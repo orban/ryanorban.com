@@ -15,14 +15,14 @@
 
 		<p>I am a wayfaring <span itemprop="jobTitle">artist and data scientist</span> currently located in <span class="where"></span>.</p>
 
-		<p>On a year-long sabbatical to travel the world. I'm currently looking for new projects, so if you're interested in working together please <a href="#contact" data-scroll data-options='{"offset": 30}'>reach out</a>!</p>
+		<p>In February 2017, I started a year-long sabbatical to travel and explore the world. I'm currently looking for new projects, so if you're interested in working together please <a href="#contact" data-scroll data-options='{"offset": 30}'>reach out</a>!</p>
 	</section>
 
 	<section id="projects">
-
+		<h2>Projects</h2>
 		<div class="project">
 			<div class="thumb">
-				<a href="http://www.taylordeanharrison.com/wp/portfolio/enunciation/"><img width=200 height=127 src="images/enunciation.jpg" alt="enunciation installation photo"></a>
+				<a href="http://www.taylordeanharrison.com/wp/portfolio/enunciation/" target="_blank"><img width=200 height=127 src="images/enunciation.jpg" alt="enunciation installation photo"></a>
 			</div>
 			<div class="description">
 				<h3><a href="/work/enunciation.html">Enunciation</a></h3>
@@ -34,7 +34,7 @@
 
 	<section id="background">
 		<h2>Background</h2>
-		<p><span itemscope itemtype="http://schema.org/Organization" itemprop="affiliation">I earned a degree in <span itemprop="department">Molecular & Cellular Biology with an emphasis in Genetics, Genomics & Development </span> at <span itemprop="name">UC Berkeley</span></span>. Founded <span itemprop="affiliation" itemscope itemtype="http://schema.org/Organization"><span itemprop="name">Zipfian Academy</span>, an immersive data science school, which was acquired by <span itemprop="affiliation" itemscope itemtype="http://schema.org/Organization"> <span itemprop="name">Galvanize</span></span> in 2015. Post-aquisition, I joined Galvanize's executive team, where I oversaw the growth and scaling of new and existing educational programs as EVP of Product & Strategy and CTO in several markets -- San Francisco, Denver, Seattle, Austin, and New York. Previously, I was an early member of the engineering and sales teams at <span itemprop="affiliation" itemscope itemtype="http://schema.org/Organization"><span itemprop="name">Nutanix</span></span>.</p>
+		<p><span itemscope itemtype="http://schema.org/Organization" itemprop="affiliation">I earned a degree in <span itemprop="department">Molecular & Cellular Biology with an emphasis in Genetics, Genomics & Development </span> at <span itemprop="name">UC Berkeley</span></span>. I founded <span itemprop="affiliation" itemscope itemtype="http://schema.org/Organization"><span itemprop="name">Zipfian Academy</span>, an immersive data science school, which was acquired by <span itemprop="affiliation" itemscope itemtype="http://schema.org/Organization"> <span itemprop="name">Galvanize</span></span> in 2015. Post-aquisition, I joined Galvanize's executive team, overseeing the growth and scaling of new and existing educational programs in several markets, including San Francisco, Denver, Seattle, Austin, and New York. Previously, I was an early member of the engineering and sales teams at <span itemprop="affiliation" itemscope itemtype="http://schema.org/Organization"><span itemprop="name">Nutanix</span></span>.</p>
 
 		<p>You can find more information about my travels at <a href="http://there.today" target="_blank">There Today</a> and my professional profile on <a href="http://linkedin.com/in/ryanorban" target="_blank">LinkedIn</a>.</p>
 
@@ -88,7 +88,7 @@
 			<a target="_blank" href="https://blogs.wsj.com/venturecapital/2014/11/18/as-demand-for-data-scientists-grows-galvanize-buys-boot-camp-zipfian/" target="_blank">As Demand for Data Scientists Grows, Galvanize Buys Boot Camp Zipfian</a> | WSJ
 		</div>
 		<div>
-			<a target="_blank" href="http://dataweek.co/2013/?p=1336" target="_blank">Zipfian Bets on Immersive Data Science Education</a> | WSJ
+			<a target="_blank" href="http://dataweek.co/2013/?p=1336" target="_blank">Zipfian Bets on Immersive Data Science Education</a> | DataWeek
 		</div>
 
 	</section>
@@ -118,12 +118,6 @@
 				where[i].innerHTML = 'Paris, France';
 			}
 		}, 1000);
-
-		var newsletterForm = document.getElementById('newsletter-form');
-		newsletterForm.addEventListener('submit', function(e) {
-			ga('send', 'event', 'Homepage', 'subscribe');
-			fbq('track', 'subscribe');
-		});
 	});
 
 	var moreButton = document.getElementById('show-more-projects');
@@ -138,6 +132,16 @@
 	});
 	</script>
 
+	<script>
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+	  ga('create', 'UA-18623557-1', 'auto');
+	  ga('send', 'pageview');
+
+	</script>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/smooth-scroll/11.1.0/js/smooth-scroll.min.js">
 	</script>
