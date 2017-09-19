@@ -103,10 +103,13 @@
 	<script>
 	document.addEventListener("DOMContentLoaded", function(event) {
 		var where = document.querySelectorAll('.where');
+		var currentLocation = locations[0];
+		var place = currentLocation.properties.place;
+		var country = currentLocation.properties.country;
 		setTimeout(function() {
 			for (var i = 0; i < where.length; i++) {
 				where[i].classList.add('loaded');
-				where[i].innerHTML = 'Zadar, Croatia';
+				where[i].innerHTML = place + ', ' + country;
 			}
 		}, 1000);
 
@@ -134,6 +137,9 @@
 	</script>
 	<script>
 		smoothScroll.init();
+	</script>
+	<script
+	src="http://there.today/assets/locations.json.js">
 	</script>
 </body>
 </html>
