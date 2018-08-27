@@ -8,6 +8,7 @@
 	<meta charset="utf-8" />
 	<link rel="stylesheet" href="style.css">
 	<meta name=viewport content="width=device-width, initial-scale=1">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
 <body itemscope itemtype="http://schema.org/Person">
 	<section id="intro">
@@ -139,17 +140,37 @@
 
 	<script>
 	document.addEventListener("DOMContentLoaded", function(event) {
-		var where = document.querySelectorAll('.where');
-		var currentLocation = locations[0];
-		var place = currentLocation.properties.place;
-		var country = currentLocation.properties.country;
-		setTimeout(function() {
-			for (var i = 0; i < where.length; i++) {
-				where[i].classList.add('loaded');
-				where[i].innerHTML = place + ', ' + country;
-			}
-		}, 1000);
-	});
+  		$.getJSON('https://s3.amazonaws.com/tt-trace-public/realtime.json', function(realtime){
+				 // final item in array is a linestring, need to skip
+				const trace = realtime.features.pop();
+				const now = realtime.features.pop();
+				const loc = now.geometry.coordinates;
+				loc.pop();
+				console.log(loc);
+				const token = 'pk.eyJ1IjoiY2FtaWxsZWFubmUiLCJhIjoiY2psY3FkYnJoMDNhOTNvcDEyZjh4ZzltaCJ9.MWF_HLt3ae_wxklmVwFz1A';
+				$.getJSON('https://api.mapbox.com/geocoding/v5/mapbox.places/' +
+					loc.join(',') +
+					'.json?access_token=' + token +
+					'&types=place,country', function(res){
+				    	let where = document.querySelectorAll('.where');
+				    	let currentLocation = [];
+				    	if (res.features.length) {
+				    		res.features.forEach(function(r){
+				    			if (r.place_type == 'place') currentLocation.push(r.text);
+				    			if (r.place_type == 'country') currentLocation.push(r.text);
+				    		})				    		
+				    	}
+				    	setTimeout(function() {
+							for (var i = 0; i < where.length; i++) {
+								where[i].classList.add('loaded');
+								where[i].innerHTML = currentLocation.join(', ');
+							}
+						}, 1000);
+					});
+			});
+  	});
+				
+				
 	</script>
 
 	<script>
@@ -168,8 +189,6 @@
 	<script>
 		smoothScroll.init();
 	</script>
-	<script
-	src="https://s3.amazonaws.com/there.today/assets/locations.json.js">
-	</script>
+
 </body>
 </html>
