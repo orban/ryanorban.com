@@ -140,13 +140,11 @@
 
 	<script>
 	document.addEventListener("DOMContentLoaded", function(event) {
-		$.getJSON('https://s3://tt-trace-public/latest.json', function(geojson){
+		$.getJSON('https://s3.amazonaws.com/tt-trace-public/latest.json', function(geojson){
 					 // final item in array is a linestring, need to skip
-					const trace = geojson.features.pop();
-					const now = geojson.features.pop();
+					const now = geojson.features[0];
 					const loc = now.geometry.coordinates;
 					loc.pop();
-					console.log(loc);
 					const token = 'pk.eyJ1IjoiY2FtaWxsZWFubmUiLCJhIjoiY2psY3FkYnJoMDNhOTNvcDEyZjh4ZzltaCJ9.MWF_HLt3ae_wxklmVwFz1A';
 					$.getJSON('https://api.mapbox.com/geocoding/v5/mapbox.places/' +
 						loc.join(',') +
@@ -167,8 +165,7 @@
 								}
 							}, 1000);
 						});
-			};
-			req.send(null);
+			});
 		});
 				
 	</script>
