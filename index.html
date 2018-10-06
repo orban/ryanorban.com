@@ -140,13 +140,7 @@
 
 	<script>
 	document.addEventListener("DOMContentLoaded", function(event) {
-				var req = new XMLHttpRequest();
-				req.open("GET", "https://s3.amazonaws.com/theretoday-images/realtime.json", true);
-				req.responseType = "arraybuffer";
-
-				req.onload = function(oEvent) {
-		  			var data = req.response;
-	  				const geojson = geobuf.decode(new Pbf(data));
+		$.getJSON('https://s3://tt-trace-public/latest.json', function(geojson){
 					 // final item in array is a linestring, need to skip
 					const trace = geojson.features.pop();
 					const now = geojson.features.pop();
@@ -191,9 +185,6 @@
 	</script>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/smooth-scroll/11.1.0/js/smooth-scroll.min.js">
-	</script>
-	<script src="https://unpkg.com/geobuf@3.0.1/dist/geobuf.js"></script>
-	<script src="https://unpkg.com/pbf@3.0.5/dist/pbf.js"></script>
 	<script>
 		smoothScroll.init();
 	</script>
