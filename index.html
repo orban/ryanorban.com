@@ -16,7 +16,7 @@
 
 		<p>👋 I'm a nomadic <span itemprop="jobTitle">data scientist, amateur photographer, and world traveller</span> currently located in <span class="where"></span>.</p>
 
-		<p>In 2017, I left the Bay Area to explore the world. After motorbiking Vietnam, diving Thailand, surfing Indonesia, camper-vanning Australia, horse-trekking Monoglia, eating my weight in Japan, climbing the Great Wall of China, and almost overstaying my visa in Europe -- I'm currently overlanding the the Americas in a 2001 4x4 Sportsmobile van, driving all the way from from Patagonia to California. I work remotely and am always looking for new projects, so if you're interested in colloborating please <a href="#contact" data-scroll data-options='{"offset": 30}'>reach out</a> and follow our journey below!</p>
+		<p>In 2017, I left the Bay Area to explore the world. After motorbiking Vietnam, diving Thailand, surfing Indonesia, camper-vanning Australia, horse-trekking Monoglia, eating my weight in Japan, climbing the Great Wall of China, and almost overstaying my visa in Europe -- I'm currently overlanding the Americas in a 2001 4x4 Sportsmobile van, driving all the way from from Patagonia to California. I work remotely and am always looking for new projects, so if you're interested in colloborating please <a href="#contact" data-scroll data-options='{"offset": 30}'>reach out</a> and follow our journey below!</p>
 	</section>
 
 	<section id="projects">
@@ -140,36 +140,42 @@
 
 	<script>
 	document.addEventListener("DOMContentLoaded", function(event) {
-  		$.getJSON('https://s3.amazonaws.com/tt-trace-public/realtime.json', function(realtime){
-				 // final item in array is a linestring, need to skip
-				const trace = realtime.features.pop();
-				const now = realtime.features.pop();
-				const loc = now.geometry.coordinates;
-				loc.pop();
-				console.log(loc);
-				const token = 'pk.eyJ1IjoiY2FtaWxsZWFubmUiLCJhIjoiY2psY3FkYnJoMDNhOTNvcDEyZjh4ZzltaCJ9.MWF_HLt3ae_wxklmVwFz1A';
-				$.getJSON('https://api.mapbox.com/geocoding/v5/mapbox.places/' +
-					loc.join(',') +
-					'.json?access_token=' + token +
-					'&types=place,country', function(res){
-				    	let where = document.querySelectorAll('.where');
-				    	let currentLocation = [];
-				    	if (res.features.length) {
-				    		res.features.forEach(function(r){
-				    			if (r.place_type == 'place') currentLocation.push(r.text);
-				    			if (r.place_type == 'country') currentLocation.push(r.text);
-				    		})				    		
-				    	}
-				    	setTimeout(function() {
-							for (var i = 0; i < where.length; i++) {
-								where[i].classList.add('loaded');
-								where[i].innerHTML = currentLocation.join(', ');
-							}
-						}, 1000);
-					});
-			});
-  	});
-				
+				var req = new XMLHttpRequest();
+				req.open("GET", "https://s3.amazonaws.com/theretoday-images/realtime.json", true);
+				req.responseType = "arraybuffer";
+
+				req.onload = function(oEvent) {
+		  			var data = req.response;
+	  				const geojson = geobuf.decode(new Pbf(data));
+					 // final item in array is a linestring, need to skip
+					const trace = geojson.features.pop();
+					const now = geojson.features.pop();
+					const loc = now.geometry.coordinates;
+					loc.pop();
+					console.log(loc);
+					const token = 'pk.eyJ1IjoiY2FtaWxsZWFubmUiLCJhIjoiY2psY3FkYnJoMDNhOTNvcDEyZjh4ZzltaCJ9.MWF_HLt3ae_wxklmVwFz1A';
+					$.getJSON('https://api.mapbox.com/geocoding/v5/mapbox.places/' +
+						loc.join(',') +
+						'.json?access_token=' + token +
+						'&types=place,country', function(res){
+					    	let where = document.querySelectorAll('.where');
+					    	let currentLocation = [];
+					    	if (res.features.length) {
+					    		res.features.forEach(function(r){
+					    			if (r.place_type == 'place') currentLocation.push(r.text);
+					    			if (r.place_type == 'country') currentLocation.push(r.text);
+					    		})				    		
+					    	}
+					    	setTimeout(function() {
+								for (var i = 0; i < where.length; i++) {
+									where[i].classList.add('loaded');
+									where[i].innerHTML = currentLocation.join(', ');
+								}
+							}, 1000);
+						});
+			};
+			req.send(null);
+		});
 				
 	</script>
 
@@ -186,6 +192,8 @@
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/smooth-scroll/11.1.0/js/smooth-scroll.min.js">
 	</script>
+	<script src="https://unpkg.com/geobuf@3.0.1/dist/geobuf.js"></script>
+	<script src="https://unpkg.com/pbf@3.0.5/dist/pbf.js"></script>
 	<script>
 		smoothScroll.init();
 	</script>
