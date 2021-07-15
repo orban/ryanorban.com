@@ -13,10 +13,16 @@
 <body itemscope itemtype="http://schema.org/Person">
 	<section id="intro">
 			<h1 class="myname" itemprop="name"><span itemprop="givenName">Ryan</span> <span itemprop="familyName">Orban</span></h1>
+		Hi! 👋
 
-		<p>👋 I'm a nomadic <span itemprop="jobTitle">data scientist, amateur photographer, and world traveler</span> currently located in <span class="where"></span>.</p>
+		<p>I'm a <span itemprop="jobTitle">data scientist and machine learning engineer</span> currently located in <span class="where">San Francisco, CA</span> with over 10 years of experience helping build technology companies.</p>
 
-		<p>In 2017, I left the Bay Area to explore the world. After motorbiking Vietnam, diving Thailand, surfing Indonesia, camper-vanning Australia, horse-trekking Mongolia, eating my weight in Japan, climbing the Great Wall of China, and almost overstaying my visa in Europe -- I'm currently overlanding the Americas in a 2001 4x4 Sportsmobile van, driving all the way from from Patagonia to California. I work remotely and am always looking for new projects, so if you're interested in collaborating please <a href="#contact" data-scroll data-options='{"offset": 30}'>reach out</a> and follow our journey below!</p>
+		<p>I'm currently working to create the best career coaching experience at <a href="http://www.placement.com">Placement</a> using advanced NLP, deep learning, and personalized recommendation techniques.</p>
+
+		<p>Previously, I was the CTO of <a href="http://www.galvanize.com">Galvanize</a>, a 21st Century school for entrepreneurs, engineers, and data scientists. Our flexible blended-learning platform, combining part-time online education and in-person training, provides the most relevant and in-demand technical skills to students nationwide. Galvanize was acquired by K12 (NYSE: LRN) in 2020.</p>
+
+		<p>An early leader in tech bootcamps, I launched <a href="http://www.zipfian.academy">Zipfian Academy<a/>, America's first data science bootcamp in 2013. I grew the business from an idea in an apartment to acquisition by Galvanize, to 1000s of customers across eight campuses. The program was a category creator in alternative education that continues to inspire Fortune 500s and startups alike.</p>
+
 	</section>
 
 	<section id="projects">
@@ -42,7 +48,7 @@
 		</div>
 			<div class="project">
 				<div class="thumb">
-					<img width=200 height=127 src="images/zipfian.png" alt="zipfian academy logo"></a>
+					<a href="http://www.zipfian.academy" target="_blank"><img width=200 height=127 src="images/zipfian.png" alt="zipfian academy logo"></a>
 				</div>
 				<div class="description">
 					<h3><a href="https://blogs.wsj.com/venturecapital/2014/11/18/as-demand-for-data-scientists-grows-galvanize-buys-boot-camp-zipfian/">Zipfian Academy</a></h3>
@@ -65,7 +71,7 @@
 	<section id="contact">
 		<h2>Contact</h2>
 		<div class="address">
-			<div><img width=120 src="images/headshot.jpg" alt="portrait of Ryan Orban" /></div>
+			<div><img width=200 src="images/headshot.jpg" alt="portrait of Ryan Orban" /></div>
 			<div class="data">
 				<a itemprop="email" href="mailto:me@ryanorban.com">me@ryanorban.com</a><br />
 				<a target="_blank" href="https://twitter.com/ryanorban">@ryanorban</a><br /><br />
@@ -134,40 +140,24 @@
 
 	<footer>
 		<div>
-		Last updated 16 Sep 2017
+		Last updated 16 Sep 2020
 	</div>
 	</footer>
 
 	<script>
 	document.addEventListener("DOMContentLoaded", function(event) {
-		$.getJSON('https://s3.amazonaws.com/tt-trace-public/latest.json', function(geojson){
-					 // final item in array is a linestring, need to skip
-					const now = geojson.features[0];
-					const loc = now.geometry.coordinates;
-					loc.pop();
-					const token = 'pk.eyJ1IjoiY2FtaWxsZWFubmUiLCJhIjoiY2psY3FkYnJoMDNhOTNvcDEyZjh4ZzltaCJ9.MWF_HLt3ae_wxklmVwFz1A';
-					$.getJSON('https://api.mapbox.com/geocoding/v5/mapbox.places/' +
-						loc.join(',') +
-						'.json?access_token=' + token +
-						'&types=place,country', function(res){
-					    	let where = document.querySelectorAll('.where');
-					    	let currentLocation = [];
-					    	if (res.features.length) {
-					    		res.features.forEach(function(r){
-					    			if (r.place_type == 'place') currentLocation.push(r.text);
-					    			if (r.place_type == 'country') currentLocation.push(r.text);
-					    		})				    		
-					    	}
-					    	setTimeout(function() {
-								for (var i = 0; i < where.length; i++) {
-									where[i].classList.add('loaded');
-									where[i].innerHTML = currentLocation.join(', ');
-								}
-							}, 1000);
-						});
-			});
-		});
-				
+		let where = document.querySelectorAll('.where');
+		let currentLocation = [];
+
+		setTimeout(function() {
+			for (var i = 0; i < where.length; i++) {
+				where[i].classList.add('loaded');
+				where[i].innerHTML = "San Francisco";
+			}
+		}, 1000);
+	});
+
+
 	</script>
 
 	<script>
