@@ -39,6 +39,7 @@ p {
     height: 15px;
     background: url('data:image/gif;base64,R0lGODlhEAAQAPEAAP///wAAADY2NgAAACH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAAQAAACLYSPacLtvkA7U64qGb2C6gtyXmeJHIl+WYeuY7SSLozV6WvK9pfqWv8IKoaIAgAh+QQACgABACwAAAAAEAAQAAACLYSPacLtvhY7DYhY5bV62xl9XvZJFCiGaReS1Xa5ICyP2jnS+M7drPgIKoaIAgAh+QQACgACACwAAAAAEAAQAAACLISPacLtvk6TE4jF6L3WZsyFlcd1pEZhKBixYOie8FiJ39nS97f39gNUCBEFACH5BAAKAAMALAAAAAAQABAAAAIshI9pwu2+xGmTrSqjBZlqfnnc1onmh44RxoIp5JpWN2b1Vdvn/ZbPb1MIAQUAIfkEAAoABAAsAAAAABAAEAAAAi2Ej2nC7b7YaVPEamPOgOqtYd3SSeFYmul0rlcpnpyXgu4K0t6mq/wD5CiGgAIAIfkEAAoABQAsAAAAABAAEAAAAiyEj2nC7b7akSuKyXDE11ZvdWLmiQB1kiOZdifYailHvzBko5Kpq+HzUAgRBQA7AAAAAAAAAAAA');
 }
+
 .where:hover:after {
     content: 'My location changes often. This page automatically updates with my latest GPS trace.';
     position: absolute;
@@ -52,10 +53,12 @@ p {
     font-size: 18px;
     line-height: 1.2em;
 }
+
 .where.loaded {
     background: transparent;
     display: inline;
 }
+
 #projects {
     margin: 80px 0;
 }
