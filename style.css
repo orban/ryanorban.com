@@ -1,373 +1,383 @@
-@import url('https://fonts.googleapis.com/css?family=Nunito|Permanent+Marker|Slabo+27px');
-
+@import url("https://fonts.googleapis.com/css?family=Nunito|Permanent+Marker|Inter:400,600");
 
 body {
-    font-family: 'Slabo 27px', serif, 'Times New Roman', times, serif;
-    line-height: 1.4em;
-    font-size: 24px;
-    padding: 20px 50px;
+  font-family: "Inter", sans-serif;
+  line-height: 1.4em;
+  font-size: 18px;
+  padding: 20px 50px;
 }
 h1.myname {
-    color: #E74646;
-    font-family: 'Permanent Marker', cursive, 'Courier New', Courier, monospace;
-    font-weight: 500;
-    margin-bottom: 60px;
-    font-size: 36px;
+  color: #e74646;
+  font-family: "Permanent Marker", cursive, "Courier New", Courier, monospace;
+  font-weight: 500;
+  margin-bottom: 100px;
+  font-size: 48px;
 }
-h2, h3, h4, h5, h6 {
-    font-size: 24px;
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: 24px;
 }
 h2 {
-    text-transform: uppercase;
-    margin-top: 3em;
+  text-transform: uppercase;
+  margin-top: 3em;
 }
 p {
-    max-width: 500px;
+  max-width: 500px;
 }
 #intro {
-    margin-bottom: 60px;
-    margin-top: 30px;
+  margin-bottom: 60px;
+  margin-top: 30px;
 }
 .where {
-    text-decoration: underline;
-    text-decoration-color: #AAA;
-    cursor: crosshair;
-    position: relative;
+  text-decoration: underline;
+  text-decoration-color: #aaa;
+  cursor: crosshair;
+  position: relative;
 
-    display: inline-block;
-    width: 15px;
-    height: 15px;
-    background: url('data:image/gif;base64,R0lGODlhEAAQAPEAAP///wAAADY2NgAAACH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAAQAAACLYSPacLtvkA7U64qGb2C6gtyXmeJHIl+WYeuY7SSLozV6WvK9pfqWv8IKoaIAgAh+QQACgABACwAAAAAEAAQAAACLYSPacLtvhY7DYhY5bV62xl9XvZJFCiGaReS1Xa5ICyP2jnS+M7drPgIKoaIAgAh+QQACgACACwAAAAAEAAQAAACLISPacLtvk6TE4jF6L3WZsyFlcd1pEZhKBixYOie8FiJ39nS97f39gNUCBEFACH5BAAKAAMALAAAAAAQABAAAAIshI9pwu2+xGmTrSqjBZlqfnnc1onmh44RxoIp5JpWN2b1Vdvn/ZbPb1MIAQUAIfkEAAoABAAsAAAAABAAEAAAAi2Ej2nC7b7YaVPEamPOgOqtYd3SSeFYmul0rlcpnpyXgu4K0t6mq/wD5CiGgAIAIfkEAAoABQAsAAAAABAAEAAAAiyEj2nC7b7akSuKyXDE11ZvdWLmiQB1kiOZdifYailHvzBko5Kpq+HzUAgRBQA7AAAAAAAAAAAA');
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  background: url("data:image/gif;base64,R0lGODlhEAAQAPEAAP///wAAADY2NgAAACH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAAQAAACLYSPacLtvkA7U64qGb2C6gtyXmeJHIl+WYeuY7SSLozV6WvK9pfqWv8IKoaIAgAh+QQACgABACwAAAAAEAAQAAACLYSPacLtvhY7DYhY5bV62xl9XvZJFCiGaReS1Xa5ICyP2jnS+M7drPgIKoaIAgAh+QQACgACACwAAAAAEAAQAAACLISPacLtvk6TE4jF6L3WZsyFlcd1pEZhKBixYOie8FiJ39nS97f39gNUCBEFACH5BAAKAAMALAAAAAAQABAAAAIshI9pwu2+xGmTrSqjBZlqfnnc1onmh44RxoIp5JpWN2b1Vdvn/ZbPb1MIAQUAIfkEAAoABAAsAAAAABAAEAAAAi2Ej2nC7b7YaVPEamPOgOqtYd3SSeFYmul0rlcpnpyXgu4K0t6mq/wD5CiGgAIAIfkEAAoABQAsAAAAABAAEAAAAiyEj2nC7b7akSuKyXDE11ZvdWLmiQB1kiOZdifYailHvzBko5Kpq+HzUAgRBQA7AAAAAAAAAAAA");
 }
 
 .where:hover:after {
-    content: 'My location changes often. This page automatically updates with my latest GPS trace.';
-    position: absolute;
-    display: block;
-    top: -30px;
-    right: -320px;
-    width: 300px;
-    background: white;
-    border: solid black 1px;
-    padding: 10px;
-    font-size: 18px;
-    line-height: 1.2em;
+  content: "My location changes often. This page automatically updates with my latest GPS trace.";
+  position: absolute;
+  display: block;
+  top: -30px;
+  right: -320px;
+  width: 300px;
+  background: white;
+  border: solid black 1px;
+  padding: 10px;
+  font-size: 18px;
+  line-height: 1.2em;
 }
 
 .where.loaded {
-    background: transparent;
-    display: inline;
+  background: transparent;
+  display: inline;
 }
 
 #projects {
-    margin: 80px 0;
+  margin: 80px 0;
 }
 #projects .project {
-    display: flex;
-    margin: 50px 0;
+  display: flex;
+  margin: 50px 0;
 }
 #projects .project h3 {
-    margin-top: 0;
-    margin-bottom: 1em;
+  margin-top: 0;
+  margin-bottom: 1em;
 }
 #projects .project h3 a {
-    color: black;
-    text-decoration: none;
+  color: black;
+  text-decoration: none;
 }
 #projects .project .description {
-    max-width: 450px;
+  max-width: 450px;
 }
 .thumb {
-    width: 180px;
-    height: 180px;
-    margin-right: 30px;
+  width: 180px;
+  height: 180px;
+  margin-right: 30px;
 }
 .thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .show-more-projects {
-    background: white;
-    flex: 1;
-    border: solid #CCC 1px;
-    text-align: center;
-    max-width: 650px;
-    padding: 20px 0;
-    cursor: pointer;
+  background: white;
+  flex: 1;
+  border: solid #ccc 1px;
+  text-align: center;
+  max-width: 650px;
+  padding: 20px 0;
+  cursor: pointer;
 }
 .show-more-projects:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 .address {
-    display: flex;
-    margin: 30px 0;
-    max-width: 400px;
+  display: flex;
+  margin: 30px 0;
+  max-width: 400px;
 }
 .address a {
-    line-height: 1.7em;
+  line-height: 1.7em;
 }
 .address img {
-    margin-right: 50px;
+  margin-right: 50px;
 }
 #newsletter {
-    background: #FFEEDB;
-    margin: 2em -30px;
-    padding: 30px;
-    max-width: 650px;
-    font-size: 32px;
-    line-height: 1.2em;
+  background: #ffeedb;
+  margin: 2em -30px;
+  padding: 30px;
+  max-width: 650px;
+  font-size: 32px;
+  line-height: 1.2em;
 }
 #newsletter form {
-    display: flex;
-    height: 70px;
+  display: flex;
+  height: 70px;
 }
 #newsletter .email {
-    flex: 1;
-    font-family: 'Source Serif Pro', 'Times New Roman', times, serif;
-    font-size: 24px;
-    border: solid rgba(0,0,0,0.5) 1px;
-    padding: 10px 15px;
+  flex: 1;
+  font-family: "Source Serif Pro", "Times New Roman", times, serif;
+  font-size: 24px;
+  border: solid rgba(0, 0, 0, 0.5) 1px;
+  padding: 10px 15px;
 }
 #newsletter .subscribe {
-    margin-left: 20px;
-    background: transparent;
-    border: solid rgba(0,0,0,0.5) 1px;
-    font-size: 24px;
-    padding: 20px 40px;
-    font-family: 'Source Serif Pro', 'Times New Roman', times, serif;
+  margin-left: 20px;
+  background: transparent;
+  border: solid rgba(0, 0, 0, 0.5) 1px;
+  font-size: 24px;
+  padding: 20px 40px;
+  font-family: "Source Serif Pro", "Times New Roman", times, serif;
 }
 #newsletter .subscribe:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 #newsletter h2 {
-    margin: 0;
-    margin-bottom: 1em;
-    text-transform: none;
-    font-size: 32px;
+  margin: 0;
+  margin-bottom: 1em;
+  text-transform: none;
+  font-size: 32px;
 }
 #irl h4 {
-    font-size: 24px;
-    margin-bottom: 0;
+  font-size: 24px;
+  margin-bottom: 0;
 }
-#presentations a, #irl a {
-    color: black;
+#presentations a,
+#irl a {
+  color: black;
 }
 #more-projects h4 {
-    color: #555;
-    margin-top: 1.5em;
-    margin-bottom: 0.25em;
-    font-weight: normal;
+  color: #555;
+  margin-top: 1.5em;
+  margin-bottom: 0.25em;
+  font-weight: normal;
 }
 #more-projects .project {
-    margin: 0;
+  margin: 0;
 }
 #more-projects .project a {
-    color: black;
+  color: black;
 }
 #more-projects .project .date {
-    margin-right: 20px;
+  margin-right: 20px;
 }
 footer {
-    margin: 3em 0;
-    color: #CCC;
+  margin: 3em 0;
+  color: #ccc;
 }
 
 @media screen and (max-width: 500px) {
-    body {
-        padding: 20px;
-    }
-    .project {
-        flex-direction: column;
-        margin-bottom: 80px;
-    }
-    .project .thumb {
-        height: 150px;
-        width: 100%;
-        margin-bottom: 20px;
-    }
-    #more-projects .project .date {
-        display: none;
-    }
-    .address img {
-        width: 60px;
-        margin-right: 20px;
-    }
-    #newsletter {
-        padding: 40px 20px;
-        margin-left: -20px;
-        margin-right: -20px;
-    }
-    #newsletter form {
-        flex-direction: column;
-        height: auto;
-    }
-    #newsletter .email {
-        height: 60px;
-    }
-    #newsletter .subscribe {
-        margin-left: 0;
-        margin-top: 30px;
-        max-width: 250px;
-    }
-    #newsletter h2 {
-        margin-top: 10px;
-    }
+  body {
+    padding: 20px;
+  }
+  .project {
+    flex-direction: column;
+    margin-bottom: 80px;
+  }
+  .project .thumb {
+    height: 150px;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  #more-projects .project .date {
+    display: none;
+  }
+  .address img {
+    width: 60px;
+    margin-right: 20px;
+  }
+  #newsletter {
+    padding: 40px 20px;
+    margin-left: -20px;
+    margin-right: -20px;
+  }
+  #newsletter form {
+    flex-direction: column;
+    height: auto;
+  }
+  #newsletter .email {
+    height: 60px;
+  }
+  #newsletter .subscribe {
+    margin-left: 0;
+    margin-top: 30px;
+    max-width: 250px;
+  }
+  #newsletter h2 {
+    margin-top: 10px;
+  }
 }
 
-
 pre {
-    max-width: 700px;
-    white-space: pre-wrap;
+  max-width: 700px;
+  white-space: pre-wrap;
 }
 
 .subpage {
-    margin-top: 50px;
-    padding: 20px 65px;
+  margin-top: 50px;
+  padding: 20px 65px;
 }
 .top-menu {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    padding-top: 10px;
-    /*border: 1px solid #CCC;*/
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  padding-top: 10px;
+  /*border: 1px solid #CCC;*/
 }
 .top-menu h1 {
-    font-weight: 600;
-    font-size: 24px;
-    display: inline-block;
+  font-weight: 600;
+  font-size: 24px;
+  display: inline-block;
 }
 .top-menu .back-button {
-    margin-left: 25px;
-    margin-right: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  margin-left: 25px;
+  margin-right: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 #intro .summary {
-    background: salmon;
-    padding: 0 20px;
+  font-size: 24px;
+  font-family: "Nunito", sans-serif;
+  max-width: px;
+  background: #ffeedb;
+  padding: 10px 15px;
+  border-left: 4px solid #e74646;
+  margin-top: -40px;
+  margin-bottom: 40px;
+  line-height: 1.4em;
 }
 .sip-point {
-    position: absolute;
-    left: 0;
-    right: 0;
-    z-index: -10;
-    max-width: 900px;
-    margin-top: 1em;
-    margin-left: 50px;
-    margin-bottom: 20px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: -10;
+  max-width: 900px;
+  margin-top: 1em;
+  margin-left: 50px;
+  margin-bottom: 20px;
 }
 .sip-point img {
-    width: 100%;
-    height: 100%;
-    min-width: 300px;
-    max-height: 300px;
-    object-fit: cover;
-    background: #EEE;
+  width: 100%;
+  height: 100%;
+  min-width: 300px;
+  max-height: 300px;
+  object-fit: cover;
+  background: #eee;
 }
 .subpage #newsletter {
-    max-width: 850px;
+  max-width: 850px;
 }
 .subpage #newsletter h2 {
-    font-size: 24px;
+  font-size: 24px;
 }
 .subpage #intro {
-    max-width: 850px;
-    display: flex;
+  max-width: 850px;
+  display: flex;
 }
 .subpage p {
-    max-width: 400px;
+  max-width: 400px;
 }
 
 #tools .tool {
-    display: flex;
-    margin: 50px 0;
+  display: flex;
+  margin: 50px 0;
 }
 #tools .tool h3 {
-    margin-top: 0;
-    margin-bottom: 1em;
+  margin-top: 0;
+  margin-bottom: 1em;
 }
 #tools .tool h3 a {
-    color: black;
-    text-decoration: none;
+  color: black;
+  text-decoration: none;
 }
 #tools .tool .description {
-    max-width: 400px;
-    min-width: 200px;
+  max-width: 400px;
+  min-width: 200px;
 }
 
 #trip {
-    display: flex;
-    flex-direction: row;
-    overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
 }
 .bot-map figcaption {
-    font-size: 18px;
-    text-align: right;
+  font-size: 18px;
+  text-align: right;
 }
 #trip h2 {
-    margin-top: 0;
+  margin-top: 0;
 }
 #trip .bot-map {
-    flex: 1;
-    max-width: 400px;
-    min-width: 200px;
-    margin-left: 50px;
-    margin-top: 3em;
-    max-height: 250px;
+  flex: 1;
+  max-width: 400px;
+  min-width: 200px;
+  margin-left: 50px;
+  margin-top: 3em;
+  max-height: 250px;
 }
 #trip .bot-map img {
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
 }
 
 @media screen and (max-width: 500px) {
-    .tool .thumb img {
-        object-fit: contain;
-    }
-    #trip {
-        flex-direction: column;
-    }
-    #trip .bot-map {
-        margin: 1em 0;
-        max-width: auto;
-        width: 100%;
-    }
-    #trip .bot-map img {
-        object-fit: cover;
-    }
-    .subpage {
-        padding: 20px;
-    }
-    .top-menu {
-        position: fixed;
-        background: white;
-        border-bottom: 1px solid #DDD;
-    }
-    .sip-point {
-        position: static;
-        flex: 1;
-    }
-    #intro .summary {
-        background: none;
-    }
+  .tool .thumb img {
+    object-fit: contain;
+  }
+  #trip {
+    flex-direction: column;
+  }
+  #trip .bot-map {
+    margin: 1em 0;
+    max-width: auto;
+    width: 100%;
+  }
+  #trip .bot-map img {
+    object-fit: cover;
+  }
+  .subpage {
+    padding: 20px;
+  }
+  .top-menu {
+    position: fixed;
+    background: white;
+    border-bottom: 1px solid #ddd;
+  }
+  .sip-point {
+    position: static;
+    flex: 1;
+  }
+  #intro .summary {
+    background: none;
+  }
 }
 @media screen and (max-width: 700px) {
-    .subpage #intro {
-        flex-direction: column;
-    }
-    .sip-point {
-        margin: 1em 0;
-    }
+  .subpage #intro {
+    flex-direction: column;
+  }
+  .sip-point {
+    margin: 1em 0;
+  }
 }
 
 .third-party-vid {
-    display: block;
-    margin: 1em 0;
-    width: 100%;
-    max-width: 500px;
+  display: block;
+  margin: 1em 0;
+  width: 100%;
+  max-width: 500px;
 }
