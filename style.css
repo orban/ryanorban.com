@@ -225,17 +225,30 @@ pre {
 }
 
 .subpage {
-  margin-top: 50px;
+  margin-top: 80px;
   padding: 20px 65px;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .top-menu {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   display: flex;
-  padding-top: 10px;
-  /*border: 1px solid #CCC;*/
+  align-items: center;
+  padding: 15px 50px;
+  background: white;
+  border-bottom: 1px solid #eee;
+  z-index: 100;
+}
+.top-menu a {
+  color: #333;
+  text-decoration: none;
+}
+.top-menu a:hover {
+  text-decoration: underline;
 }
 .top-menu h1 {
   font-weight: 600;
@@ -285,11 +298,65 @@ pre {
   font-size: 24px;
 }
 .subpage #intro {
-  max-width: 850px;
-  display: flex;
+  max-width: 900px;
 }
 .subpage p {
-  max-width: 400px;
+  max-width: 700px;
+}
+.subpage h1 {
+  font-size: 36px;
+  font-weight: 600;
+  margin-bottom: 1em;
+  margin-top: 0.5em;
+  color: #333;
+}
+.subpage h2 {
+  margin-top: 2.5em;
+  margin-bottom: 1em;
+  font-size: 20px;
+  letter-spacing: 0.05em;
+}
+.subpage h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  color: #333;
+}
+.subpage ul {
+  max-width: 700px;
+  margin: 1em 0;
+  padding-left: 1.5em;
+}
+.subpage ul li {
+  margin: 0.75em 0;
+  line-height: 1.6em;
+}
+.subpage section {
+  margin-bottom: 2em;
+}
+.subpage #ways-to-work > div {
+  margin: 1.5em 0;
+  padding: 1.5em 0;
+  border-bottom: 1px solid #eee;
+}
+.subpage #ways-to-work > div:last-child {
+  border-bottom: none;
+}
+.subpage #ways-to-work h3 {
+  margin-top: 0;
+  color: #e74646;
+}
+.subpage #ways-to-work p {
+  margin-top: 0.5em;
+  color: #555;
+}
+.subpage a {
+  color: #e74646;
+  text-decoration: none;
+}
+.subpage a:hover {
+  text-decoration: underline;
 }
 
 #tools .tool {
@@ -352,11 +419,13 @@ pre {
   }
   .subpage {
     padding: 20px;
+    margin-top: 70px;
   }
   .top-menu {
-    position: fixed;
-    background: white;
-    border-bottom: 1px solid #ddd;
+    padding: 12px 20px;
+  }
+  .top-menu h1 {
+    font-size: 20px;
   }
   .sip-point {
     position: static;
@@ -372,6 +441,19 @@ pre {
   }
   .sip-point {
     margin: 1em 0;
+  }
+  .subpage h1 {
+    font-size: 28px;
+  }
+  .subpage h2 {
+    font-size: 18px;
+    margin-top: 2em;
+  }
+  .subpage p {
+    max-width: 100%;
+  }
+  .subpage ul {
+    max-width: 100%;
   }
 }
 
