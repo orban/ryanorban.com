@@ -1,10 +1,12 @@
-@import url("https://fonts.googleapis.com/css?family=Nunito|Permanent+Marker|Inter:400,600");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=Nunito&family=Permanent+Marker&display=swap");
 
 body {
-  font-family: "Inter", sans-serif;
+  font-family: "IBM Plex Sans", sans-serif;
   line-height: 1.4em;
-  font-size: 18px;
+  font-size: 16px;
   padding: 20px 50px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 h1.myname {
   color: #e74646;
@@ -25,8 +27,19 @@ h2 {
   margin-top: 3em;
 }
 p {
-  max-width: 500px;
+  max-width: 700px;
 }
+
+#background > p:last-of-type {
+  max-width: 467px;
+}
+
+@media screen and (min-width: 768px) {
+  #background > p:last-of-type {
+    max-width: 533px;
+  }
+}
+
 #intro {
   margin-bottom: 60px;
   margin-top: 30px;
@@ -105,7 +118,7 @@ p {
 .address {
   display: flex;
   margin: 30px 0;
-  max-width: 400px;
+  max-width: 600px;
 }
 .address a {
   line-height: 1.7em;
@@ -177,9 +190,22 @@ footer {
   color: #ccc;
 }
 
+@media screen and (min-width: 768px) {
+  p {
+    max-width: 800px;
+  }
+  #intro .summary {
+    max-width: 533px;
+  }
+  .address {
+    max-width: 700px;
+  }
+}
+
 @media screen and (max-width: 500px) {
   body {
     padding: 20px;
+    max-width: 100%;
   }
   .project {
     flex-direction: column;
@@ -257,12 +283,24 @@ pre {
   color: #333;
   text-decoration: none;
 }
+
+.top-menu h1 a {
+  color: #e74646;
+  text-decoration: none;
+}
 .top-menu a:hover {
   text-decoration: underline;
 }
+
+.top-menu h1 a:hover {
+  color: #e74646;
+  text-decoration: none;
+}
 .top-menu h1 {
-  font-weight: 600;
-  font-size: 24px;
+  font-family: "Permanent Marker", cursive, "Courier New", Courier, monospace;
+  font-weight: 500;
+  font-size: 32px;
+  color: #e74646;
   display: inline-block;
 }
 .top-menu .back-button {
@@ -275,7 +313,7 @@ pre {
 #intro .summary {
   font-size: 24px;
   font-family: "Nunito", sans-serif;
-  max-width: px;
+  max-width: 467px;
   background: #ffeedb;
   padding: 10px 15px;
   border-left: 4px solid #e74646;
@@ -346,8 +384,8 @@ pre {
   margin-bottom: 2em;
 }
 .subpage #ways-to-work > div {
-  margin: 1.5em 0;
-  padding: 1.5em 0;
+  margin: 1em 0;
+  padding: 1em 0;
   border-bottom: 1px solid #eee;
 }
 .subpage #ways-to-work > div:last-child {
@@ -367,6 +405,68 @@ pre {
 }
 .subpage a:hover {
   text-decoration: underline;
+}
+
+.subpage .intro-text {
+  font-size: 20px;
+  line-height: 1.6em;
+  margin-bottom: 2em;
+  color: #555;
+}
+
+.subpage .intro-text-first {
+  margin-bottom: 1em;
+}
+
+.subpage .intro-text-secondary {
+  margin-bottom: 2em;
+  color: #555;
+}
+
+.subpage .email-contact {
+  margin-top: 1em;
+}
+
+.subpage .email-contact a {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.subpage .intro-text-secondary {
+  margin-bottom: 2em;
+  color: #555;
+}
+
+.subpage .booking-info {
+  margin-top: 1.5em;
+}
+
+.subpage .booking-note {
+  margin-top: 0.5em;
+  color: #777;
+  font-size: 16px;
+}
+
+.subpage .section-link {
+  margin-top: 1em;
+}
+
+.subpage .booking-button {
+  display: inline-block;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  padding: 8px 16px;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  text-decoration: none;
+  border: 1px solid #1a1a1a;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.subpage .booking-button:hover {
+  background-color: #ffffff;
+  color: #1a1a1a;
+  text-decoration: none;
 }
 
 #tools .tool {
@@ -435,7 +535,7 @@ pre {
     padding: 12px 20px;
   }
   .top-menu h1 {
-    font-size: 20px;
+    font-size: 24px;
   }
   .sip-point {
     position: static;
@@ -477,11 +577,24 @@ pre {
 #background .role-entry {
   margin: 1.5em 0;
   padding: 1em 0;
-  border-bottom: 1px solid #eee;
+  position: relative;
 }
 
-#background .role-entry:has(+ .education-section) {
-  border-bottom: none;
+#background .role-entry:not(:has(+ .education-section))::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 700px;
+  max-width: calc(100% - 1.2em);
+  height: 1px;
+  background-color: #e8e8e8;
+}
+
+@media screen and (min-width: 768px) {
+  #background .role-entry:not(:has(+ .education-section))::after {
+    width: 800px;
+  }
 }
 
 #background .role-entry h3 {
@@ -501,7 +614,24 @@ pre {
 #background .education-section {
   margin: 2em 0;
   padding: 1.5em 0 1em 0;
-  border-top: 1px solid #eee;
+  position: relative;
+}
+
+#background .education-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 700px;
+  max-width: calc(100% - 1.2em);
+  height: 1px;
+  background-color: #e8e8e8;
+}
+
+@media screen and (min-width: 768px) {
+  #background .education-section::before {
+    width: 800px;
+  }
 }
 
 #background .education-section h3 {

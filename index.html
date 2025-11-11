@@ -26,8 +26,7 @@
       <h2>Background</h2>
 
       <p>
-        I help founders and product teams get to signal fast—clarifying wedge, tightening narrative, and making the
-        right AI/infra bets. Previously: built and scaled programs that placed talent into Tesla, Facebook, Google;
+        Previously: built and scaled programs that placed talent into Tesla, Facebook, Google;
         shipped hands-on data/ML products; and ran large-scale deployments in the federal space.
       </p>
 
@@ -106,7 +105,7 @@
           <a target="_blank" href="https://www.linkedin.com/in/ryanorban">LinkedIn Profile</a><br /><br />
 
           <div>
-            My current location is San Francisco, California, United States.
+            My current location is San Francisco, California.
           </div>
         </div>
       </div>
@@ -158,40 +157,7 @@
       </div>
     </section>
 
-    <footer>Last updated October 2024</footer>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", function (event) {
-        var where = document.querySelectorAll(".where");
-        var currentLocation = locations[0];
-        var place = currentLocation.properties.place;
-        var country = currentLocation.properties.country;
-        setTimeout(function () {
-          for (var i = 0; i < where.length; i++) {
-            where[i].classList.add("loaded");
-            where[i].innerHTML = place + ", " + country;
-          }
-        }, 1000);
-
-        var newsletterForm = document.getElementById("newsletter-form");
-        newsletterForm.addEventListener("submit", function (e) {
-          ga("send", "event", "Homepage", "subscribe");
-          fbq("track", "subscribe");
-        });
-      });
-
-      var moreButton = document.getElementById("show-more-projects");
-      var moreSection = document.getElementById("more-projects");
-      moreSection.style.display = "none";
-      moreButton.addEventListener("click", function (e) {
-        moreSection.style.display = "block";
-        moreButton.style.display = "none";
-
-        //ga('send', 'event', 'Homepage', 'read-more');
-        //fbq('track', 'read-more');
-      });
-    </script>
-
+    <footer>Last updated November 2025</footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/smooth-scroll/11.1.0/js/smooth-scroll.min.js"></script>
     <script>
       smoothScroll.init();
