@@ -26,33 +26,71 @@
       <h2>Background</h2>
 
       <p>
-        I've worked with companies like Tesla, Facebook, and Google build world-class
-        data science and machine learning teams. I'm passionate about leveraging
-        AI and data science to solve complex business problems.
+        Previously: built and scaled programs that placed talent into Tesla, Facebook, Google;
+        shipped hands-on data/ML products; and ran large-scale deployments in the federal space.
       </p>
 
+      <div class="role-entry">
+        <h3>Founder, Cadea (2023–2024)</h3>
+        <p>
+          Explored AI security: RBAC-aware RAG and agentic pipelines for regulated data. Built working prototypes,
+          learned the market was early, returned remaining funds, and distilled playbooks for secure LLM adoption
+          (red-teaming, data governance, evals).
+        </p>
+      </div>
 
-      <ul>
-        <li>Founder at Cadea (2023 - 2024)</li>
-        <li>Chief Technology Officer at Tribe AI (2021 - 2022)</li>
-        <li>Head of Data Science at Placement.com (2020 - 2021)</li>
-        <li>Chief Technology Officer at Galvanize Inc (2014 - 2016)</li>
-        <li>Founder & CEO at Zipfian Academy (2013 - 2014)</li>
-        <li>Sr. Systems Engineer at Nutanix (2011 - 2014)</li>
-      </ul>
+      <div class="role-entry">
+        <h3>CTO, Tribe AI (2021–2022)</h3>
+        <p>
+          Led product/infra for a network of senior ML practitioners. Standardized delivery playbooks, improved scoping
+          → delivery cycle time, and shipped client work across LLM prototyping, recommender systems, and data
+          platforms.
+        </p>
+      </div>
 
+      <div class="role-entry">
+        <h3>Head of Data Science, Placement.com (2020–2021)</h3>
+        <p>
+          Owned data products for job-seeker outcomes: ranking, matching, funnel analytics, and experimentation. Reduced
+          time-to-insight and improved placement conversion via lightweight ML + measurement.
+        </p>
+      </div>
 
+      <div class="role-entry">
+        <h3>CTO, Galvanize (2014–2016)</h3>
+        <p>
+          Post-acquisition integration of Zipfian. Scaled data science curriculum nationwide; hired and managed
+          instructor teams; stood up enterprise training and assessments; aligned pedagogy with industry needs.
+        </p>
+      </div>
 
-      <p>
-        I earned a degree in
-        <span itemprop="hasCredential">Molecular & Cellular Biology with an emphasis in Genetics, Genomics &
-          Development</span>
-        at <span itemprop="alumniOf">UC Berkeley</span>.
-      </p>
+      <div class="role-entry">
+        <h3>Founder & CEO, Zipfian Academy (2013–2014)</h3>
+        <p>
+          Bootstrapped one of the first immersive data science programs. 10-person team; >$1M revenue in year one;
+          graduates placed at top tech firms. Built the original curriculum that many programs later echoed.
+        </p>
+      </div>
 
-      <p>
-        You can find more information about my professional life on
-        <a href="http://linkedin.com/in/ryanorban" target="_blank">LinkedIn</a>.
+      <div class="role-entry">
+        <h3>Sr. Systems Engineer, Nutanix (2011–2014)</h3>
+        <p>
+          Federal SE covering Army/Air Force/NSA. Designed and tested clusters, led large-scale POCs, and translated
+          hard infra constraints into deployable, resilient systems.
+        </p>
+      </div>
+
+      <div class="education-section">
+        <h3>Education</h3>
+        <p>
+          B.A., <span itemprop="hasCredential">Molecular & Cellular Biology (Genetics/Genomics/Development)</span>,
+          <span itemprop="alumniOf">UC Berkeley</span>.
+        </p>
+      </div>
+
+      <p style="margin-top: 2em;">
+        If you're looking for help on PMF experiments, AI/infra choices, or fundraising narrative, start with <a
+          href="office-hours/">office hours</a>. For ongoing work, see my <a href="advising/">advising details</a>.
       </p>
     </section>
 
@@ -67,7 +105,7 @@
           <a target="_blank" href="https://www.linkedin.com/in/ryanorban">LinkedIn Profile</a><br /><br />
 
           <div>
-            My current location is San Francisco, California, United States.
+            My current location is San Francisco, California.
           </div>
         </div>
       </div>
@@ -119,40 +157,7 @@
       </div>
     </section>
 
-    <footer>Last updated October 2024</footer>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", function (event) {
-        var where = document.querySelectorAll(".where");
-        var currentLocation = locations[0];
-        var place = currentLocation.properties.place;
-        var country = currentLocation.properties.country;
-        setTimeout(function () {
-          for (var i = 0; i < where.length; i++) {
-            where[i].classList.add("loaded");
-            where[i].innerHTML = place + ", " + country;
-          }
-        }, 1000);
-
-        var newsletterForm = document.getElementById("newsletter-form");
-        newsletterForm.addEventListener("submit", function (e) {
-          ga("send", "event", "Homepage", "subscribe");
-          fbq("track", "subscribe");
-        });
-      });
-
-      var moreButton = document.getElementById("show-more-projects");
-      var moreSection = document.getElementById("more-projects");
-      moreSection.style.display = "none";
-      moreButton.addEventListener("click", function (e) {
-        moreSection.style.display = "block";
-        moreButton.style.display = "none";
-
-        //ga('send', 'event', 'Homepage', 'read-more');
-        //fbq('track', 'read-more');
-      });
-    </script>
-
+    <footer>Last updated November 2025</footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/smooth-scroll/11.1.0/js/smooth-scroll.min.js"></script>
     <script>
       smoothScroll.init();
