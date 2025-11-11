@@ -217,6 +217,16 @@ footer {
   #newsletter h2 {
     margin-top: 10px;
   }
+  #background .role-entry {
+    margin: 1em 0;
+    padding: 0.75em 0;
+  }
+  #background .role-entry h3 {
+    font-size: 18px;
+  }
+  #background .education-section {
+    margin: 1.5em 0;
+  }
 }
 
 pre {
@@ -462,4 +472,56 @@ pre {
   margin: 1em 0;
   width: 100%;
   max-width: 500px;
+}
+
+#background .role-entry {
+  margin: 1.5em 0;
+  padding: 1em 0;
+  border-bottom: 1px solid #eee;
+}
+
+#background .role-entry:has(+ .education-section) {
+  border-bottom: none;
+}
+
+#background .role-entry h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  color: #333;
+}
+
+#background .role-entry p {
+  margin-top: 0.5em;
+  color: #555;
+  line-height: 1.6em;
+}
+
+#background .education-section {
+  margin: 2em 0;
+  padding: 1.5em 0 1em 0;
+  border-top: 1px solid #eee;
+}
+
+#background .education-section h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  color: #333;
+}
+
+#background .education-section p {
+  color: #555;
+  line-height: 1.6em;
+}
+
+#background a {
+  color: #e74646;
+  text-decoration: none;
+}
+
+#background a:hover {
+  text-decoration: underline;
 }
