@@ -7,6 +7,7 @@ body {
   padding: 20px 50px;
   max-width: 1200px;
   margin: 0 auto;
+  background-color: #fdfdfd;
 }
 h1.myname {
   color: #e74646;
@@ -28,16 +29,6 @@ h2 {
 }
 p {
   max-width: 700px;
-}
-
-#background > p:last-of-type {
-  max-width: 467px;
-}
-
-@media screen and (min-width: 768px) {
-  #background > p:last-of-type {
-    max-width: 533px;
-  }
 }
 
 #intro {
@@ -194,9 +185,6 @@ footer {
   p {
     max-width: 800px;
   }
-  #intro .summary {
-    max-width: 533px;
-  }
   .address {
     max-width: 700px;
   }
@@ -313,7 +301,6 @@ pre {
 #intro .summary {
   font-size: 24px;
   font-family: "Nunito", sans-serif;
-  max-width: 467px;
   background: #ffeedb;
   padding: 10px 15px;
   border-left: 4px solid #e74646;
@@ -453,7 +440,7 @@ pre {
 
 .subpage .booking-button {
   display: inline-block;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: 16px;
   padding: 8px 16px;
   background-color: #1a1a1a;
@@ -581,7 +568,7 @@ pre {
 }
 
 #background .role-entry:not(:has(+ .education-section))::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -589,12 +576,6 @@ pre {
   max-width: calc(100% - 1.2em);
   height: 1px;
   background-color: #e8e8e8;
-}
-
-@media screen and (min-width: 768px) {
-  #background .role-entry:not(:has(+ .education-section))::after {
-    width: 800px;
-  }
 }
 
 #background .role-entry h3 {
@@ -607,7 +588,7 @@ pre {
 
 #background .role-entry p {
   margin-top: 0.5em;
-  color: #555;
+  color: #666;
   line-height: 1.6em;
 }
 
@@ -618,7 +599,7 @@ pre {
 }
 
 #background .education-section::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
