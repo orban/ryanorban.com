@@ -9,10 +9,23 @@
   <meta charset="utf-8" />
   <link rel="stylesheet" href="style.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+  <!-- Open Graph / Social Meta Tags -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Ryan Orban - Founder, Advisor, Data Scientist" />
+  <meta property="og:description" content="I help technical founders and teams build ambitious AI systems without getting lost in abstractions or hype." />
+  <meta property="og:image" content="https://ryanorban.com/images/headshot.jpg" />
+  <meta property="og:url" content="https://ryanorban.com/" />
+  <meta name="twitter:card" content="summary_large_image" />
 </head>
 
 <body itemscope itemtype="http://schema.org/Person">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <section id="intro">
+    <div id="main-content"></div>
     <h1 class="myname" itemprop="name">
       <span itemprop="givenName">Ryan</span>
       <span itemprop="familyName">Orban</span>
@@ -26,6 +39,22 @@
       If you're looking for help on PMF experiments, AI/infra choices, or fundraising narrative, start with <a
         href="office-hours/">office hours</a>. For ongoing work, see my <a href="advising/">advising details</a>.
     </p>
+
+    <section id="ways-to-work-together" class="cta-section">
+      <h2>Ways to Work Together</h2>
+      <div class="cta-cards">
+        <a href="office-hours/" class="cta-card">
+          <h3>Office Hours</h3>
+          <p>20-minute sessions for focused questions on PMF, GTM, fundraising, or AI/data infra.</p>
+          <span class="cta-link">Book a slot &rarr;</span>
+        </a>
+        <a href="advising/" class="cta-card">
+          <h3>Advising</h3>
+          <p>Ongoing work with founders: equity or cash arrangements for deeper engagement.</p>
+          <span class="cta-link">Learn more &rarr;</span>
+        </a>
+      </div>
+    </section>
 
     <section id="background">
       <h2>Background</h2>
@@ -155,7 +184,7 @@
     <script>
       smoothScroll.init();
     </script>
-    <script src="http://there.today/assets/locations.json.js"></script>
+    <script src="https://there.today/assets/locations.json.js"></script>
 </body>
 
 </html>

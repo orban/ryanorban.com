@@ -1,5 +1,39 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=Nunito&family=Permanent+Marker&display=swap");
 
+/* Skip Link - Accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #e74646;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  font-weight: 600;
+  z-index: 1000;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Keyboard Focus Styles */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #e74646;
+  outline-offset: 2px;
+}
+
+/* Remove default outline when using mouse */
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible) {
+  outline: none;
+}
+
 body {
   font-family: "IBM Plex Sans", sans-serif;
   line-height: 1.4em;
@@ -179,6 +213,71 @@ p {
 footer {
   margin: 3em 0;
   color: #ccc;
+}
+
+/* CTA Section - Ways to Work Together */
+.cta-section {
+  margin: 3em 0;
+}
+
+.cta-section h2 {
+  margin-bottom: 1em;
+}
+
+.cta-cards {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  max-width: 800px;
+}
+
+.cta-card {
+  flex: 1;
+  min-width: 280px;
+  max-width: 380px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cta-card:hover {
+  border-color: #e74646;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  text-decoration: none;
+}
+
+.cta-card h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 0.5em 0;
+  color: #333;
+}
+
+.cta-card p {
+  font-size: 15px;
+  color: #666;
+  margin: 0 0 1em 0;
+  line-height: 1.5;
+}
+
+.cta-link {
+  color: #e74646;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+@media screen and (max-width: 500px) {
+  .cta-cards {
+    flex-direction: column;
+  }
+
+  .cta-card {
+    max-width: none;
+  }
 }
 
 @media screen and (min-width: 768px) {
