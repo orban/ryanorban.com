@@ -68,7 +68,11 @@ $$\text{If the trial passed: } \quad \Lambda \mathrel{+}= \log(p_0 / p_1)$$
 
 $$\text{If the trial failed: } \quad \Lambda \mathrel{+}= \log((1 - p_0) / (1 - p_1))$$
 
-Where $p_0$ is your threshold (0.90) and $p_1$ is the alternative (0.80). Technically, SPRT tests simple hypotheses ($p = p_0$ vs $p = p_1$), not the composite "$p \geq \text{threshold}$" you actually care about. The standard trick is to pick $p_1$ as a specific "unacceptable" rate below your threshold — the reference implementation uses $p_1 = \max(0.01,\; p_0 - 0.10)$ — and test between those two points. Then compare against two boundaries:
+Where $p_0$ is your threshold (0.90) and $p_1$ is the alternative (0.80). Technically, SPRT tests simple hypotheses ($p = p_0$ vs $p = p_1$), not the composite "$p \geq \text{threshold}$" you actually care about. The standard trick is to pick $p_1$ as a specific "unacceptable" rate below your threshold — the reference implementation uses $p_1 = \max(0.01,\; p_0 - 0.10)$ — and test between those two points.
+
+Think of it like a factory inspection. You can't directly test the claim "this factory produces good parts at least 90% of the time" — that's an infinite family of possibilities. What you can test is: "Does this factory look more like one that produces 90% good parts, or one that produces 80% good parts?" If the factory is actually producing at 96%, it'll look like the 90% factory even faster — the test accepts sooner, and the approximation is conservative in your favor. The only place it gets fuzzy is when the true rate is between the two points (the indifference zone), which is exactly where you'd want more data anyway.
+
+Then compare against two boundaries:
 
 - **Accept (agent is good enough):** $\Lambda \geq \log((1 - \alpha) / \beta)$
 - **Reject (agent is failing):** $\Lambda \leq \log(\alpha / (1 - \beta))$
