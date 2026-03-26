@@ -162,10 +162,11 @@ pre {
 code:not(pre code) {
   font-family: 'JetBrains Mono', monospace !important;
   font-size: 0.85em !important;
-  background: transparent !important;
+  font-weight: 400 !important;
+  background: var(--surface) !important;
   color: var(--text) !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
+  padding: 0.2em 0.4em !important;
+  border-radius: 6px !important;
   border: none !important;
 }
 
