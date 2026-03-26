@@ -1,194 +1,202 @@
 ---
 title: "Stop Testing AI Agents Like Deterministic Code"
 date: 2026-03-26
-description: "Your AI agent CI is a coin flip and you don't know it. Here's how to apply statistical testing to stochastic systems."
+description: "Your AI agent CI is a coin flip and you don't know it. Here's how to test stochastic systems like an adult."
 math: true
 ---
 
 Your AI agent CI is a coin flip and you don't know it.
 
-Here's what I mean. You wrote an agent. It calls an LLM, maybe several LLMs, uses tools, makes decisions. It works well — you've seen it work. So you write tests. `assert(agent(input) === expected_output)`. Run it in CI. Green. Ship it.
+You built an agent. It calls one or more LLMs, uses tools, makes decisions. You've seen it work, so you write tests:
 
-Except the next day it's red. Nobody changed anything. You rerun the pipeline. Green again.
+`assert(agent(input) === expected_output)`
 
-"Flaky test," someone says, and you move on.
+CI goes green. You ship.
 
-That test wasn't flaky. It was *statistically inevitable*. You're testing a stochastic system with deterministic assumptions, and the math guarantees it'll bite you.
+Next day it's red. Nobody changed anything. You rerun it. Green again.
+
+People call that a flaky test and move on.
+
+That's not flakiness. That's probability. You're testing a stochastic system with deterministic assumptions, and the math is catching up to you.
 
 ---
 
-## The problem with assert
+## The problem with `assert`
 
-When you write `assert(f(x) === y)`, you're making a very specific claim: *this function always returns this value for this input*. That's valid for `parseInt("42")`. It's not valid for a system that queries a language model.
+When you write `assert(f(x) === y)`, you're claiming this function always returns this value for this input. That makes sense for `parseInt("42")`. It does not make sense for a system that queries a language model.
 
-To be clear: some agent properties *are* deterministic. "The process exits without crashing" or "the output is valid JSON" — you can still hard-assert those. The problem is when you apply the same pattern to inherently stochastic properties like output quality, task completion, or rubric adherence.
+Some things around an agent are still deterministic. "The process didn't crash." "The output is valid JSON." "The schema parsed." Hard-assert those.
 
-An AI agent is approximately a Bernoulli process. Each invocation is a trial with some probability *p* of producing a satisfactory result. You don't know *p*. You're trying to figure out if *p* is high enough. (In practice, *p* varies by task difficulty, prompt phrasing, and model state — it's a mixture, not a single fixed rate. The Bernoulli framing is a useful simplification for the math that follows, not a claim that all trials are identical.)
+The problem is using the same pattern for things that are inherently probabilistic: output quality, task success, rubric adherence, correctness under ambiguity.
 
-Here's where it gets painful. Say your agent genuinely has a 90% success rate — solid, shippable. You have 10 test cases, each run once. What's the probability of a perfectly clean CI run?
+For those, each run is basically a Bernoulli trial. The agent either produces a satisfactory result or it doesn't, with some unknown success rate $p$. That rate isn't truly fixed across all tasks and conditions, but it's a useful model.
+
+Now the ugly part. Suppose your agent really does succeed 90% of the time. That sounds good enough to ship. You have 10 tests, each run once. What's the probability CI comes back perfectly clean?
 
 $$P(\text{all 10 pass}) = 0.9^{10} = 0.349$$
 
-**65% chance of at least one failure.** Not because your agent is broken — because you ran 10 independent Bernoulli trials with $p = 0.9$. Your "flaky" CI isn't flaky. It's working exactly as probability says it should. You just built a testing framework that can't handle that.
+So even with a 90% success rate, you still have a **65% chance of at least one failure**.
 
-(This assumes independent trials. Real systems often show overdispersion — if your tests share a common failure mode, failures will cluster rather than distribute uniformly. The math changes, but the fundamental problem doesn't: deterministic assertions on stochastic behavior produce misleading results either way.)
+Not because the agent is broken. Because you ran 10 Bernoulli trials and expected deterministic behavior.
 
-Run those same 10 tests twice each? Now it's $p = 0.9$ across 20 trials. $P(\text{at least one failure}) = 87\%$. The more tests you add, the worse it gets.
+That's the bug. Not the agent. The test harness.
+
+And yes, this assumes independence. Real failures often cluster because tests share failure modes. That changes the shape, not the conclusion. Deterministic assertions on stochastic behavior still give you garbage.
+
+Run those 10 tests twice each and it gets worse. Now you're at 20 trials. Probability of at least one failure jumps to 87%.
+
+The more coverage you add, the more "flaky" your suite becomes. Not because you're testing better. Because you're using the wrong testing model.
 
 <iframe src="/embeds/flaky-ci-probability.html" style="width:100%;height:440px;border:none;overflow:hidden;" loading="lazy"></iframe>
 
-## The reframe: testing as hypothesis testing
+## The reframe: this is hypothesis testing
 
-Once you stop thinking of agent tests as *assertions* and start thinking of them as *experiments*, the solution becomes obvious.
+Once you stop treating agent evals like assertions and start treating them like experiments, the path gets obvious.
 
-You're not asking: "Did this test pass?" You're asking: "Does this agent pass *reliably enough*?"
+The real question is not:
+
+"Did this exact run pass?"
+
+It's:
+
+"Is this agent reliable enough?"
+
+That's a hypothesis test.
 
 You don't accept a batch of parts by testing one and declaring the factory good or bad. You sample, measure a rate, and decide whether the rate meets spec. Agent testing is the same problem.
 
-That's a hypothesis test. Specifically:
+- **Null hypothesis $H_0$:** the agent meets the target pass rate, say $p \ge 0.90$
+- **Alternative $H_1$:** it's materially worse, say $p < 0.80$
 
-- **Null hypothesis ($H_0$):** The agent's true pass rate meets our threshold ($p \geq 0.90$)
-- **Alternative hypothesis ($H_1$):** The agent's pass rate is below threshold ($p < 0.80$)
+That 0.90 to 0.80 gap is your indifference zone. Borderline systems need more evidence.
 
-The gap between 0.90 and 0.80 is the indifference zone — rates in that range are borderline and we'll need more data to decide. (The reference implementation defaults to a zone width of 0.10, derived from $p_1 = \max(0.01,\; p_0 - 0.10)$. You can narrow it for more sensitive tests at the cost of more trials, or widen it to decide faster with less precision.) The key insight is that instead of a single binary observation, you're collecting *evidence* across multiple trials.
+## Use SPRT, not one-shot CI theater
 
-This immediately changes CI from "run once, pray" to something that can make statistically valid claims about your agent's reliability.
+The dumb but already-better version is fixed-$N$: run the contract 50 times, estimate the rate, do a binomial test, gate on that.
 
-## Adaptive sampling with SPRT
+Fine. Already better than `assert`.
 
-The simplest version of this is fixed-N testing: run each contract 50 times, compute a binomial test, and gate on the result. That works. If you stop here, you're already ahead of `assert`. But 50 runs per contract is expensive, and most of those runs are wasted when the answer is obvious after 10.
+But fixed-$N$ wastes money. If the answer is obvious after 10 runs, forcing 50 is just lighting tokens on fire.
 
-You don't need 50 runs. Not usually.
+That's what SPRT is for.
 
-The Sequential Probability Ratio Test (SPRT), developed by Abraham Wald during World War II for quality control, is designed for exactly this problem: make a decision with as few observations as possible. This isn't just practical intuition — the Wald-Wolfowitz theorem proves that SPRT minimizes expected sample size among *all* tests with the same error rates. There is no test that will give you the same statistical guarantees with fewer trials on average.
+The Sequential Probability Ratio Test updates evidence after every trial and asks: do we already know enough to decide?
 
-Here's the intuition. You're watching a stream of trial results (pass/fail). After each trial, you ask: "Do I have enough evidence to decide?" If the agent passes 12 out of 12 trials, you probably don't need trials 13 through 50 to be confident it's above a 90% threshold. SPRT formalizes that intuition.
+If an agent passes 12/12, you probably don't need 38 more runs to know it's likely above a 90% threshold. If it faceplants immediately, you don't need to keep paying to watch it drown.
 
-After each trial, you update a log-likelihood ratio:
+After each trial, update the log-likelihood ratio:
 
-$$\text{If the trial passed: } \quad \Lambda \mathrel{+}= \log(p_0 / p_1)$$
+$$\text{pass: } \Lambda \mathrel{+}= \log(p_0 / p_1)$$
 
-$$\text{If the trial failed: } \quad \Lambda \mathrel{+}= \log((1 - p_0) / (1 - p_1))$$
+$$\text{fail: } \Lambda \mathrel{+}= \log((1-p_0)/(1-p_1))$$
 
-Where $p_0$ is your threshold (0.90) and $p_1$ is the alternative (0.80). Technically, SPRT tests simple hypotheses ($p = p_0$ vs $p = p_1$), not the composite "$p \geq \text{threshold}$" you actually care about. The standard trick is to pick $p_1$ as a specific "unacceptable" rate below your threshold — the reference implementation uses $p_1 = \max(0.01,\; p_0 - 0.10)$ — and test between those two points.
+Where $p_0$ is your acceptable rate, say 0.90, and $p_1$ is your unacceptable rate, say 0.80.
+
+SPRT formally compares two simple hypotheses, $p = p_0$ vs $p = p_1$, not the full composite claim you actually care about. In practice you pick $p_1$ as a clearly bad rate below your threshold and test between those two points. That's standard and works well.
 
 Think of it like a factory inspection. You can't directly test the claim "this factory produces good parts at least 90% of the time" — that's an infinite family of possibilities. What you can test is: "Does this factory look more like one that produces 90% good parts, or one that produces 80% good parts?" If the factory is actually producing at 96%, it'll look like the 90% factory even faster — the test accepts sooner, and the approximation is conservative in your favor. The only place it gets fuzzy is when the true rate is between the two points (the indifference zone), which is exactly where you'd want more data anyway.
 
 Then compare against two boundaries:
 
-- **Accept (agent is good enough):** $\Lambda \geq \log((1 - \alpha) / \beta)$
-- **Reject (agent is failing):** $\Lambda \leq \log(\alpha / (1 - \beta))$
-- **Continue testing:** otherwise
+- **Accept:** $\Lambda \ge \log((1-\alpha)/\beta)$
+- **Reject:** $\Lambda \le \log(\alpha/(1-\beta))$
+- **Otherwise:** keep going
 
-With typical values ($\alpha = 0.05$, $\beta = 0.20$), the upper boundary is $\log(4.75) \approx 1.56$ and the lower is $\log(0.0625) \approx -2.77$.
+With typical values $\alpha = 0.05$, $\beta = 0.20$, the upper boundary is about 1.56 and the lower is about -2.77.
 
-One technical note: the nominal $\alpha$ and $\beta$ are approximate. Because the log-likelihood ratio is updated in discrete steps, it can *overshoot* a boundary rather than landing exactly on it. The actual error rates are slightly more conservative than the nominal values — SPRT may stop one trial past the boundary. In practice this works in your favor (slightly fewer errors than promised), but it's worth knowing if you're comparing SPRT's guarantees against a fixed-N test at the same nominal rates.
+The nominal error bounds are slightly conservative because the log-likelihood ratio moves in discrete jumps and can overshoot the boundary. Fine. That helps you.
 
-**A concrete example.** Suppose your agent has a true pass rate of 95%, and you're testing against a 90% threshold:
+Concrete example. Suppose the true pass rate is 95% and your threshold is 90%:
 
-```
-Trial 1:  pass → logLR = +0.118     (continue)
-Trial 2:  pass → logLR = +0.235     (continue)
-Trial 3:  pass → logLR = +0.353     (continue)
+```text
+Trial 1:  pass → logLR = +0.118
+Trial 2:  pass → logLR = +0.235
+Trial 3:  pass → logLR = +0.353
 ...
-Trial 7:  pass → logLR = +0.824     (continue)
-...
-Trial 14: pass → logLR = +1.649     → ACCEPT ✓
+Trial 14: pass → logLR = +1.649 → ACCEPT
 ```
 
-14 trials instead of 50. A 72% reduction.
+14 trials instead of 50.
 
-Now suppose the agent is actually bad — true rate of 60%:
+Now suppose the agent actually sucks, say 60% success:
 
-```
+```text
 Trial 1:  pass → logLR = +0.118
 Trial 2:  fail → logLR = -0.575
 Trial 3:  fail → logLR = -1.268
 Trial 4:  pass → logLR = -1.150
 Trial 5:  fail → logLR = -1.843
 Trial 6:  fail → logLR = -2.536
-Trial 7:  fail → logLR = -3.229     → REJECT ✗
+Trial 7:  fail → logLR = -3.229 → REJECT
 ```
 
-7 trials. It cuts losses fast.
+Seven trials. Done.
 
 <iframe src="/embeds/sprt-random-walk.html" style="width:100%;height:400px;border:none;overflow:hidden;" loading="lazy"></iframe>
 
-SPRT is both a statistical tool and a cost optimizer. For clearly passing or clearly failing agents, it saves 60-80% of trial runs. That's real money when each trial is an LLM call. (For borderline agents — true rate near the indifference zone — SPRT can run as long as or longer than fixed-N. That's a feature: it's telling you the answer is genuinely ambiguous.)
+That's the whole point. SPRT is not just more statistically sane. It's a cost-control mechanism.
 
-One assumption to be aware of: SPRT assumes the underlying pass rate $p$ is stationary across trials within a single run. In practice, LLM providers push model updates, API latency varies, and rate limiting can change behavior mid-run. If you're running a CI check that completes in minutes, this is rarely a problem. If your evaluation stretches over hours or days — or spans a provider-side model update — the evidence accumulation is mixing draws from different distributions, and the guarantees weaken. Keep individual SPRT runs short enough that the underlying system is unlikely to change during execution.
+For clearly good or clearly bad agents, it often cuts trial count by 60-80%.
 
-## Confidence intervals that mean something
+Caveat: SPRT assumes the pass rate is stationary during the run. If your eval drags on for hours and the provider updates the model halfway through, your guarantees get mushy. Keep runs short enough that the underlying system is effectively stable.
 
-SPRT gives you a go/no-go decision, but you also want to *see* the agent's reliability. "90% pass rate" from 10 runs means something very different than "90% pass rate" from 100 runs. This is where confidence intervals come in.
+## Confidence intervals that aren't lying to you
 
-The naive approach ($p \pm z \sqrt{p(1-p)/n}$) has a well-known problem at the boundaries. If your agent passes 10/10 trials, the naive 95% interval is [1.0, 1.0]. Confident that *nothing will ever go wrong*? That's clearly absurd.
+You also want to see uncertainty, not just a pass/fail badge.
 
-Wilson score intervals handle this correctly:
+A 90% pass rate from 10 runs and a 90% pass rate from 100 runs are not the same thing.
+
+The naive interval, $\hat{p} \pm z\sqrt{\hat{p}(1-\hat{p})/n}$, breaks badly near the edges. If you go 10/10, it gives you [1.0, 1.0], which is obviously nonsense.
+
+Use Wilson intervals instead:
 
 $$\text{center} = \frac{\hat{p} + z^2/2n}{1 + z^2/n}$$
 
 $$\text{spread} = \frac{z \sqrt{\hat{p}(1-\hat{p})/n + z^2/4n^2}}{1 + z^2/n}$$
 
-For 10/10 at 95% confidence, Wilson gives [0.72, 1.00]. Much more honest: you've seen all successes, but the sample is small.
+For 10/10 at 95% confidence, Wilson gives roughly [0.72, 1.00]. That's much more honest. You saw all passes, but the sample is small.
 
-The practical impact:
-
-| Observations | Pass rate | Naive 95% CI | Wilson 95% CI |
-|-------------|-----------|-------------|---------------|
-| 9/10 | 90% | [71%, 100%] | [60%, 98%] |
-| 10/10 | 100% | [100%, 100%] | [72%, 100%] |
-| 0/10 | 0% | [0%, 0%] | [0%, 28%] |
-| 45/50 | 90% | [82%, 98%] | [79%, 96%] |
-| 90/100 | 90% | [84%, 96%] | [83%, 94%] |
+That's exactly the behavior you want: more skepticism when data is thin, convergence as $n$ grows.
 
 <iframe src="/embeds/wilson-vs-naive-ci.html" style="width:100%;height:380px;border:none;overflow:hidden;" loading="lazy"></iframe>
 
-Notice how Wilson is *wider* for small samples and converges to the naive interval as *n* grows. That's exactly the behavior you want — appropriate skepticism.
+One caveat: if the run stopped early via SPRT, Wilson intervals are descriptive, not strict post-stopping inference. Fine for dashboards. Don't pretend they're something more.
 
-One caveat: if you're reporting Wilson intervals after SPRT early-stopped, the interval is *descriptive*, not inferential — optional stopping changes the coverage properties. Use these CIs for human-readable summaries, not as formal inference on the stopped data.
+## Multiple testing will quietly wreck you
 
-## The multiple testing trap
+Now suppose you have 10 contracts, each with false rejection rate $\alpha = 0.05$. Even if each one is individually controlled, the chance of at least one spurious rejection across the suite grows fast:
 
-Here's a subtler problem. Say you have 10 contracts for your agent, and each has a false rejection rate of $\alpha = 0.05$. In the worst case (agent performing right at the threshold boundary), the probability of at least one spurious rejection across all 10:
+$$P(\geq 1 \text{ false rejection}) = 1 - (1-0.05)^{10} \approx 0.40$$
 
-$$P(\geq 1 \text{ false rejection}) = 1 - (1 - 0.05)^{10} \approx 0.40$$
+So now you've got up to a **40% chance of a bogus red build**.
 
-**Up to 40% chance of a spurious failure.** This is an upper bound under independence — if the agent comfortably exceeds all thresholds, the actual per-contract rejection rate is well below α and the family-wise risk is much lower. But when your agent is near a boundary on even one contract, the compound risk grows fast.
+That's not a corner case. That's what happens when you pile multiple tests onto the same stochastic system and ignore family-wise error.
 
-Here, "false rejection" means incorrectly declaring a passing contract as failing. That's the direction that matters in CI gating — spurious red builds.
+If you care about controlling the probability of any false rejection, use Bonferroni. It's conservative, but simple.
 
-The classical fix is Bonferroni correction: divide $\alpha$ by the number of tests. With 10 tests, each one uses $\alpha = 0.005$ instead of 0.05. This controls the probability of *any* spurious rejection (FWER), but it's conservative — it makes each individual test harder to pass, increasing the chance you'll fail to detect a real regression.
-
-Benjamini-Hochberg (BH) is a less conservative alternative. Instead of controlling the probability of *any* false rejection, it controls the *proportion* of false rejections among all rejected contracts (false discovery rate). The algorithm:
-
-1. Sort p-values from smallest to largest
-2. For the $k$-th p-value, compare against $(k/n) \cdot \alpha$
-3. Find the largest $k$ that passes; reject all up to that point
+If you care more about overall discovery power and can tolerate a controlled fraction of false rejections, use Benjamini-Hochberg.
 
 <iframe src="/embeds/bh-procedure.html" style="width:100%;height:400px;border:none;overflow:hidden;" loading="lazy"></iframe>
 
-BH controls FDR while rejecting more true positives than Bonferroni. If your requirement is strict control over the probability of *any* false rejection, Bonferroni is the right choice. If you're optimizing for overall suite accuracy and can tolerate a controlled proportion of false rejections, BH is better.
+BH is usually the better tradeoff for larger suites, but it assumes independence or certain positive dependence structures. If your contracts are highly correlated, and many are, the guarantees get softer. Then you may want Benjamini-Yekutieli or a more conservative correction.
 
-Two caveats. First, BH's FDR guarantee assumes independence or positive regression dependence (PRDS) among test statistics. Contracts evaluated on the same agent output may be correlated — "produces valid JSON" and "JSON has required fields" aren't independent. If your contracts are highly correlated, consider Benjamini-Yekutieli (BY) correction, which controls FDR under arbitrary dependence at the cost of being more conservative. Second, the "family" being corrected matters: in the reference implementation, it's contracts within a single study (all assertions evaluated on the same agent run). If your deploy gate checks contracts across *multiple* studies, you'd want the family to span the full pipeline.
+Point is: if you have one contract, whatever. If you have 15, this matters.
 
-If you have a single contract, none of this matters. If you have 15 contracts checking different aspects of your agent's output, it matters a lot.
+## What agent CI should actually do
 
-## What CI/CD should actually look like
-
-With these pieces, we can define what a statistically sound CI pipeline looks like for agents.
-
-**Exit codes that mean something.** Not just 0/1, but:
+A sane CI pipeline for agents should have three outcomes:
 
 | Exit code | Meaning |
 |-----------|---------|
-| 0 | PASS — Evidence the agent meets all thresholds |
-| 1 | FAIL — Evidence the agent is below threshold on at least one contract |
-| 3 | INCONCLUSIVE — Hit max trials without enough evidence either way |
+| 0 | PASS — enough evidence the agent meets threshold |
+| 1 | FAIL — enough evidence it does not |
+| 3 | INCONCLUSIVE — max trials hit, evidence still ambiguous |
 
-Inconclusive is important. It's the honest answer when you've burned your trial budget and the data is ambiguous. Treating inconclusive as a failure is a conservative policy choice — it won't cause bad agents to ship, but it biases your inference and may block good agents unnecessarily. Treating it as a pass is irresponsible. In practice, an inconclusive result means: "increase your trial budget or investigate why the agent is borderline."
+That last one matters. "Inconclusive" is not weakness. It's the honest answer.
 
-**Threshold-based gates, not exact matching.** A config like:
+Treating inconclusive as fail is a policy choice. Conservative, but costly. Treating it as pass is reckless.
+
+Your config should specify reliability targets, not fantasy-world exact matches:
 
 ```yaml
 studies:
@@ -198,9 +206,9 @@ studies:
       - name: exits-cleanly
         type: code
         assert: "output.meta.exitCode === 0"
-        threshold: 0.95    # Must pass 95% of the time
-        confidence: 0.95   # At 95% confidence level
-        trials: 50         # Max trials budget
+        threshold: 0.95
+        confidence: 0.95
+        trials: 50
 
       - name: response-is-valid-json
         type: code
@@ -210,110 +218,101 @@ studies:
         trials: 50
 ```
 
-Each contract specifies *how reliable* the behavior needs to be, not that it must always succeed. A 95% threshold with 95% confidence means: "If this agent truly passes 95% of the time, I'll incorrectly reject it at most 5% of the time ($\alpha = 0.05$). If it truly passes only 85% of the time, I'll correctly reject it at least 80% of the time ($\beta = 0.20$)." (These are approximate bounds due to the overshoot effect discussed above — the actual error rates are slightly better than nominal.) The $\alpha$ side protects good agents from false alarms; the $\beta$ side controls how often bad agents slip through.
+That says: this behavior needs to succeed often enough, with enough evidence, not literally every single time forever.
 
-**How do you choose a threshold?** Start with your product's tolerance for user-visible failures. Deterministic properties (valid JSON, clean exit) can be held to 0.95-0.99. Quality properties (good summaries, correct answers) depend on your use case — if you'd accept a 15% failure rate in production, 0.85 is your threshold. When in doubt, start at 0.85 and tighten as you learn your agent's actual distribution from historical runs. Note that very high thresholds (0.99) make the test sensitive to individual failures — a single bad trial can dominate the evidence.
+And yes, threshold choice depends on product reality, not vibes. Deterministic-ish properties like valid JSON or clean exit can live around 0.95-0.99. Subjective or hard tasks may belong lower. If the product tolerates a 15% miss rate, stop pretending the eval threshold should be 0.99.
 
-**Result persistence.** Save every run to `.cerberus/runs/` as JSON:
+Persist every run. Trendlines are more informative than single snapshots. If observed rates drift down or inconclusives rise, that tells you something real.
 
-```json
-{
-  "status": "pass",
-  "studies": [{
-    "name": "code-review-agent",
-    "contracts": [{
-      "name": "exits-cleanly",
-      "status": "pass",
-      "observedRate": 0.96,
-      "ci": { "lower": 0.87, "upper": 0.99 },
-      "trialsEvaluated": 14,
-      "sprtStoppedEarly": true
-    }]
-  }]
-}
-```
+## The cost math is not subtle
 
-Over time, this gives you trend data. Is the agent's observed rate drifting down? Are you seeing more inconclusive results? Trend analysis on historical runs is more informative than any single CI check.
+Let's say you have 5 contracts, max 50 trials each.
 
-## The cost equation
+At &#36;1/trial, fixed-$N$ costs:
 
-Let's make the SPRT cost savings concrete.
+$$5 \times 50 \times \$1 = \$250 \text{ per CI run}$$
 
-Suppose you have 5 contracts, each with a max budget of 50 trials. A simple agent making a few API calls might cost &#36;0.01-&#36;0.10 per trial. A real agentic workflow (multi-step tool use, code generation, Docker execution) can easily cost &#36;0.50-&#36;5.00 per trial. Fixed-sample testing with a mid-range agent at &#36;1.00/trial:
+If SPRT stops around 14 trials on a clearly passing agent:
 
-$$5 \text{ contracts} \times 50 \text{ trials} \times \$1.00 = \$250 \text{ per CI run}$$
+$$5 \times 14 \times \$1 = \$70 \text{ per CI run}$$
 
-With SPRT on a clearly passing agent (true rate 96%, threshold 90%), each contract typically stops at ~14 trials:
+That's a 72% cost reduction.
 
-$$5 \text{ contracts} \times 14 \text{ trials (avg)} \times \$1.00 = \$70 \text{ per CI run}$$
+At &#36;5/trial, the savings are enormous. And real agentic workflows can absolutely get there once you include tool use, code execution, and longer rollouts.
 
-**72% cost reduction.** For a clearly failing agent, SPRT also saves — a completely broken agent (0% pass rate) rejects in 4-5 trials, and a moderately bad agent (60% pass rate) typically rejects in 8-15 trials.
+This is not just cleaner stats. It's fewer wasted tokens, faster feedback, and a smaller bill.
 
-| Method | Trials | &#36;0.01/trial | &#36;1.00/trial | &#36;5.00/trial |
-|--------|--------|------------|------------|------------|
-| Fixed N=50 | 250 | &#36;2.50 | &#36;250 | &#36;1,250 |
-| SPRT (passing) | ~70 | &#36;0.70 | &#36;70 | &#36;350 |
-| SPRT (failing) | ~75 | &#36;0.75 | &#36;75 | &#36;375 |
+## Hard lessons from building eval harnesses
 
-The savings scale with trial cost. At &#36;5/trial, SPRT saves &#36;900 per CI run on a passing suite. Run that 10 times a day and you're looking at real money. SPRT doesn't just give you better statistics — it gives you a substantially smaller bill.
-
-## Lessons from building an eval harness
-
-That's the theory. Here's what actually happened when we tried to use it.
-
-We built an A/B testing framework that measures whether giving Claude contextual documentation helps it fix bugs — running agents in Docker, collecting pass/fail outcomes, computing the same Wilson intervals and paired tests described above. Every lesson below is something the statistical machinery couldn't save us from on its own.
+The math helps, but it won't save you from bad experimental design.
 
 ### Single runs tell you almost nothing
 
-Early on we ran each task once per condition (baseline vs. treatment), compared the results, and drew conclusions. The AGENTbench paper that inspired the work did the same thing: one run per task, temperature=0, no repetitions, no p-values. With those sample sizes, their reported 2-4% deltas are likely within the margin of random variation — there's no power analysis to say otherwise.
+Early on, we compared baseline vs treatment with one run each and pretended the delta meant something. It didn't.
 
-It's worth noting that temperature=0 doesn't buy you determinism here. Most LLM APIs are non-deterministic even at temperature=0 — GPU floating-point non-determinism, batching effects, and speculative decoding all introduce variation. If you've been relying on temperature=0 as a substitute for repetitions, you're getting stochastic outputs without the statistical framework to interpret them.
+A task that passed once under baseline would fail the next three times. A treatment that looked worse in one run could easily end up better over five.
 
-When we started running 3-5 repetitions per condition, the picture changed. A task that passed once under baseline would fail the next three times. A treatment that looked worse in a single run showed a 60% success rate over five runs — better than baseline's 40%. The variance itself turned out to be informative: if adding context makes the agent *more* variable rather than more reliable, the context is probably confusing it rather than helping.
+Temperature 0 does not magically fix this. API-level nondeterminism still exists. If you are using temperature 0 as an excuse not to repeat runs, you are fooling yourself.
 
-The fix was straightforward: always run with repetitions, report Wilson score confidence intervals on the per-condition success rates, and use McNemar's test for paired comparison. We pair by task and repetition index (trial 1 of condition A pairs with trial 1 of condition B on the same task). The pairing is valid because both conditions share the same nuisance variables — same repository, same pre-fix commit, same Docker image, same prompt. If a result isn't statistically significant, say so.
+Run repetitions. Report intervals. Use paired tests.
 
-### You need a taxonomy of failures
+### You need a real failure taxonomy
 
-Not all failures are equal, and conflating them corrupts your statistics.
+We initially excluded timeouts from the denominator as "infra errors." That was wrong and inflated success rates.
 
-We learned this by accident. Our early runs classified timeouts as infrastructure errors and excluded them from the success rate denominator. This inflated reported success rates by 8-12 percentage points. A task where the agent spent 300 seconds actively working (making tool calls, editing files) before running out of time isn't an infrastructure failure — it's a genuine experimental outcome.
+If the agent was actively working and then ran out of time, that is a real failure under the operational budget you gave it.
 
-We ended up with five error classes:
+We ended up with something like:
 
-| Error tag | Meaning | Counted in success rate? |
-|-----------|---------|--------------------------|
-| *(none)* | Normal trial (pass or fail) | Yes |
-| `[timeout]` with tool_calls > 0 | Agent ran out of time while working | Yes (as failure) |
+| Error tag | Meaning | Count in success rate? |
+|-----------|---------|------------------------|
+| none | normal pass/fail trial | Yes |
+| `[timeout]` with tool calls | agent ran out of time while working | Yes, as failure |
 | `[infrastructure]` | Docker crash, network issue | No |
-| `[pre-validation]` | Test was broken before agent touched it | No |
-| `[empty-run]` | Agent returned instantly, did nothing | No |
+| `[pre-validation]` | broken test before agent acted | No |
+| `[empty-run]` | agent returned immediately, did nothing | No |
 
-One subtlety: timeouts are technically a *censoring* mechanism, not a clear-cut failure. An agent that was making progress when time ran out might have succeeded with a longer budget. Counting all timeouts as failures can penalize slower-but-correct strategies. We accepted this trade-off because the timeout represents a real operational constraint (you don't get infinite time in CI), but if you're doing research rather than CI gating, you might want to analyze timeouts separately.
+Timeouts are technically censoring, not pure failure, but in CI they often function as failure because wall-clock budget is part of the product constraint.
 
-The broader distinction matters. Per-protocol analysis (excluding infrastructure errors from the denominator) tells you how the agent performs *when it actually runs*. Intent-to-treat analysis (counting everything) tells you how reliable the whole pipeline is. You want both numbers.
+Also, report both per-protocol and full-pipeline reliability when you can. Those are different questions.
 
-### Separate what you're measuring
+### Separate setup cost from experimental cost
 
-When comparing conditions, be precise about what goes into each metric. We had two kinds of confounds:
+If your treatment adds docs or context before the actual task, don't lump setup token cost into the fix attempt and then act like the treatment is intrinsically worse.
 
-**Setup cost vs. experimental cost.** Our treatments add documentation to the agent's context before it attempts a fix. Generating that documentation takes time and tokens. If you lump generation cost into the fix cost, you're measuring two things at once. We split metrics into *fix-only* (the agent's actual debugging work) and *setup* (one-time indexing overhead). Delta calculations use only fix-only metrics. We only caught this because a treatment was "losing" on tokens solely due to setup cost, not the fix.
+Measure setup separately from the thing you're actually trying to compare.
 
-**No-ops contaminating failure rates.** An agent can return instantly without doing work (zero tool calls, 0.0 seconds). If you don't detect these and exclude them, they fall through to test execution, fail (nothing was changed), and inflate your failure rate. Detect no-ops by checking for an activity signal (for tool-using agents, `tool_calls == 0`), not wall-clock time.
+Same for no-op runs. If the agent does nothing and instantly returns, that should be detected and classified, not silently counted as a normal task attempt.
 
-### Paired tests > unpaired tests
+### Use paired tests when the data is paired
 
-When you're comparing two conditions on the same tasks, use a paired statistical test. McNemar's test looks at *discordant pairs* — cases where condition A passed but B failed, or vice versa. It ignores cases where both passed or both failed, because those tell you nothing about the difference between conditions. With small sample sizes (under ~25 discordant pairs), use the exact binomial form rather than the chi-squared approximation — the asymptotic version is unreliable when counts are low.
+If baseline and treatment are run on the same task under the same conditions, use a paired test. McNemar is often the right choice for binary outcomes.
 
-This matters more than you'd think. In one eval run, baseline had an 80% success rate and the treatment had 50%. Looks bad for the treatment. But McNemar's p-value was 0.25 — not significant. Why? Only 3 discordant pairs out of 10, and the sample was too small to distinguish the difference from chance. Without the paired test, we would've incorrectly concluded the treatment was harmful.
+Looking at raw success rates without a paired test is how people talk themselves into fake conclusions.
 
-CI overlap is *not* a valid substitute for a paired test. With small samples and wide intervals, the relationship between CI overlap and statistical significance breaks down — overlapping CIs don't prove equivalence, and non-overlapping CIs don't prove significance when the data is paired. We display CI overlap as a visual heuristic in reports, but significance decisions come from McNemar.
+CI overlap is not a substitute. It's a visual aid at best.
 
-### At scale, everything above compounds
+### At scale, all of this compounds
 
-The cost section above covers a range of per-trial costs, but our real trials sat at the high end: 50k-500k tokens each and 5-30 minutes. A single eval run across 7 tasks, 3 conditions, and 5 repetitions consumed 24 million tokens. At that scale, SPRT early stopping, proper error classification, and metric separation aren't academic preferences — they're the difference between a viable evaluation pipeline and a budget crater.
+Once runs cost real time and real money, statistical sloppiness stops being academic. It turns into delayed feedback, bogus regressions, blown budgets, and bad product calls.
 
-If your test suite includes tasks of varying difficulty and you know that difficulty ahead of time (e.g., from historical pass rates), stratifying by difficulty and running SPRT within each stratum can improve statistical power — you avoid easy tasks diluting the signal from hard ones.
+## The point
+
+Stop pretending agent evals are deterministic software tests with slightly annoying noise around the edges.
+
+They are not.
+
+They are statistical quality-control problems wrapped around stochastic systems.
+
+If you keep using exact-match assertions for probabilistic behavior, your CI will keep alternating between false confidence and random humiliation.
+
+Use hard assertions for deterministic properties.
+
+Use statistical tests for stochastic ones.
+
+Track rates, not anecdotes. Use sequential testing. Report uncertainty. Correct for multiple contracts. Classify failures properly.
+
+Test the system you actually built, not the fantasy version that only exists in a clean demo run.
 
 ## Try it yourself
 
@@ -333,102 +332,60 @@ npx cerberus init
 npx cerberus run
 ```
 
-The config is YAML. You point it at a command that runs your agent, define contracts (either code assertions or LLM-judge evaluations), and set thresholds:
-
-```yaml
-adapter:
-  command: "node ./my-agent.js --scenario {{scenario}}"
-  timeout: 30000
-
-studies:
-  - name: code-review-quality
-    scenario: scenarios/review-task.yaml
-    contracts:
-      - name: exits-cleanly
-        type: code
-        assert: "output.meta.exitCode === 0"
-        threshold: 0.95
-        confidence: 0.95
-        trials: 50
-
-      - name: produces-valid-json
-        type: code
-        assert: "output.meta.jsonParsed === true"
-        threshold: 0.90
-        confidence: 0.95
-        trials: 50
-```
-
-Output looks like:
-
-```
-Contracts:
-  exits-cleanly       PASS  100.0% [CI: 84–100%]  (11 trials, early stop)
-  produces-valid-json  PASS   93.3% [CI: 70–99%]   (15 trials, early stop)
-
-Suite: PASS (2/2 contracts satisfied)
-```
-
 The implementation is deliberately minimal — 9 source files, 4 runtime dependencies — so you can read the code and understand every decision. See the [README](https://github.com/orban/cerberus) for a file-by-file map of which concepts live where.
 
 ---
 
-## Appendix: The math
+## Appendix: the math
 
-For readers who want the precise formulations.
+### SPRT
 
-### SPRT (Sequential Probability Ratio Test)
+For Bernoulli observations with null $p_0$ and alternative $p_1$:
 
-For Bernoulli observations with null hypothesis $p_0$ and alternative $p_1$:
+**Log-likelihood update**
 
-**Log-likelihood ratio update:**
+$$\Lambda_n = \Lambda_{n-1} + \begin{cases} \log(p_0/p_1) & \text{if pass} \\ \log((1-p_0)/(1-p_1)) & \text{if fail} \end{cases}$$
 
-$$\Lambda_n = \Lambda_{n-1} + \begin{cases} \log(p_0 / p_1) & \text{if trial passed} \\ \log((1 - p_0) / (1 - p_1)) & \text{if trial failed} \end{cases}$$
+**Wald boundaries**
 
-**Wald boundaries:**
+$$A = \frac{1-\alpha}{\beta}, \quad B = \frac{\alpha}{1-\beta}$$
 
-$$A = \frac{1 - \alpha}{\beta}, \quad B = \frac{\alpha}{1 - \beta}$$
+**Decision rule**
 
-**Decision rule:**
+$$\begin{cases} \text{Accept } H_0 & \text{if } \Lambda_n \ge \log(A) \\ \text{Reject } H_0 & \text{if } \Lambda_n \le \log(B) \\ \text{Continue} & \text{otherwise} \end{cases}$$
 
-$$\begin{cases} \text{Accept } H_0 & \text{if } \Lambda_n \geq \log(A) \\ \text{Reject } H_0 & \text{if } \Lambda_n \leq \log(B) \\ \text{Continue} & \text{otherwise} \end{cases}$$
+Where $\alpha$ is the false rejection rate and $\beta$ is the false acceptance rate.
 
-Where $\alpha$ is the Type I error rate (false rejection) and $\beta$ is the Type II error rate (false acceptance).
+The usual practical mapping is:
 
-Note: Because the log-likelihood ratio is updated in discrete steps, it can overshoot a boundary rather than landing exactly on it. The nominal $\alpha$ and $\beta$ are therefore approximate — the actual error rates are slightly more conservative (lower) than the nominal values. This is the standard behavior of Wald's SPRT and works in the practitioner's favor.
+- $p_0 =$ threshold
+- $p_1 =$ a clearly worse rate below threshold
+- $\alpha = 1 -$ confidence
+- $\beta \approx 0.20$
 
-**Default configuration** (from threshold $t$ and confidence $c$):
-- $p_0 = t$
-- $p_1 = \max(0.01,\; t - 0.10)$
-- $\alpha = 1 - c$
-- $\beta = 0.20$
+SPRT is optimal in expected sample size among tests with the same error guarantees. That's the whole reason to use it.
 
-**Optimality.** The Wald-Wolfowitz theorem (1948) proves that among all sequential and fixed-sample tests with the same error rates $\alpha$ and $\beta$, SPRT minimizes the expected number of observations under both $H_0$ and $H_1$. No other test can match its statistical guarantees with fewer expected trials.
+### Wilson interval
 
-### Wilson score interval
-
-For $k$ successes in $n$ trials at confidence level $(1 - \alpha)$:
+For $k$ successes in $n$ trials:
 
 $$\text{center} = \frac{\hat{p} + \frac{z^2}{2n}}{1 + \frac{z^2}{n}}$$
 
 $$\text{spread} = \frac{z \sqrt{\frac{\hat{p}(1-\hat{p})}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}$$
 
-$$CI = [\text{center} - \text{spread}, \; \text{center} + \text{spread}]$$
+$$CI = [\text{center} - \text{spread},\; \text{center} + \text{spread}]$$
 
-Where $\hat{p} = k/n$ and $z = \Phi^{-1}(1 - \alpha/2)$.
+Where $\hat{p} = k/n$ and $z = \Phi^{-1}(1-\alpha/2)$.
 
-Wilson score is preferred over the normal approximation because it:
-- Never produces intervals outside $[0, 1]$
-- Gives sensible intervals for $k = 0$ and $k = n$
-- Has better coverage probability for small $n$
+Use Wilson, not the naive normal approximation, especially for small $n$ or edge cases like 0/10 and 10/10.
 
-### Benjamini-Hochberg procedure
+### Benjamini-Hochberg
 
-Given $m$ p-values $p_1 \leq p_2 \leq \ldots \leq p_m$ and desired FDR level $\alpha$:
+Given ordered p-values $p_1 \le p_2 \le \ldots \le p_m$:
 
-1. Find the largest $k$ such that $p_k \leq \frac{k}{m} \cdot \alpha$
-2. Reject all hypotheses $H_1, H_2, \ldots, H_k$
+1. Find the largest $k$ such that $p_k \le \frac{k}{m}\alpha$
+2. Reject all hypotheses up to $k$
 
-This controls the expected false discovery rate: $E[\text{FDR}] \leq \alpha$.
+Bonferroni controls the chance of any false rejection and is more conservative. BH controls expected false discovery rate and is usually less wasteful.
 
-Compared to Bonferroni ($\alpha' = \alpha/m$), BH is less conservative and rejects more hypotheses while still maintaining rigorous FDR control.
+Pick the correction that matches the actual failure mode you care about.
