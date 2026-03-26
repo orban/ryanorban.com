@@ -5,19 +5,19 @@ description: "Your AI agent CI is a coin flip and you don't know it. Here's how 
 math: true
 ---
 
-Your AI agent CI is a coin flip and you don't know it.
+Most teams I work with are trying to retrofit CI/CD pipelines built for deterministic software onto systems that aren't deterministic at all.
 
-You built an agent. It calls one or more LLMs, uses tools, makes decisions. You've seen it work, so you write tests:
+They build an agent — it calls an LLM, uses tools, makes decisions — and then test it the same way they'd test a REST endpoint:
 
 `assert(agent(input) === expected_output)`
 
-CI goes green. You ship.
+Green. Ship. Next day it's red. Nobody changed anything. Rerun. Green again.
 
-Next day it's red. Nobody changed anything. You rerun it. Green again.
+"Flaky test." Move on.
 
-People call that a flaky test and move on.
+But it's not flaky. It's stochastic. And the objection I hear most often is: "It's just matrix multiplication — how is it not deterministic?" In practice, batch sizing, floating-point accumulation order, speculative decoding, and tool calls all introduce variation. The same prompt won't produce identical output 100% of the time, even at temperature 0.
 
-That's not flakiness. That's probability. You're testing a stochastic system with deterministic assumptions, and the math is catching up to you.
+So what do you do? You stop asserting and start sampling. You treat the agent as the stochastic process it actually is, apply hypothesis testing, and gate on statistical evidence instead of exact matches. And with SPRT, you can do it without burning your entire trial budget every time.
 
 ---
 
