@@ -48,7 +48,7 @@ That's a hypothesis test. Specifically:
 - **Null hypothesis ($H_0$):** The agent's true pass rate meets our threshold ($p \geq 0.90$)
 - **Alternative hypothesis ($H_1$):** The agent's pass rate is below threshold ($p < 0.80$)
 
-The gap between 0.90 and 0.80 is the indifference zone — rates in that range are borderline and we'll need more data to decide. The key insight is that instead of a single binary observation, you're collecting *evidence* across multiple trials.
+The gap between 0.90 and 0.80 is the indifference zone — rates in that range are borderline and we'll need more data to decide. (The reference implementation defaults to a zone width of 0.10, derived from $p_1 = \max(0.01,\; p_0 - 0.10)$. You can narrow it for more sensitive tests at the cost of more trials, or widen it to decide faster with less precision.) The key insight is that instead of a single binary observation, you're collecting *evidence* across multiple trials.
 
 This immediately changes CI from "run once, pray" to something that can make statistically valid claims about your agent's reliability.
 
@@ -58,7 +58,7 @@ The simplest version of this is fixed-N testing: run each contract 50 times, com
 
 You don't need 50 runs. Not usually.
 
-The Sequential Probability Ratio Test (SPRT), developed by Abraham Wald during World War II for quality control, is designed for exactly this problem: make a decision with as few observations as possible.
+The Sequential Probability Ratio Test (SPRT), developed by Abraham Wald during World War II for quality control, is designed for exactly this problem: make a decision with as few observations as possible. This isn't just practical intuition — the Wald-Wolfowitz theorem proves that SPRT minimizes expected sample size among *all* tests with the same error rates. There is no test that will give you the same statistical guarantees with fewer trials on average.
 
 Here's the intuition. You're watching a stream of trial results (pass/fail). After each trial, you ask: "Do I have enough evidence to decide?" If the agent passes 12 out of 12 trials, you probably don't need trials 13 through 50 to be confident it's above a 90% threshold. SPRT formalizes that intuition.
 
@@ -75,6 +75,8 @@ Where $p_0$ is your threshold (0.90) and $p_1$ is the alternative (0.80). Techni
 - **Continue testing:** otherwise
 
 With typical values ($\alpha = 0.05$, $\beta = 0.20$), the upper boundary is $\log(4.75) \approx 1.56$ and the lower is $\log(0.0625) \approx -2.77$.
+
+One technical note: the nominal $\alpha$ and $\beta$ are approximate. Because the log-likelihood ratio is updated in discrete steps, it can *overshoot* a boundary rather than landing exactly on it. The actual error rates are slightly more conservative than the nominal values — SPRT may stop one trial past the boundary. In practice this works in your favor (slightly fewer errors than promised), but it's worth knowing if you're comparing SPRT's guarantees against a fixed-N test at the same nominal rates.
 
 **A concrete example.** Suppose your agent has a true pass rate of 95%, and you're testing against a 90% threshold:
 
@@ -107,6 +109,8 @@ Trial 7:  fail → logLR = -3.229     → REJECT ✗
 <iframe src="/embeds/sprt-random-walk.html" style="width:100%;height:400px;border:none;overflow:hidden;" loading="lazy"></iframe>
 
 SPRT is both a statistical tool and a cost optimizer. For clearly passing or clearly failing agents, it saves 60-80% of trial runs. That's real money when each trial is an LLM call. (For borderline agents — true rate near the indifference zone — SPRT can run as long as or longer than fixed-N. That's a feature: it's telling you the answer is genuinely ambiguous.)
+
+One assumption to be aware of: SPRT assumes the underlying pass rate $p$ is stationary across trials within a single run. In practice, LLM providers push model updates, API latency varies, and rate limiting can change behavior mid-run. If you're running a CI check that completes in minutes, this is rarely a problem. If your evaluation stretches over hours or days — or spans a provider-side model update — the evidence accumulation is mixing draws from different distributions, and the guarantees weaken. Keep individual SPRT runs short enough that the underlying system is unlikely to change during execution.
 
 ## Confidence intervals that mean something
 
@@ -198,7 +202,7 @@ studies:
         trials: 50
 ```
 
-Each contract specifies *how reliable* the behavior needs to be, not that it must always succeed. A 95% threshold with 95% confidence means: "If this agent truly passes 95% of the time, I'll incorrectly reject it at most 5% of the time ($\alpha = 0.05$). If it truly passes only 85% of the time, I'll correctly reject it at least 80% of the time ($\beta = 0.20$)." The $\alpha$ side protects good agents from false alarms; the $\beta$ side controls how often bad agents slip through.
+Each contract specifies *how reliable* the behavior needs to be, not that it must always succeed. A 95% threshold with 95% confidence means: "If this agent truly passes 95% of the time, I'll incorrectly reject it at most 5% of the time ($\alpha = 0.05$). If it truly passes only 85% of the time, I'll correctly reject it at least 80% of the time ($\beta = 0.20$)." (These are approximate bounds due to the overshoot effect discussed above — the actual error rates are slightly better than nominal.) The $\alpha$ side protects good agents from false alarms; the $\beta$ side controls how often bad agents slip through.
 
 **How do you choose a threshold?** Start with your product's tolerance for user-visible failures. Deterministic properties (valid JSON, clean exit) can be held to 0.95-0.99. Quality properties (good summaries, correct answers) depend on your use case — if you'd accept a 15% failure rate in production, 0.85 is your threshold. When in doubt, start at 0.85 and tighten as you learn your agent's actual distribution from historical runs. Note that very high thresholds (0.99) make the test sensitive to individual failures — a single bad trial can dominate the evidence.
 
@@ -255,6 +259,8 @@ We built an A/B testing framework that measures whether giving Claude contextual
 
 Early on we ran each task once per condition (baseline vs. treatment), compared the results, and drew conclusions. The AGENTbench paper that inspired the work did the same thing: one run per task, temperature=0, no repetitions, no p-values. With those sample sizes, their reported 2-4% deltas are likely within the margin of random variation — there's no power analysis to say otherwise.
 
+It's worth noting that temperature=0 doesn't buy you determinism here. Most LLM APIs are non-deterministic even at temperature=0 — GPU floating-point non-determinism, batching effects, and speculative decoding all introduce variation. If you've been relying on temperature=0 as a substitute for repetitions, you're getting stochastic outputs without the statistical framework to interpret them.
+
 When we started running 3-5 repetitions per condition, the picture changed. A task that passed once under baseline would fail the next three times. A treatment that looked worse in a single run showed a 60% success rate over five runs — better than baseline's 40%. The variance itself turned out to be informative: if adding context makes the agent *more* variable rather than more reliable, the context is probably confusing it rather than helping.
 
 The fix was straightforward: always run with repetitions, report Wilson score confidence intervals on the per-condition success rates, and use McNemar's test for paired comparison. We pair by task and repetition index (trial 1 of condition A pairs with trial 1 of condition B on the same task). The pairing is valid because both conditions share the same nuisance variables — same repository, same pre-fix commit, same Docker image, same prompt. If a result isn't statistically significant, say so.
@@ -298,6 +304,8 @@ CI overlap is *not* a valid substitute for a paired test. With small samples and
 ### At scale, everything above compounds
 
 The cost section above covers a range of per-trial costs, but our real trials sat at the high end: 50k-500k tokens each and 5-30 minutes. A single eval run across 7 tasks, 3 conditions, and 5 repetitions consumed 24 million tokens. At that scale, SPRT early stopping, proper error classification, and metric separation aren't academic preferences — they're the difference between a viable evaluation pipeline and a budget crater.
+
+If your test suite includes tasks of varying difficulty and you know that difficulty ahead of time (e.g., from historical pass rates), stratifying by difficulty and running SPRT within each stratum can improve statistical power — you avoid easy tasks diluting the signal from hard ones.
 
 ## Try it yourself
 
@@ -379,11 +387,15 @@ $$\begin{cases} \text{Accept } H_0 & \text{if } \Lambda_n \geq \log(A) \\ \text{
 
 Where $\alpha$ is the Type I error rate (false rejection) and $\beta$ is the Type II error rate (false acceptance).
 
+Note: Because the log-likelihood ratio is updated in discrete steps, it can overshoot a boundary rather than landing exactly on it. The nominal $\alpha$ and $\beta$ are therefore approximate — the actual error rates are slightly more conservative (lower) than the nominal values. This is the standard behavior of Wald's SPRT and works in the practitioner's favor.
+
 **Default configuration** (from threshold $t$ and confidence $c$):
 - $p_0 = t$
 - $p_1 = \max(0.01,\; t - 0.10)$
 - $\alpha = 1 - c$
 - $\beta = 0.20$
+
+**Optimality.** The Wald-Wolfowitz theorem (1948) proves that among all sequential and fixed-sample tests with the same error rates $\alpha$ and $\beta$, SPRT minimizes the expected number of observations under both $H_0$ and $H_1$. No other test can match its statistical guarantees with fewer expected trials.
 
 ### Wilson score interval
 
