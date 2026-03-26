@@ -27,9 +27,7 @@ An AI agent is approximately a Bernoulli process. Each invocation is a trial wit
 
 Here's where it gets painful. Say your agent genuinely has a 90% success rate — solid, shippable. You have 10 test cases, each run once. What's the probability of a perfectly clean CI run?
 
-```
-P(all 10 pass) = 0.9^10 = 0.349
-```
+$$P(\text{all 10 pass}) = 0.9^{10} = 0.349$$
 
 **65% chance of at least one failure.** Not because your agent is broken — because you ran 10 independent Bernoulli trials with p=0.9. Your "flaky" CI isn't flaky. It's working exactly as probability says it should. You just built a testing framework that can't handle that.
 
@@ -64,10 +62,9 @@ Here's the intuition. You're watching a stream of trial results (pass/fail). Aft
 
 After each trial, you update a log-likelihood ratio:
 
-```
-If the trial passed:  logLR += log(p₀ / p₁)
-If the trial failed:  logLR += log((1 - p₀) / (1 - p₁))
-```
+$$\text{If the trial passed: } \quad \Lambda \mathrel{+}= \log(p_0 / p_1)$$
+
+$$\text{If the trial failed: } \quad \Lambda \mathrel{+}= \log((1 - p_0) / (1 - p_1))$$
 
 Where p₀ is your threshold (0.90) and p₁ is the alternative (0.80). Technically, SPRT tests simple hypotheses (p = p₀ vs p = p₁), not the composite "p ≥ threshold" you actually care about. The standard trick is to pick p₁ as a specific "unacceptable" rate below your threshold — the reference implementation uses p₁ = max(0.01, p₀ - 0.10) — and test between those two points. Then compare against two boundaries:
 
@@ -115,10 +112,9 @@ The naive approach (`p ± z * sqrt(p(1-p)/n)`) has a well-known problem at the b
 
 Wilson score intervals handle this correctly:
 
-```
-center = (p̂ + z²/2n) / (1 + z²/n)
-spread = z * sqrt(p̂(1-p̂)/n + z²/4n²) / (1 + z²/n)
-```
+$$\text{center} = \frac{\hat{p} + z^2/2n}{1 + z^2/n}$$
+
+$$\text{spread} = \frac{z \sqrt{\hat{p}(1-\hat{p})/n + z^2/4n^2}}{1 + z^2/n}$$
 
 For 10/10 at 95% confidence, Wilson gives [0.72, 1.00]. Much more honest: you've seen all successes, but the sample is small.
 
@@ -140,9 +136,7 @@ One caveat: if you're reporting Wilson intervals after SPRT early-stopped, the i
 
 Here's a subtler problem. Say you have 10 contracts for your agent, and each has a false rejection rate of α=0.05. In the worst case (agent performing right at the threshold boundary), the probability of at least one spurious rejection across all 10:
 
-```
-P(≥1 false rejection) = 1 - (1 - 0.05)^10 ≈ 0.40
-```
+$$P(\geq 1 \text{ false rejection}) = 1 - (1 - 0.05)^{10} \approx 0.40$$
 
 **Up to 40% chance of a spurious failure.** This is an upper bound under independence — if the agent comfortably exceeds all thresholds, the actual per-contract rejection rate is well below α and the family-wise risk is much lower. But when your agent is near a boundary on even one contract, the compound risk grows fast.
 
@@ -229,15 +223,11 @@ Let's make the SPRT cost savings concrete.
 
 Suppose you have 5 contracts, each with a max budget of 50 trials. A simple agent making a few API calls might cost $0.01-$0.10 per trial. A real agentic workflow (multi-step tool use, code generation, Docker execution) can easily cost $0.50-$5.00 per trial. Fixed-sample testing with a mid-range agent at $1.00/trial:
 
-```
-5 contracts × 50 trials × $1.00 = $250 per CI run
-```
+$$5 \text{ contracts} \times 50 \text{ trials} \times \$1.00 = \$250 \text{ per CI run}$$
 
 With SPRT on a clearly passing agent (true rate 96%, threshold 90%), each contract typically stops at ~14 trials:
 
-```
-5 contracts × 14 trials (avg) × $1.00 = $70 per CI run
-```
+$$5 \text{ contracts} \times 14 \text{ trials (avg)} \times \$1.00 = \$70 \text{ per CI run}$$
 
 **72% cost reduction.** For a clearly failing agent, SPRT also saves — a completely broken agent (0% pass rate) rejects in 4-5 trials, and a moderately bad agent (60% pass rate) typically rejects in 8-15 trials.
 

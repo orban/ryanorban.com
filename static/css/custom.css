@@ -1,0 +1,226 @@
+/* ==========================================================================
+   ryanorban.com — Understated Craft
+   Small, intentional changes. Warmth through restraint.
+   ========================================================================== */
+
+:root {
+  --bg: #fafaf8;
+  --text: #232220;
+  --text-mid: #555350;
+  --text-muted: #8a8784;
+  --accent: #5a7a64;
+  --accent-hover: #476552;
+  --border: #e5e2de;
+  --border-light: #eeebe7;
+  --surface: #f2f0ec;
+  --code-bg: #1c1e26;
+}
+
+/* --- Warm background --- */
+body {
+  background-color: var(--bg) !important;
+  color: var(--text) !important;
+  font-family: 'Geist Sans', 'Geist', system-ui, -apple-system, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Header --- */
+header {
+  background: var(--bg) !important;
+  border-bottom-color: var(--border) !important;
+}
+
+header a[href="/"] {
+  font-family: 'Geist Sans', 'Geist', system-ui, -apple-system, sans-serif !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+}
+
+/* --- Nav --- */
+nav a {
+  color: var(--text-mid) !important;
+  transition: color 0.15s ease !important;
+}
+
+nav a:hover {
+  color: var(--text) !important;
+}
+
+nav a.active,
+nav a.ancestor {
+  color: var(--text) !important;
+}
+
+/* --- Headings --- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Geist Sans', 'Geist', system-ui, -apple-system, sans-serif !important;
+  color: var(--text) !important;
+}
+
+/* Page titles */
+article > h1:first-of-type,
+article.main > div:first-child > h1 {
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
+}
+
+/* Section labels (Recent posts, etc.) */
+main > div > h2,
+section > h2 {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: var(--text-muted) !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  padding-bottom: 0.5rem !important;
+}
+
+/* Article subheadings */
+article.main h2 {
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  text-transform: none !important;
+  border-bottom: none !important;
+  color: var(--text) !important;
+}
+
+article.main h3 {
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+}
+
+article.main h4 {
+  font-weight: 600 !important;
+}
+
+/* --- Body text --- */
+article p,
+article li,
+.prose p,
+.prose li {
+  color: var(--text) !important;
+  line-height: 1.75 !important;
+}
+
+/* --- Links --- */
+article.main a {
+  color: var(--accent) !important;
+  text-decoration-color: var(--accent) !important;
+  text-underline-offset: 3px !important;
+  text-decoration-thickness: 1px !important;
+}
+
+article.main a:hover {
+  color: var(--accent-hover) !important;
+  text-decoration-thickness: 2px !important;
+}
+
+article.main .codeblock-meta a {
+  color: inherit !important;
+}
+
+/* Post list links */
+article h3 a {
+  color: var(--text) !important;
+  text-decoration: none !important;
+}
+
+article h3 a:hover {
+  color: var(--accent) !important;
+}
+
+/* --- Dates --- */
+time {
+  color: var(--text-muted) !important;
+}
+
+/* --- Post excerpt --- */
+article > div:last-child p {
+  color: var(--text-mid) !important;
+}
+
+/* --- Code blocks --- */
+.codeblock pre,
+pre {
+  background-color: var(--code-bg) !important;
+  border-radius: 8px !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.85rem !important;
+}
+
+.codeblock-meta {
+  background-color: #161821 !important;
+  border-radius: 8px 8px 0 0 !important;
+}
+
+.codeblock-meta + pre {
+  border-radius: 0 0 8px 8px !important;
+}
+
+/* Inline code */
+code:not(pre code) {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.85em !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  padding: 0.15em 0.35em !important;
+  border-radius: 4px !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* --- Tables --- */
+th {
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  color: var(--text-mid) !important;
+  border-bottom-color: var(--text-mid) !important;
+}
+
+td {
+  border-bottom-color: var(--border-light) !important;
+}
+
+/* --- Blockquotes --- */
+blockquote {
+  border-left-color: var(--accent) !important;
+}
+
+/* --- HR --- */
+hr {
+  border-color: var(--border) !important;
+}
+
+/* --- Footer --- */
+footer {
+  border-top-color: var(--border) !important;
+  color: var(--text-muted) !important;
+}
+
+/* --- Taxonomy tags --- */
+a.taxonomy {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text-mid) !important;
+}
+
+a.taxonomy:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+/* --- Images --- */
+article.main img {
+  max-width: 140px !important;
+  border-radius: 6px !important;
+}
+
+/* --- Selection --- */
+::selection {
+  background: #5a7a6425;
+}
+
+/* --- Strong --- */
+strong, b {
+  color: var(--text) !important;
+}
