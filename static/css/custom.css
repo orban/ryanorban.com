@@ -161,7 +161,7 @@ pre {
 /* Inline code */
 code:not(pre code) {
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 0.85em !important;
+  font-size: 0.78em !important;
   font-weight: 400 !important;
   background: var(--surface) !important;
   color: var(--text) !important;
