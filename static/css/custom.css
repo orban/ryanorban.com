@@ -54,10 +54,11 @@ header {
 header a[href="/"] {
   font-family: 'EB Garamond', Palatino, Georgia, serif !important;
   font-weight: 400 !important;
-  font-size: 1.5rem !important;
+  font-size: 1.25rem !important;
   letter-spacing: 0.01em !important;
   color: var(--heading) !important;
   text-decoration: none !important;
+  white-space: nowrap !important;
 }
 
 nav a {
