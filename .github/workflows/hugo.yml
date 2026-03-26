@@ -62,7 +62,7 @@ jobs:
 
       - name: Build with Hugo
         env:
-          HUGO_CACHEDIR: hugo_cache
+          HUGO_CACHEDIR: /tmp/hugo_cache
           HUGO_ENVIRONMENT: production
           TZ: America/Los_Angeles
           BASE_URL: "${{ steps.pages.outputs.base_url }}/"
