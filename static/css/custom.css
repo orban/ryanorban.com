@@ -123,12 +123,12 @@ section > h2 {
   margin-top: 2.5rem !important;
 }
 
-/* Article subheadings — Tufte style (italic, light) */
+/* Article subheadings */
 article.main h2 {
   font-family: 'EB Garamond', Palatino, Georgia, serif !important;
   font-size: 1.6rem !important;
-  font-weight: 400 !important;
-  font-style: italic !important;
+  font-weight: 500 !important;
+  font-style: normal !important;
   text-transform: none !important;
   letter-spacing: normal !important;
   color: var(--heading) !important;
@@ -140,19 +140,19 @@ article.main h2 {
 
 article.main h3 {
   font-size: 1.35rem !important;
-  font-weight: 400 !important;
-  font-style: italic !important;
+  font-weight: 500 !important;
+  font-style: normal !important;
   margin-top: 2rem !important;
   margin-bottom: 0.3rem !important;
 }
 
 article.main h4 {
   font-size: 1.15rem !important;
-  font-weight: 400 !important;
+  font-weight: 500 !important;
   font-style: normal !important;
-  font-variant: small-caps !important;
-  text-transform: lowercase !important;
-  letter-spacing: 0.05em !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
 }
 
 /* --- Body text — generous Tufte line-height --- */
@@ -225,13 +225,6 @@ article > div:last-child p {
   color: var(--text-light) !important;
   font-size: 1rem !important;
   line-height: 1.7 !important;
-}
-
-/* --- Newthought-style opening (first paragraph bold lead-in) --- */
-article.main > p:first-of-type::first-line {
-  font-variant: small-caps;
-  font-size: 1.15em;
-  letter-spacing: 0.03em;
 }
 
 /* --- Horizontal rules — minimal Tufte divider --- */
