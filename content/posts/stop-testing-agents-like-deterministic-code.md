@@ -43,6 +43,8 @@ Once you stop thinking of agent tests as *assertions* and start thinking of them
 
 You're not asking: "Did this test pass?" You're asking: "Does this agent pass *reliably enough*?"
 
+You don't accept a batch of parts by testing one and declaring the factory good or bad. You sample, measure a rate, and decide whether the rate meets spec. Agent testing is the same problem.
+
 That's a hypothesis test. Specifically:
 
 - **Null hypothesis ($H_0$):** The agent's true pass rate meets our threshold ($p \geq 0.90$)
@@ -164,6 +166,8 @@ Benjamini-Hochberg (BH) is a less conservative alternative. Instead of controlli
 2. For the $k$-th p-value, compare against $(k/n) \cdot \alpha$
 3. Find the largest $k$ that passes; reject all up to that point
 
+<iframe src="/embeds/bh-procedure.html" style="width:100%;height:400px;border:none;overflow:hidden;" loading="lazy"></iframe>
+
 BH controls FDR while rejecting more true positives than Bonferroni. If your requirement is strict control over the probability of *any* false rejection, Bonferroni is the right choice. If you're optimizing for overall suite accuracy and can tolerate a controlled proportion of false rejections, BH is better.
 
 Two caveats. First, BH's FDR guarantee assumes independence or positive regression dependence (PRDS) among test statistics. Contracts evaluated on the same agent output may be correlated — "produces valid JSON" and "JSON has required fields" aren't independent. If your contracts are highly correlated, consider Benjamini-Yekutieli (BY) correction, which controls FDR under arbitrary dependence at the cost of being more conservative. Second, the "family" being corrected matters: in the reference implementation, it's contracts within a single study (all assertions evaluated on the same agent run). If your deploy gate checks contracts across *multiple* studies, you'd want the family to span the full pipeline.
@@ -250,6 +254,8 @@ $$5 \text{ contracts} \times 14 \text{ trials (avg)} \times \$1.00 = \$70 \text{
 | Fixed N=50 | 250 | \$2.50 | \$250 | \$1,250 |
 | SPRT (passing) | ~70 | \$0.70 | \$70 | \$350 |
 | SPRT (failing) | ~75 | \$0.75 | \$75 | \$375 |
+
+<iframe src="/embeds/cost-comparison.html" style="width:100%;height:420px;border:none;overflow:hidden;" loading="lazy"></iframe>
 
 The savings scale with trial cost. At \$5/trial, SPRT saves \$900 per CI run on a passing suite. Run that 10 times a day and you're looking at real money. SPRT doesn't just give you better statistics — it gives you a substantially smaller bill.
 

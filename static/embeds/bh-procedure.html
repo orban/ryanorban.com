@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: transparent; }
+  @media (prefers-color-scheme: dark) { :root { --text-primary: rgba(255,255,255,0.88); --text-secondary: rgba(255,255,255,0.55); } }
+  @media (prefers-color-scheme: light) { :root { --text-primary: rgba(0,0,0,0.88); --text-secondary: rgba(0,0,0,0.45); } }
+  .container { padding: 1rem 0; }
+  .title { font-size: 14px; font-weight: 500; color: var(--text-primary); margin: 0 0 4px; }
+  .subtitle { font-size: 12px; color: var(--text-secondary); margin: 0 0 12px; }
+  .chart-wrap { position: relative; width: 100%; height: 360px; }
+  .legend { display: flex; gap: 20px; justify-content: center; margin-top: 8px; font-size: 12px; color: var(--text-secondary); flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+  .legend .dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <p class="title">Benjamini-Hochberg procedure</p>
+  <p class="subtitle">Reject all contracts up to the last one below the threshold line</p>
+  <div class="chart-wrap"><canvas id="bhChart"></canvas></div>
+  <div class="legend">
+    <span><span class="dot" style="background:#0F6E56;"></span>Rejected</span>
+    <span><span class="dot" style="background:#999;"></span>Not rejected</span>
+    <span><span class="dot" style="background:transparent; border: 1.5px dashed #534AB7; border-radius: 0;"></span>BH threshold (k/m) &times; &alpha;</span>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const m = 10;
+const alpha = 0.05;
+const pValues = [0.003, 0.008, 0.012, 0.018, 0.021, 0.028, 0.034, 0.058, 0.078, 0.095];
+const thresholds = Array.from({length: m}, (_, i) => ((i + 1) / m) * alpha);
+
+// Find largest k where p_k <= (k/m)*alpha
+let cutoff = 0;
+for (let k = 0; k < m; k++) {
+  if (pValues[k] <= thresholds[k]) cutoff = k + 1;
+}
+
+const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+const tickColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)';
+const cutoffLineColor = isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.18)';
+
+const labels = Array.from({length: m}, (_, i) => i + 1);
+
+const rejectedPoints = pValues.map((p, i) => (i + 1) <= cutoff ? p : null);
+const notRejectedPoints = pValues.map((p, i) => (i + 1) > cutoff ? p : null);
+
+const cutoffPlugin = {
+  id: 'cutoffLine',
+  afterDraw(chart) {
+    const { ctx, scales: { x, y } } = chart;
+    const xPos = x.getPixelForValue(cutoff + 0.5);
+    ctx.save();
+    ctx.beginPath();
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = cutoffLineColor;
+    ctx.lineWidth = 1.5;
+    ctx.moveTo(xPos, y.top);
+    ctx.lineTo(xPos, y.bottom);
+    ctx.stroke();
+    ctx.restore();
+  }
+};
+
+new Chart(document.getElementById('bhChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [
+      {
+        label: 'BH threshold',
+        data: labels.map((k, i) => ({ x: k, y: thresholds[i] })),
+        showLine: true,
+        borderColor: '#534AB7',
+        borderWidth: 2,
+        borderDash: [6, 4],
+        pointRadius: 0,
+        fill: false
+      },
+      {
+        label: 'Rejected',
+        data: rejectedPoints.map((p, i) => p !== null ? { x: i + 1, y: p } : null).filter(Boolean),
+        pointBackgroundColor: '#0F6E56',
+        pointBorderColor: '#0F6E56',
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        showLine: false
+      },
+      {
+        label: 'Not rejected',
+        data: notRejectedPoints.map((p, i) => p !== null ? { x: i + 1, y: p } : null).filter(Boolean),
+        pointBackgroundColor: '#999',
+        pointBorderColor: '#999',
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        showLine: false
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (item) => {
+            const k = item.raw.x;
+            const p = item.raw.y;
+            if (item.datasetIndex === 0) return 'Threshold: ' + p.toFixed(4);
+            return 'Contract ' + k + ': p = ' + p.toFixed(4);
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        title: { display: true, text: 'Contract (sorted by p-value)', font: { size: 12 }, color: tickColor },
+        grid: { color: gridColor },
+        ticks: { color: tickColor, font: { size: 11 }, stepSize: 1 },
+        min: 0.5,
+        max: 10.5
+      },
+      y: {
+        title: { display: true, text: 'p-value', font: { size: 12 }, color: tickColor },
+        grid: { color: gridColor },
+        ticks: { color: tickColor, font: { size: 11 } },
+        min: 0,
+        max: 0.11
+      }
+    }
+  },
+  plugins: [cutoffPlugin]
+});
+</script>
+</body>
+</html>
