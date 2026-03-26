@@ -239,7 +239,7 @@ Over time, this gives you trend data. Is the agent's observed rate drifting down
 
 Let's make the SPRT cost savings concrete.
 
-Suppose you have 5 contracts, each with a max budget of 50 trials. A simple agent making a few API calls might cost \$0.01-\$0.10 per trial. A real agentic workflow (multi-step tool use, code generation, Docker execution) can easily cost \$0.50-\$5.00 per trial. Fixed-sample testing with a mid-range agent at \$1.00/trial:
+Suppose you have 5 contracts, each with a max budget of 50 trials. A simple agent making a few API calls might cost &#36;0.01-&#36;0.10 per trial. A real agentic workflow (multi-step tool use, code generation, Docker execution) can easily cost &#36;0.50-&#36;5.00 per trial. Fixed-sample testing with a mid-range agent at &#36;1.00/trial:
 
 $$5 \text{ contracts} \times 50 \text{ trials} \times \$1.00 = \$250 \text{ per CI run}$$
 
@@ -249,15 +249,13 @@ $$5 \text{ contracts} \times 14 \text{ trials (avg)} \times \$1.00 = \$70 \text{
 
 **72% cost reduction.** For a clearly failing agent, SPRT also saves — a completely broken agent (0% pass rate) rejects in 4-5 trials, and a moderately bad agent (60% pass rate) typically rejects in 8-15 trials.
 
-| Method | Trials | \$0.01/trial | \$1.00/trial | \$5.00/trial |
+| Method | Trials | &#36;0.01/trial | &#36;1.00/trial | &#36;5.00/trial |
 |--------|--------|------------|------------|------------|
-| Fixed N=50 | 250 | \$2.50 | \$250 | \$1,250 |
-| SPRT (passing) | ~70 | \$0.70 | \$70 | \$350 |
-| SPRT (failing) | ~75 | \$0.75 | \$75 | \$375 |
+| Fixed N=50 | 250 | &#36;2.50 | &#36;250 | &#36;1,250 |
+| SPRT (passing) | ~70 | &#36;0.70 | &#36;70 | &#36;350 |
+| SPRT (failing) | ~75 | &#36;0.75 | &#36;75 | &#36;375 |
 
-<iframe src="/embeds/cost-comparison.html" style="width:100%;height:420px;border:none;overflow:hidden;" loading="lazy"></iframe>
-
-The savings scale with trial cost. At \$5/trial, SPRT saves \$900 per CI run on a passing suite. Run that 10 times a day and you're looking at real money. SPRT doesn't just give you better statistics — it gives you a substantially smaller bill.
+The savings scale with trial cost. At &#36;5/trial, SPRT saves &#36;900 per CI run on a passing suite. Run that 10 times a day and you're looking at real money. SPRT doesn't just give you better statistics — it gives you a substantially smaller bill.
 
 ## Lessons from building an eval harness
 
