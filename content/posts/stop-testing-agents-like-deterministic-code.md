@@ -29,11 +29,11 @@ Here's where it gets painful. Say your agent genuinely has a 90% success rate �
 
 $$P(\text{all 10 pass}) = 0.9^{10} = 0.349$$
 
-**65% chance of at least one failure.** Not because your agent is broken — because you ran 10 independent Bernoulli trials with p=0.9. Your "flaky" CI isn't flaky. It's working exactly as probability says it should. You just built a testing framework that can't handle that.
+**65% chance of at least one failure.** Not because your agent is broken — because you ran 10 independent Bernoulli trials with $p = 0.9$. Your "flaky" CI isn't flaky. It's working exactly as probability says it should. You just built a testing framework that can't handle that.
 
 (This assumes independent trials. Real systems often show overdispersion — if your tests share a common failure mode, failures will cluster rather than distribute uniformly. The math changes, but the fundamental problem doesn't: deterministic assertions on stochastic behavior produce misleading results either way.)
 
-Run those same 10 tests twice each? Now it's p=0.9 across 20 trials. P(at least one failure) = 87%. The more tests you add, the worse it gets.
+Run those same 10 tests twice each? Now it's $p = 0.9$ across 20 trials. $P(\text{at least one failure}) = 87\%$. The more tests you add, the worse it gets.
 
 ## The reframe: testing as hypothesis testing
 
@@ -43,8 +43,8 @@ You're not asking: "Did this test pass?" You're asking: "Does this agent pass *r
 
 That's a hypothesis test. Specifically:
 
-- **Null hypothesis (H₀):** The agent's true pass rate meets our threshold (p ≥ 0.90)
-- **Alternative hypothesis (H₁):** The agent's pass rate is below threshold (p < 0.80)
+- **Null hypothesis ($H_0$):** The agent's true pass rate meets our threshold ($p \geq 0.90$)
+- **Alternative hypothesis ($H_1$):** The agent's pass rate is below threshold ($p < 0.80$)
 
 The gap between 0.90 and 0.80 is the indifference zone — rates in that range are borderline and we'll need more data to decide. The key insight is that instead of a single binary observation, you're collecting *evidence* across multiple trials.
 
@@ -66,13 +66,13 @@ $$\text{If the trial passed: } \quad \Lambda \mathrel{+}= \log(p_0 / p_1)$$
 
 $$\text{If the trial failed: } \quad \Lambda \mathrel{+}= \log((1 - p_0) / (1 - p_1))$$
 
-Where p₀ is your threshold (0.90) and p₁ is the alternative (0.80). Technically, SPRT tests simple hypotheses (p = p₀ vs p = p₁), not the composite "p ≥ threshold" you actually care about. The standard trick is to pick p₁ as a specific "unacceptable" rate below your threshold — the reference implementation uses p₁ = max(0.01, p₀ - 0.10) — and test between those two points. Then compare against two boundaries:
+Where $p_0$ is your threshold (0.90) and $p_1$ is the alternative (0.80). Technically, SPRT tests simple hypotheses ($p = p_0$ vs $p = p_1$), not the composite "$p \geq \text{threshold}$" you actually care about. The standard trick is to pick $p_1$ as a specific "unacceptable" rate below your threshold — the reference implementation uses $p_1 = \max(0.01,\; p_0 - 0.10)$ — and test between those two points. Then compare against two boundaries:
 
-- **Accept (agent is good enough):** logLR ≥ log((1 - α) / β)
-- **Reject (agent is failing):** logLR ≤ log(α / (1 - β))
+- **Accept (agent is good enough):** $\Lambda \geq \log((1 - \alpha) / \beta)$
+- **Reject (agent is failing):** $\Lambda \leq \log(\alpha / (1 - \beta))$
 - **Continue testing:** otherwise
 
-With typical values (α=0.05, β=0.20), the upper boundary is log(4.75) ≈ 1.56 and the lower is log(0.0625) ≈ -2.77.
+With typical values ($\alpha = 0.05$, $\beta = 0.20$), the upper boundary is $\log(4.75) \approx 1.56$ and the lower is $\log(0.0625) \approx -2.77$.
 
 **A concrete example.** Suppose your agent has a true pass rate of 95%, and you're testing against a 90% threshold:
 
@@ -108,7 +108,7 @@ SPRT is both a statistical tool and a cost optimizer. For clearly passing or cle
 
 SPRT gives you a go/no-go decision, but you also want to *see* the agent's reliability. "90% pass rate" from 10 runs means something very different than "90% pass rate" from 100 runs. This is where confidence intervals come in.
 
-The naive approach (`p ± z * sqrt(p(1-p)/n)`) has a well-known problem at the boundaries. If your agent passes 10/10 trials, the naive 95% interval is [1.0, 1.0]. Confident that *nothing will ever go wrong*? That's clearly absurd.
+The naive approach ($p \pm z \sqrt{p(1-p)/n}$) has a well-known problem at the boundaries. If your agent passes 10/10 trials, the naive 95% interval is [1.0, 1.0]. Confident that *nothing will ever go wrong*? That's clearly absurd.
 
 Wilson score intervals handle this correctly:
 
@@ -134,7 +134,7 @@ One caveat: if you're reporting Wilson intervals after SPRT early-stopped, the i
 
 ## The multiple testing trap
 
-Here's a subtler problem. Say you have 10 contracts for your agent, and each has a false rejection rate of α=0.05. In the worst case (agent performing right at the threshold boundary), the probability of at least one spurious rejection across all 10:
+Here's a subtler problem. Say you have 10 contracts for your agent, and each has a false rejection rate of $\alpha = 0.05$. In the worst case (agent performing right at the threshold boundary), the probability of at least one spurious rejection across all 10:
 
 $$P(\geq 1 \text{ false rejection}) = 1 - (1 - 0.05)^{10} \approx 0.40$$
 
@@ -142,13 +142,13 @@ $$P(\geq 1 \text{ false rejection}) = 1 - (1 - 0.05)^{10} \approx 0.40$$
 
 Here, "false rejection" means incorrectly declaring a passing contract as failing. That's the direction that matters in CI gating — spurious red builds.
 
-The classical fix is Bonferroni correction: divide α by the number of tests. With 10 tests, each one uses α=0.005 instead of 0.05. This controls the probability of *any* spurious rejection (FWER), but it's conservative — it makes each individual test harder to pass, increasing the chance you'll fail to detect a real regression.
+The classical fix is Bonferroni correction: divide $\alpha$ by the number of tests. With 10 tests, each one uses $\alpha = 0.005$ instead of 0.05. This controls the probability of *any* spurious rejection (FWER), but it's conservative — it makes each individual test harder to pass, increasing the chance you'll fail to detect a real regression.
 
 Benjamini-Hochberg (BH) is a less conservative alternative. Instead of controlling the probability of *any* false rejection, it controls the *proportion* of false rejections among all rejected contracts (false discovery rate). The algorithm:
 
 1. Sort p-values from smallest to largest
-2. For the k-th p-value, compare against (k/n) × α
-3. Find the largest k that passes; reject all up to that point
+2. For the $k$-th p-value, compare against $(k/n) \cdot \alpha$
+3. Find the largest $k$ that passes; reject all up to that point
 
 BH controls FDR while rejecting more true positives than Bonferroni. If your requirement is strict control over the probability of *any* false rejection, Bonferroni is the right choice. If you're optimizing for overall suite accuracy and can tolerate a controlled proportion of false rejections, BH is better.
 
@@ -192,7 +192,7 @@ studies:
         trials: 50
 ```
 
-Each contract specifies *how reliable* the behavior needs to be, not that it must always succeed. A 95% threshold with 95% confidence means: "If this agent truly passes 95% of the time, I'll incorrectly reject it at most 5% of the time (α=0.05). If it truly passes only 85% of the time, I'll correctly reject it at least 80% of the time (β=0.20)." The α side protects good agents from false alarms; the β side controls how often bad agents slip through.
+Each contract specifies *how reliable* the behavior needs to be, not that it must always succeed. A 95% threshold with 95% confidence means: "If this agent truly passes 95% of the time, I'll incorrectly reject it at most 5% of the time ($\alpha = 0.05$). If it truly passes only 85% of the time, I'll correctly reject it at least 80% of the time ($\beta = 0.20$)." The $\alpha$ side protects good agents from false alarms; the $\beta$ side controls how often bad agents slip through.
 
 **How do you choose a threshold?** Start with your product's tolerance for user-visible failures. Deterministic properties (valid JSON, clean exit) can be held to 0.95-0.99. Quality properties (good summaries, correct answers) depend on your use case — if you'd accept a 15% failure rate in production, 0.85 is your threshold. When in doubt, start at 0.85 and tighten as you learn your agent's actual distribution from historical runs. Note that very high thresholds (0.99) make the test sensitive to individual failures — a single bad trial can dominate the evidence.
 
@@ -357,7 +357,7 @@ For readers who want the precise formulations.
 
 ### SPRT (Sequential Probability Ratio Test)
 
-For Bernoulli observations with null hypothesis p₀ and alternative p₁:
+For Bernoulli observations with null hypothesis $p_0$ and alternative $p_1$:
 
 **Log-likelihood ratio update:**
 
@@ -371,17 +371,17 @@ $$A = \frac{1 - \alpha}{\beta}, \quad B = \frac{\alpha}{1 - \beta}$$
 
 $$\begin{cases} \text{Accept } H_0 & \text{if } \Lambda_n \geq \log(A) \\ \text{Reject } H_0 & \text{if } \Lambda_n \leq \log(B) \\ \text{Continue} & \text{otherwise} \end{cases}$$
 
-Where α is the Type I error rate (false rejection) and β is the Type II error rate (false acceptance).
+Where $\alpha$ is the Type I error rate (false rejection) and $\beta$ is the Type II error rate (false acceptance).
 
-**Default configuration** (from threshold *t* and confidence *c*):
-- p₀ = t
-- p₁ = max(0.01, t − 0.10)
-- α = 1 − c
-- β = 0.20
+**Default configuration** (from threshold $t$ and confidence $c$):
+- $p_0 = t$
+- $p_1 = \max(0.01,\; t - 0.10)$
+- $\alpha = 1 - c$
+- $\beta = 0.20$
 
 ### Wilson score interval
 
-For *k* successes in *n* trials at confidence level (1 − α):
+For $k$ successes in $n$ trials at confidence level $(1 - \alpha)$:
 
 $$\text{center} = \frac{\hat{p} + \frac{z^2}{2n}}{1 + \frac{z^2}{n}}$$
 
@@ -392,16 +392,16 @@ $$CI = [\text{center} - \text{spread}, \; \text{center} + \text{spread}]$$
 Where $\hat{p} = k/n$ and $z = \Phi^{-1}(1 - \alpha/2)$.
 
 Wilson score is preferred over the normal approximation because it:
-- Never produces intervals outside [0, 1]
-- Gives sensible intervals for k=0 and k=n
-- Has better coverage probability for small n
+- Never produces intervals outside $[0, 1]$
+- Gives sensible intervals for $k = 0$ and $k = n$
+- Has better coverage probability for small $n$
 
 ### Benjamini-Hochberg procedure
 
-Given *m* p-values p₁ ≤ p₂ ≤ ... ≤ pₘ and desired FDR level α:
+Given $m$ p-values $p_1 \leq p_2 \leq \ldots \leq p_m$ and desired FDR level $\alpha$:
 
-1. Find the largest *k* such that $p_k \leq \frac{k}{m} \cdot \alpha$
-2. Reject all hypotheses H₁, H₂, ..., Hₖ
+1. Find the largest $k$ such that $p_k \leq \frac{k}{m} \cdot \alpha$
+2. Reject all hypotheses $H_1, H_2, \ldots, H_k$
 
 This controls the expected false discovery rate: $E[\text{FDR}] \leq \alpha$.
 
