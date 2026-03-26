@@ -1,0 +1,76 @@
+baseURL = "https://ryanorban.com/"
+languageCode = "en-us"
+title = "Ryan Orban"
+copyright = "Ryan Orban"
+enableRobotsTXT = true
+
+[module]
+  [[module.imports]]
+    path = "github.com/michenriksen/hugo-theme-til"
+
+[outputs]
+  home = ["HTML"]
+  section = ["HTML", "RSS", "JSON"]
+  page = ["HTML"]
+
+[menus]
+  [[menus.main]]
+    name = "About"
+    pageRef = "/about"
+    weight = 10
+  [[menus.main]]
+    name = "Posts"
+    pageRef = "/posts"
+    weight = 20
+  [[menus.main]]
+    name = "Notes"
+    pageRef = "/notes"
+    weight = 30
+  [[menus.main]]
+    name = "Advising"
+    pageRef = "/advising"
+    weight = 40
+  [[menus.main]]
+    name = "Office Hours"
+    pageRef = "/office-hours"
+    weight = 50
+  [[menus.main]]
+    name = "Graph"
+    pageRef = "/graph"
+    weight = 60
+
+[params]
+  dateFormat = ":date_long"
+  showGraph = true
+
+  [params.author]
+    name = "Ryan Orban"
+    email = "me@ryanorban.com"
+
+  [params.homepage]
+    showRecentPosts = true
+    recentPostsLimit = 3
+    showRecentNotes = true
+    recentNotesLimit = 5
+
+  [params.footer]
+    creativeCommonsLicense = "none"
+    showThemeCredit = true
+
+  [params.robotsTxt]
+    blockAI = true
+
+[markup]
+  [markup.highlight]
+    style = "tokyonight-night"
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+    [markup.goldmark.extensions.passthrough]
+      enable = true
+      [markup.goldmark.extensions.passthrough.delimiters]
+        inline = [['$', '$']]
+        block = [['$$', '$$']]
+  [markup.goldmark.parser]
+    [markup.goldmark.parser.attribute]
+      block = true

@@ -1,0 +1,27 @@
+{
+  "name": "ryanorban.com",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orban/ryanorban.com.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/orban/ryanorban.com/issues"
+  },
+  "homepage": "https://github.com/orban/ryanorban.com#readme",
+  "dependencies": {
+    "vis-network": "^10.0.2"
+  }
+}
