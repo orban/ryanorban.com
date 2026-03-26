@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: transparent; }
+  @media (prefers-color-scheme: dark) { :root { --text-primary: rgba(255,255,255,0.88); --text-secondary: rgba(255,255,255,0.55); } }
+  @media (prefers-color-scheme: light) { :root { --text-primary: rgba(0,0,0,0.88); --text-secondary: rgba(0,0,0,0.45); } }
+  .container { padding: 1rem 0; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  .panel-title { font-size: 14px; font-weight: 500; color: var(--text-primary); margin: 0 0 4px; }
+  .panel-sub { font-size: 12px; color: var(--text-secondary); margin: 0 0 12px; }
+  .chart-wrap { position: relative; width: 100%; height: 260px; }
+  .legend { display: flex; gap: 20px; justify-content: center; margin-top: 8px; font-size: 12px; color: var(--text-secondary); flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+  .legend .dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="grid">
+    <div>
+      <p class="panel-title">Passing agent (true rate: 95%)</p>
+      <p class="panel-sub">Accepts at trial 14 — 72% fewer trials than fixed N=50</p>
+      <div class="chart-wrap"><canvas id="chartPass"></canvas></div>
+    </div>
+    <div>
+      <p class="panel-title">Failing agent (true rate: 60%)</p>
+      <p class="panel-sub">Rejects at trial 7 — cuts losses fast</p>
+      <div class="chart-wrap"><canvas id="chartFail"></canvas></div>
+    </div>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#0F6E56;"></span>Accept boundary</span>
+    <span><span class="dot" style="background:#A32D2D;"></span>Reject boundary</span>
+    <span><span class="dot" style="background:#534AB7;"></span>Log-likelihood ratio</span>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const acceptB = 1.5581;
+const rejectB = -2.7726;
+const passInc = Math.log(0.9 / 0.8);
+const failInc = Math.log(0.1 / 0.2);
+
+function buildWalk(results) {
+  const walk = [0];
+  let lr = 0;
+  for (const r of results) {
+    lr += r ? passInc : failInc;
+    walk.push(lr);
+  }
+  return walk;
+}
+
+const passTrials = buildWalk([1,1,1,1,1,1,1,1,1,1,1,1,1,1]);
+const failTrials = buildWalk([1,0,0,1,0,0,0]);
+
+const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+const tickColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)';
+
+function makeChart(id, data, maxX, decision) {
+  const labels = Array.from({length: data.length}, (_, i) => i);
+  const acceptLine = Array(data.length).fill(acceptB);
+  const rejectLine = Array(data.length).fill(rejectB);
+  const lastIdx = data.length - 1;
+  const pointColors = data.map((_, i) =>
+    i === lastIdx ? (decision === 'accept' ? '#0F6E56' : '#A32D2D') : 'transparent'
+  );
+  const pointRadii = data.map((_, i) => i === lastIdx ? 5 : 0);
+
+  new Chart(document.getElementById(id), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Accept',
+          data: acceptLine,
+          borderColor: '#0F6E56',
+          borderWidth: 1.5,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          fill: false
+        },
+        {
+          label: 'Reject',
+          data: rejectLine,
+          borderColor: '#A32D2D',
+          borderWidth: 1.5,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          fill: false
+        },
+        {
+          label: 'Log-LR',
+          data: data,
+          borderColor: '#534AB7',
+          borderWidth: 2,
+          pointBackgroundColor: pointColors,
+          pointBorderColor: pointColors,
+          pointRadius: pointRadii,
+          fill: false,
+          tension: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: {
+          title: { display: true, text: 'Trial', font: { size: 12 }, color: tickColor },
+          grid: { color: gridColor },
+          ticks: { color: tickColor, font: { size: 11 }, stepSize: 2 },
+          min: 0,
+          max: maxX
+        },
+        y: {
+          title: { display: true, text: 'Log-likelihood ratio', font: { size: 12 }, color: tickColor },
+          grid: { color: gridColor },
+          ticks: { color: tickColor, font: { size: 11 } },
+          min: -3.5,
+          max: 2.5
+        }
+      }
+    }
+  });
+}
+
+makeChart('chartPass', passTrials, 16, 'accept');
+makeChart('chartFail', failTrials, 16, 'reject');
+</script>
+</body>
+</html>

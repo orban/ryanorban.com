@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: transparent; }
+  @media (prefers-color-scheme: dark) { :root { --text-primary: rgba(255,255,255,0.88); --text-secondary: rgba(255,255,255,0.55); } }
+  @media (prefers-color-scheme: light) { :root { --text-primary: rgba(0,0,0,0.88); --text-secondary: rgba(0,0,0,0.45); } }
+  .container { padding: 1rem 0; }
+  .title { font-size: 14px; font-weight: 500; color: var(--text-primary); margin: 0 0 4px; }
+  .subtitle { font-size: 12px; color: var(--text-secondary); margin: 0 0 12px; }
+  .chart-wrap { position: relative; width: 100%; height: 320px; }
+  .legend { display: flex; gap: 20px; justify-content: center; margin-top: 8px; font-size: 12px; color: var(--text-secondary); flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+  .legend .dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <p class="title">Probability of at least one CI failure</p>
+  <p class="subtitle">Even a 95% pass rate gives you a coin flip at 14 tests</p>
+  <div class="chart-wrap"><canvas id="flakyChart"></canvas></div>
+  <div class="legend">
+    <span><span class="dot" style="background:#A32D2D;"></span>p = 0.85</span>
+    <span><span class="dot" style="background:#BA7517;"></span>p = 0.90</span>
+    <span><span class="dot" style="background:#534AB7;"></span>p = 0.95</span>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const maxN = 30;
+const rates = [0.85, 0.90, 0.95];
+const colors = ['#A32D2D', '#BA7517', '#534AB7'];
+
+const datasets = rates.map((p, i) => {
+  const data = [];
+  for (let n = 1; n <= maxN; n++) {
+    data.push(Math.round((1 - Math.pow(p, n)) * 1000) / 1000);
+  }
+  return {
+    label: 'p=' + p,
+    data: data,
+    borderColor: colors[i],
+    borderWidth: 2,
+    pointRadius: 0,
+    pointHitRadius: 8,
+    fill: false,
+    tension: 0.3
+  };
+});
+
+const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+const tickColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)';
+
+new Chart(document.getElementById('flakyChart'), {
+  type: 'line',
+  data: {
+    labels: Array.from({length: maxN}, (_, i) => i + 1),
+    datasets
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: (items) => items[0].label + ' tests',
+          label: (item) => 'p=' + rates[item.datasetIndex] + ': ' + Math.round(item.raw * 100) + '% chance of failure'
+        }
+      }
+    },
+    scales: {
+      x: {
+        title: { display: true, text: 'Number of test cases', font: { size: 12 }, color: tickColor },
+        grid: { color: gridColor },
+        ticks: { color: tickColor, font: { size: 11 }, stepSize: 5 }
+      },
+      y: {
+        title: { display: true, text: 'P(≥1 failure)', font: { size: 12 }, color: tickColor },
+        grid: { color: gridColor },
+        ticks: {
+          color: tickColor,
+          font: { size: 11 },
+          callback: (v) => Math.round(v * 100) + '%'
+        },
+        min: 0,
+        max: 1
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>

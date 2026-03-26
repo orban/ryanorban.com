@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: transparent; }
+  @media (prefers-color-scheme: dark) { :root { --text-primary: rgba(255,255,255,0.88); --text-secondary: rgba(255,255,255,0.55); --grid: rgba(255,255,255,0.08); } }
+  @media (prefers-color-scheme: light) { :root { --text-primary: rgba(0,0,0,0.88); --text-secondary: rgba(0,0,0,0.45); --grid: rgba(0,0,0,0.06); } }
+  .container { padding: 1rem 0; }
+  .title { font-size: 14px; font-weight: 500; color: var(--text-primary); margin: 0 0 4px; }
+  .subtitle { font-size: 12px; color: var(--text-secondary); margin: 0 0 16px; }
+  .legend { display: flex; gap: 20px; justify-content: center; margin-bottom: 16px; font-size: 12px; color: var(--text-secondary); flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+  .legend .dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <p class="title">Wilson vs. naive confidence intervals</p>
+  <p class="subtitle">Wilson stays honest at the boundaries where naive collapses</p>
+  <div class="legend">
+    <span><span class="dot" style="background:#BA7517;"></span>Naive 95% CI</span>
+    <span><span class="dot" style="background:#534AB7;"></span>Wilson 95% CI</span>
+  </div>
+  <div id="ci-chart"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+const z = 1.96;
+function wilsonCI(k, n) {
+  const p = k / n;
+  const denom = 1 + z*z/n;
+  const center = (p + z*z/(2*n)) / denom;
+  const spread = z * Math.sqrt(p*(1-p)/n + z*z/(4*n*n)) / denom;
+  return [Math.max(0, center - spread), Math.min(1, center + spread)];
+}
+function naiveCI(k, n) {
+  const p = k / n;
+  const se = Math.sqrt(p*(1-p)/n);
+  return [Math.max(0, p - z*se), Math.min(1, p + z*se)];
+}
+
+const cases = [
+  { label: '0/10', k: 0, n: 10 },
+  { label: '9/10', k: 9, n: 10 },
+  { label: '10/10', k: 10, n: 10 },
+  { label: '45/50', k: 45, n: 50 },
+  { label: '90/100', k: 90, n: 100 }
+];
+
+const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+const textPrimary = isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.88)';
+const textSecondary = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.55)';
+const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+
+const margin = { top: 8, right: 40, bottom: 32, left: 64 };
+const width = 680;
+const rowH = 56;
+const height = cases.length * rowH + margin.top + margin.bottom;
+
+const svg = d3.select('#ci-chart').append('svg')
+  .attr('viewBox', `0 0 ${width} ${height}`)
+  .attr('width', '100%');
+
+const x = d3.scaleLinear().domain([0, 1]).range([margin.left, width - margin.right]);
+const y = d3.scaleBand()
+  .domain(cases.map(c => c.label))
+  .range([margin.top, height - margin.bottom])
+  .padding(0.35);
+
+const ticks = [0, 0.25, 0.5, 0.75, 1.0];
+ticks.forEach(t => {
+  svg.append('line')
+    .attr('x1', x(t)).attr('x2', x(t))
+    .attr('y1', margin.top).attr('y2', height - margin.bottom)
+    .attr('stroke', gridColor);
+});
+svg.append('g')
+  .attr('transform', `translate(0,${height - margin.bottom})`)
+  .selectAll('text').data(ticks).join('text')
+  .attr('x', d => x(d)).attr('y', 18)
+  .attr('text-anchor', 'middle')
+  .attr('font-size', 11).attr('fill', textSecondary)
+  .text(d => Math.round(d * 100) + '%');
+
+cases.forEach(c => {
+  const cy = y(c.label) + y.bandwidth() / 2;
+  const naive = naiveCI(c.k, c.n);
+  const wilson = wilsonCI(c.k, c.n);
+  const phat = c.k / c.n;
+  const naiveY = cy - 6;
+  const wilsonY = cy + 6;
+
+  svg.append('text')
+    .attr('x', margin.left - 10).attr('y', cy + 1)
+    .attr('text-anchor', 'end').attr('dominant-baseline', 'middle')
+    .attr('font-size', 13).attr('font-weight', 500).attr('fill', textPrimary)
+    .text(c.label);
+
+  svg.append('line')
+    .attr('x1', x(naive[0])).attr('x2', x(naive[1]))
+    .attr('y1', naiveY).attr('y2', naiveY)
+    .attr('stroke', '#BA7517').attr('stroke-width', 2.5)
+    .attr('stroke-linecap', 'round');
+  svg.append('circle')
+    .attr('cx', x(phat)).attr('cy', naiveY).attr('r', 3.5)
+    .attr('fill', '#BA7517');
+
+  svg.append('line')
+    .attr('x1', x(wilson[0])).attr('x2', x(wilson[1]))
+    .attr('y1', wilsonY).attr('y2', wilsonY)
+    .attr('stroke', '#534AB7').attr('stroke-width', 2.5)
+    .attr('stroke-linecap', 'round');
+  svg.append('circle')
+    .attr('cx', x(phat)).attr('cy', wilsonY).attr('r', 3.5)
+    .attr('fill', '#534AB7');
+});
+</script>
+</body>
+</html>
