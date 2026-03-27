@@ -5,19 +5,11 @@ description: "Your AI agent CI is a coin flip and you don't know it. Here's how 
 math: true
 ---
 
-For the last decade, software engineering ate the world.
-
-Everything became:
-
-* deterministic functions
-* unit tests
-* CI/CD pipelines
-* exact assertions
-* pass/fail
+For the last decade, software engineering ate the world. Everything became deterministic functions, unit tests, CI/CD pipelines, exact assertions — pass/fail.
 
 Then we bolted stochastic systems onto that stack and pretended nothing changed.
 
-Current evals look like this:
+Current evals still look like this:
 
 ```python
 assert(agent(input) === expected_output)
@@ -25,7 +17,9 @@ assert(agent(input) === expected_output)
 
 Green. Ship it. But the next day it's red. Nobody changed anything. Rerun. Green again.
 
-So what do you do? You stop asserting and start sampling. You treat the agent as the [stochastic process](https://en.wikipedia.org/wiki/Stochastic_process) it actually is, apply [hypothesis testing](https://en.wikipedia.org/wiki/Statistical_hypothesis_testing), and gate on statistical evidence instead of exact matches. And with [SPRT](https://en.wikipedia.org/wiki/Sequential_probability_ratio_test), you can do it without burning your entire trial budget every time.
+The test isn't broken. The assumption is. You're applying deterministic assertions to a stochastic process.
+
+So you stop asserting and start sampling. You treat the agent as the [stochastic process](https://en.wikipedia.org/wiki/Stochastic_process) it actually is, apply [hypothesis testing](https://en.wikipedia.org/wiki/Statistical_hypothesis_testing), and gate on statistical evidence instead of exact matches. And with [SPRT](https://en.wikipedia.org/wiki/Sequential_probability_ratio_test), you can do it without burning your entire trial budget every time.
 
 ---
 
