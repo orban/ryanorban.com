@@ -27,7 +27,7 @@ So you stop asserting and start sampling. You treat the agent as the [stochastic
 
 When you write `assert(f(x) === y)`, you're claiming this function always returns this value for this input. That makes sense for `parseInt("42")`. It does not make sense for a system that queries a language model.
 
-Some things around an agent are still deterministic. "The process didn't crash." "The output is valid JSON." "The schema parsed." Hard-assert those.
+Some things around an agent are still deterministic. "The process didn't crash." "The output is valid JSON." "The schema parsed." Hard assert those.
 
 The problem is using the same pattern for things that are inherently probabilistic: output quality, task success, rubric adherence, correctness under ambiguity. But you'll say "It's just matrix multiplication, how is it not deterministic?" In practice, batch sizing, floating point accumulation order, speculative decoding, and tool calls all introduce variation. The same prompt won't produce identical output 100% of the time, even at `temperature=0`.
 
@@ -72,13 +72,13 @@ You don't accept a batch of parts by testing one and declaring the factory good 
 
 That 0.90 to 0.80 gap is your [indifference zone](https://en.wikipedia.org/wiki/Indifference_region). Borderline systems need more evidence.
 
-## Use SPRT, not one-shot CI theater
+## Use SPRT, not one shot CI theater
 
-The dumb but already-better version is fixed-$N$: run the contract 50 times, estimate the rate, do a [binomial test](https://en.wikipedia.org/wiki/Binomial_test), gate on that.
+The dumb but already better version is fixed $N$: run the contract 50 times, estimate the rate, do a [binomial test](https://en.wikipedia.org/wiki/Binomial_test), gate on that.
 
 Fine. Already better than `assert`.
 
-But fixed-$N$ wastes money. If the answer is obvious after 10 runs, forcing 50 is wasteful.
+But fixed $N$ wastes money. If the answer is obvious after 10 runs, forcing 50 is wasteful.
 
 That's what SPRT is for.
 
@@ -86,7 +86,7 @@ The Sequential Probability Ratio Test updates evidence after every trial and ask
 
 If an agent passes 12/12, you probably don't need 38 more runs to know it's above a 90% threshold. If it fails immediately, you don't need to keep running trials.
 
-After each trial, update the [log-likelihood ratio](https://en.wikipedia.org/wiki/Likelihood-ratio_test):
+After each trial, update the [log likelihood ratio](https://en.wikipedia.org/wiki/Likelihood-ratio_test):
 
 $$\text{pass: } \Lambda \mathrel{+}= \log(p_0 / p_1)$$
 
@@ -106,7 +106,7 @@ Then compare against two boundaries:
 
 With typical values $\alpha = 0.05$, $\beta = 0.20$, the upper boundary is about 1.56 and the lower is about -2.77.
 
-The nominal error bounds are slightly conservative because the log-likelihood ratio moves in discrete jumps and can overshoot the boundary. Fine. That helps you.
+The nominal error bounds are slightly conservative because the log likelihood ratio moves in discrete jumps and can overshoot the boundary. Fine. That helps you.
 
 Concrete example. Suppose the true pass rate is 95% and your threshold is 90%:
 
@@ -162,7 +162,7 @@ More skepticism when data is thin, convergence as $n$ grows.
 
 <iframe src="/embeds/wilson-vs-naive-ci.html" style="width:100%;height:380px;border:none;overflow:hidden;" loading="lazy"></iframe>
 
-One caveat: if the run stopped early via SPRT, Wilson intervals are descriptive, not strict post-stopping inference. Fine for dashboards. Don't pretend they're something more.
+One caveat: if the run stopped early via SPRT, Wilson intervals are descriptive, not strict post stopping inference. Fine for dashboards. Don't pretend they're something more.
 
 ## Multiple testing will quietly wreck you
 
@@ -172,7 +172,7 @@ $$P(\geq 1 \text{ false rejection}) = 1 - (1-0.05)^{10} \approx 0.40$$
 
 So now you've got up to a **40% chance of a bogus red build**.
 
-This is what happens when you pile [multiple tests](https://en.wikipedia.org/wiki/Multiple_comparisons_problem) onto the same stochastic system and ignore [family-wise error](https://en.wikipedia.org/wiki/Family-wise_error_rate).
+This is what happens when you pile [multiple tests](https://en.wikipedia.org/wiki/Multiple_comparisons_problem) onto the same stochastic system and ignore [familywise error](https://en.wikipedia.org/wiki/Family-wise_error_rate).
 
 If you care about controlling the probability of any false rejection, use [Bonferroni](https://en.wikipedia.org/wiki/Bonferroni_correction). It's conservative, but simple.
 
@@ -254,7 +254,7 @@ Early on, we compared baseline vs treatment with one run each and pretended the 
 
 A task that passed once under baseline would fail the next three times. A treatment that looked worse in one run could easily end up better over five.
 
-Temperature 0 does not magically fix this. API-level nondeterminism still exists. If you are using temperature 0 as an excuse not to repeat runs, you are fooling yourself.
+Temperature 0 does not magically fix this. API level nondeterminism still exists. If you are using temperature 0 as an excuse not to repeat runs, you are fooling yourself.
 
 Run repetitions. Report intervals. Use paired tests.
 
@@ -274,11 +274,11 @@ We ended up with something like:
 | `[pre-validation]` | broken test before agent acted | No |
 | `[empty-run]` | agent returned immediately, did nothing | No |
 
-Timeouts are technically censoring, not pure failure, but in CI they often function as failure because wall-clock budget is part of the product constraint.
+Timeouts are technically censoring, not pure failure, but in CI they often function as failure because wall clock budget is part of the product constraint.
 
-Also, report both per-protocol and full-pipeline reliability when you can. Those are different questions.
+Also, report both per protocol and full pipeline reliability when you can. Those are different questions.
 
-Once you have the taxonomy, patterns jump out. Align tool-call sequences across runs and failures stop looking random:
+Once you have the taxonomy, patterns jump out. Align tool call sequences across runs and failures stop looking random:
 
 ```text
 run 1: test → test → plan → read → edit → success
@@ -296,7 +296,7 @@ If your treatment adds docs or context before the actual task, don't lump setup 
 
 Measure setup separately from the thing you're actually trying to compare.
 
-Same for no-op runs. If the agent does nothing and instantly returns, that should be detected and classified, not silently counted as a normal task attempt.
+Same for noop runs. If the agent does nothing and instantly returns, that should be detected and classified, not silently counted as a normal task attempt.
 
 ### Use paired tests when the data is paired
 
@@ -316,9 +316,9 @@ Stop pretending agent evals are deterministic software tests with slightly annoy
 
 They are not.
 
-They are statistical quality-control problems wrapped around stochastic systems.
+They are statistical quality control problems wrapped around stochastic systems.
 
-If you keep using exact-match assertions for probabilistic behavior, your CI will keep alternating between false confidence and random humiliation.
+If you keep using exact match assertions for probabilistic behavior, your CI will keep alternating between false confidence and random humiliation.
 
 Use hard assertions for deterministic properties.
 
@@ -330,7 +330,7 @@ Test the system you actually built, not the fantasy version that only exists in 
 
 ## Try it yourself
 
-If you want to put this into practice, the code behind these ideas is a reference implementation you can read end-to-end:
+If you want to put this into practice, the code behind these ideas is a reference implementation you can read end to end:
 
 **[github.com/orban/cerberus](https://github.com/orban/cerberus)** — 1,600 lines of TypeScript, 80 tests.
 
@@ -346,7 +346,7 @@ npx cerberus init
 npx cerberus run
 ```
 
-The implementation is minimal (9 source files, 4 runtime dependencies) so you can read the code and understand every decision. See the [README](https://github.com/orban/cerberus) for a file-by-file map of which concepts live where.
+The implementation is minimal (9 source files, 4 runtime dependencies) so you can read the code and understand every decision. See the [README](https://github.com/orban/cerberus) for a file by file map of which concepts live where.
 
 ---
 
@@ -356,7 +356,7 @@ The implementation is minimal (9 source files, 4 runtime dependencies) so you ca
 
 For Bernoulli observations with null $p_0$ and alternative $p_1$:
 
-**Log-likelihood update**
+**Log likelihood update**
 
 $$\Lambda_n = \Lambda_{n-1} + \begin{cases} \log(p_0/p_1) & \text{if pass} \\ \log((1-p_0)/(1-p_1)) & \text{if fail} \end{cases}$$
 
