@@ -278,6 +278,18 @@ Timeouts are technically censoring, not pure failure, but in CI they often funct
 
 Also, report both per-protocol and full-pipeline reliability when you can. Those are different questions.
 
+Once you have the taxonomy, patterns jump out. Align tool-call sequences across runs and failures stop looking random:
+
+```text
+run 1: test → test → plan → read → edit → success
+run 2: test → test → bash → bash → fail
+run 3: test → test → bash → fail
+                    ^
+             divergence point
+```
+
+After repeated test failures, some runs pivot to planning while others reach for bash. That branching decision dominates the outcome — and it's invisible if you're only looking at pass/fail.
+
 ### Separate setup cost from experimental cost
 
 If your treatment adds docs or context before the actual task, don't lump setup token cost into the fix attempt and then act like the treatment is intrinsically worse.
