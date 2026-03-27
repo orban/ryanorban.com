@@ -5,7 +5,7 @@ description: "Your AI agent CI is a coin flip and you don't know it. Here's how 
 math: true
 ---
 
-For the last decade, software engineering ate the world. Everything became deterministic functions, unit tests, CI/CD pipelines, exact assertions — pass/fail.
+For the last decade, software engineering ate the world. Everything became deterministic functions, unit tests, CI/CD pipelines, exact assertions. Pass or fail.
 
 Then we bolted stochastic systems onto that stack and pretended nothing changed.
 
@@ -29,7 +29,7 @@ When you write `assert(f(x) === y)`, you're claiming this function always return
 
 Some things around an agent are still deterministic. "The process didn't crash." "The output is valid JSON." "The schema parsed." Hard-assert those.
 
-The problem is using the same pattern for things that are inherently probabilistic: output quality, task success, rubric adherence, correctness under ambiguity. But you'll say "It's just matrix multiplication — how is it not deterministic?" In practice, batch sizing, floating point accumulation order, speculative decoding, and tool calls all introduce variation. The same prompt won't produce identical output 100% of the time, even at `temperature=0`.
+The problem is using the same pattern for things that are inherently probabilistic: output quality, task success, rubric adherence, correctness under ambiguity. But you'll say "It's just matrix multiplication, how is it not deterministic?" In practice, batch sizing, floating point accumulation order, speculative decoding, and tool calls all introduce variation. The same prompt won't produce identical output 100% of the time, even at `temperature=0`.
 
 For those, each run is basically a [Bernoulli trial](https://en.wikipedia.org/wiki/Bernoulli_trial). The agent either produces a satisfactory result or it doesn't, with some unknown success rate $p$. That rate isn't truly fixed across all tasks and conditions, but it's a useful model.
 
@@ -78,13 +78,13 @@ The dumb but already-better version is fixed-$N$: run the contract 50 times, est
 
 Fine. Already better than `assert`.
 
-But fixed-$N$ wastes money. If the answer is obvious after 10 runs, forcing 50 is just lighting tokens on fire.
+But fixed-$N$ wastes money. If the answer is obvious after 10 runs, forcing 50 is wasteful.
 
 That's what SPRT is for.
 
 The Sequential Probability Ratio Test updates evidence after every trial and asks: do we already know enough to decide?
 
-If an agent passes 12/12, you probably don't need 38 more runs to know it's likely above a 90% threshold. If it faceplants immediately, you don't need to keep paying to watch it drown.
+If an agent passes 12/12, you probably don't need 38 more runs to know it's above a 90% threshold. If it fails immediately, you don't need to keep running trials.
 
 After each trial, update the [log-likelihood ratio](https://en.wikipedia.org/wiki/Likelihood-ratio_test):
 
@@ -96,7 +96,7 @@ Where $p_0$ is your acceptable rate, say 0.90, and $p_1$ is your unacceptable ra
 
 SPRT formally compares two simple hypotheses, $p = p_0$ vs $p = p_1$, not the full composite claim you actually care about. In practice you pick $p_1$ as a clearly bad rate below your threshold and test between those two points. That's standard and works well.
 
-Think of it like a factory inspection. You can't directly test the claim "this factory produces good parts at least 90% of the time" — that's an infinite family of possibilities. What you can test is: "Does this factory look more like one that produces 90% good parts, or one that produces 80% good parts?" If the factory is actually producing at 96%, it'll look like the 90% factory even faster — the test accepts sooner, and the approximation is conservative in your favor. The only place it gets fuzzy is when the true rate is between the two points (the indifference zone), which is exactly where you'd want more data anyway.
+Think of it like a factory inspection. You can't directly test the claim "this factory produces good parts at least 90% of the time." That's an infinite family of possibilities. What you can test is: "Does this factory look more like one that produces 90% good parts, or one that produces 80% good parts?" If the factory is actually producing at 96%, it looks like the 90% factory even faster. The test accepts sooner, and the approximation is conservative in your favor. The only place it gets fuzzy is when the true rate falls between the two points (the indifference zone), which is where you'd want more data anyway.
 
 Then compare against two boundaries:
 
@@ -136,11 +136,11 @@ Seven trials. Done.
 
 <iframe src="/embeds/sprt-random-walk.html" style="width:100%;height:400px;border:none;overflow:hidden;" loading="lazy"></iframe>
 
-That's the whole point. SPRT is not just more statistically sane. It's a cost-control mechanism.
+SPRT is not just statistically better. It's a cost control mechanism.
 
-For clearly good or clearly bad agents, it often cuts trial count by 60-80%.
+For clearly good or clearly bad agents, it cuts trial count by 60-80%.
 
-Caveat: SPRT assumes the pass rate is stationary during the run. If your eval drags on for hours and the provider updates the model halfway through, your guarantees get mushy. Keep runs short enough that the underlying system is effectively stable.
+One assumption: SPRT requires the pass rate to be stationary during the run. If your eval drags on for hours and the provider updates the model halfway through, the guarantees weaken. Keep runs short enough that the underlying system is stable.
 
 ## Confidence intervals that aren't lying to you
 
@@ -158,7 +158,7 @@ $$\text{spread} = \frac{z \sqrt{\hat{p}(1-\hat{p})/n + z^2/4n^2}}{1 + z^2/n}$$
 
 For 10/10 at 95% confidence, Wilson gives roughly [0.72, 1.00]. That's much more honest. You saw all passes, but the sample is small.
 
-That's exactly the behavior you want: more skepticism when data is thin, convergence as $n$ grows.
+More skepticism when data is thin, convergence as $n$ grows.
 
 <iframe src="/embeds/wilson-vs-naive-ci.html" style="width:100%;height:380px;border:none;overflow:hidden;" loading="lazy"></iframe>
 
@@ -172,7 +172,7 @@ $$P(\geq 1 \text{ false rejection}) = 1 - (1-0.05)^{10} \approx 0.40$$
 
 So now you've got up to a **40% chance of a bogus red build**.
 
-That's not a corner case. That's what happens when you pile [multiple tests](https://en.wikipedia.org/wiki/Multiple_comparisons_problem) onto the same stochastic system and ignore [family-wise error](https://en.wikipedia.org/wiki/Family-wise_error_rate).
+This is what happens when you pile [multiple tests](https://en.wikipedia.org/wiki/Multiple_comparisons_problem) onto the same stochastic system and ignore [family-wise error](https://en.wikipedia.org/wiki/Family-wise_error_rate).
 
 If you care about controlling the probability of any false rejection, use [Bonferroni](https://en.wikipedia.org/wiki/Bonferroni_correction). It's conservative, but simple.
 
@@ -194,11 +194,11 @@ A sane CI pipeline for agents should have three outcomes:
 | 1 | FAIL — enough evidence it does not |
 | 3 | INCONCLUSIVE — max trials hit, evidence still ambiguous |
 
-That last one matters. "Inconclusive" is not weakness. It's the honest answer.
+Inconclusive is not weakness. It's the honest answer when evidence is ambiguous.
 
-Treating inconclusive as fail is a policy choice. Conservative, but costly. Treating it as pass is reckless.
+Treating inconclusive as fail is a policy choice, conservative but costly. Treating it as pass is reckless.
 
-Your config should specify reliability targets, not fantasy-world exact matches:
+Your config should specify reliability targets, not exact matches:
 
 ```yaml
 studies:
@@ -222,7 +222,7 @@ studies:
 
 That says: this behavior needs to succeed often enough, with enough evidence, not literally every single time forever.
 
-And yes, threshold choice depends on product reality, not vibes. Deterministic-ish properties like valid JSON or clean exit can live around 0.95-0.99. Subjective or hard tasks may belong lower. If the product tolerates a 15% miss rate, stop pretending the eval threshold should be 0.99.
+Threshold choice depends on product reality. Deterministic properties like valid JSON or clean exit can live around 0.95-0.99. Subjective or hard tasks may belong lower. If the product tolerates a 15% miss rate, stop pretending the eval threshold should be 0.99.
 
 Persist every run. Trendlines are more informative than single snapshots. If observed rates drift down or inconclusives rise, that tells you something real.
 
@@ -288,7 +288,7 @@ run 3: test → test → bash → fail
              divergence point
 ```
 
-After repeated test failures, some runs pivot to planning while others reach for bash. That branching decision dominates the outcome — and it's invisible if you're only looking at pass/fail.
+After repeated test failures, some runs pivot to planning while others reach for bash. That branching decision dominates the outcome, and it's invisible if you're only looking at pass/fail.
 
 ### Separate setup cost from experimental cost
 
@@ -302,7 +302,7 @@ Same for no-op runs. If the agent does nothing and instantly returns, that shoul
 
 If baseline and treatment are run on the same task under the same conditions, use a [paired test](https://en.wikipedia.org/wiki/Paired_difference_test). [McNemar's test](https://en.wikipedia.org/wiki/McNemar%27s_test) is often the right choice for binary outcomes.
 
-Looking at raw success rates without a paired test is how people talk themselves into fake conclusions.
+Looking at raw success rates without a paired test leads to wrong conclusions.
 
 CI overlap is not a substitute. It's a visual aid at best.
 
@@ -346,7 +346,7 @@ npx cerberus init
 npx cerberus run
 ```
 
-The implementation is deliberately minimal — 9 source files, 4 runtime dependencies — so you can read the code and understand every decision. See the [README](https://github.com/orban/cerberus) for a file-by-file map of which concepts live where.
+The implementation is minimal (9 source files, 4 runtime dependencies) so you can read the code and understand every decision. See the [README](https://github.com/orban/cerberus) for a file-by-file map of which concepts live where.
 
 ---
 
