@@ -5,19 +5,27 @@ description: "Your AI agent CI is a coin flip and you don't know it. Here's how 
 math: true
 ---
 
-Most teams I work with are trying to retrofit CI/CD pipelines built for deterministic software onto systems that aren't deterministic at all.
+For the last decade, software engineering ate the world.
 
-They build an agent — it calls an LLM, uses tools, makes decisions — and then test it the same way they'd test a REST endpoint:
+Everything became:
 
-`assert(agent(input) === expected_output)`
+* deterministic functions
+* unit tests
+* CI/CD pipelines
+* exact assertions
+* pass/fail
 
-Green. Ship. Next day it's red. Nobody changed anything. Rerun. Green again.
+Then we bolted stochastic systems onto that stack and pretended nothing changed.
 
-"Flaky test." Move on.
+Current evals look like this:
 
-But it's not flaky. It's stochastic. And the objection I hear most often is: "It's just matrix multiplication — how is it not deterministic?" In practice, batch sizing, floating-point accumulation order, speculative decoding, and tool calls all introduce variation. The same prompt won't produce identical output 100% of the time, even at temperature 0.
+```python
+assert(agent(input) === expected_output)
+```
 
-So what do you do? You stop asserting and start sampling. You treat the agent as the stochastic process it actually is, apply hypothesis testing, and gate on statistical evidence instead of exact matches. And with SPRT, you can do it without burning your entire trial budget every time.
+Green. Ship it. But the next day it's red. Nobody changed anything. Rerun. Green again.
+
+So what do you do? You stop asserting and start sampling. You treat the agent as the [stochastic process](https://en.wikipedia.org/wiki/Stochastic_process) it actually is, apply [hypothesis testing](https://en.wikipedia.org/wiki/Statistical_hypothesis_testing), and gate on statistical evidence instead of exact matches. And with [SPRT](https://en.wikipedia.org/wiki/Sequential_probability_ratio_test), you can do it without burning your entire trial budget every time.
 
 ---
 
@@ -27,9 +35,9 @@ When you write `assert(f(x) === y)`, you're claiming this function always return
 
 Some things around an agent are still deterministic. "The process didn't crash." "The output is valid JSON." "The schema parsed." Hard-assert those.
 
-The problem is using the same pattern for things that are inherently probabilistic: output quality, task success, rubric adherence, correctness under ambiguity.
+The problem is using the same pattern for things that are inherently probabilistic: output quality, task success, rubric adherence, correctness under ambiguity. But you'll say "It's just matrix multiplication — how is it not deterministic?" In practice, batch sizing, floating point accumulation order, speculative decoding, and tool calls all introduce variation. The same prompt won't produce identical output 100% of the time, even at `temperature=0`.
 
-For those, each run is basically a Bernoulli trial. The agent either produces a satisfactory result or it doesn't, with some unknown success rate $p$. That rate isn't truly fixed across all tasks and conditions, but it's a useful model.
+For those, each run is basically a [Bernoulli trial](https://en.wikipedia.org/wiki/Bernoulli_trial). The agent either produces a satisfactory result or it doesn't, with some unknown success rate $p$. That rate isn't truly fixed across all tasks and conditions, but it's a useful model.
 
 Now the ugly part. Suppose your agent really does succeed 90% of the time. That sounds good enough to ship. You have 10 tests, each run once. What's the probability CI comes back perfectly clean?
 
@@ -65,14 +73,14 @@ That's a hypothesis test.
 
 You don't accept a batch of parts by testing one and declaring the factory good or bad. You sample, measure a rate, and decide whether the rate meets spec. Agent testing is the same problem.
 
-- **Null hypothesis $H_0$:** the agent meets the target pass rate, say $p \ge 0.90$
-- **Alternative $H_1$:** it's materially worse, say $p < 0.80$
+- **[Null hypothesis](https://en.wikipedia.org/wiki/Null_hypothesis) $H_0$:** the agent meets the target pass rate, say $p \ge 0.90$
+- **[Alternative hypothesis](https://en.wikipedia.org/wiki/Alternative_hypothesis) $H_1$:** it's materially worse, say $p < 0.80$
 
-That 0.90 to 0.80 gap is your indifference zone. Borderline systems need more evidence.
+That 0.90 to 0.80 gap is your [indifference zone](https://en.wikipedia.org/wiki/Indifference_region). Borderline systems need more evidence.
 
 ## Use SPRT, not one-shot CI theater
 
-The dumb but already-better version is fixed-$N$: run the contract 50 times, estimate the rate, do a binomial test, gate on that.
+The dumb but already-better version is fixed-$N$: run the contract 50 times, estimate the rate, do a [binomial test](https://en.wikipedia.org/wiki/Binomial_test), gate on that.
 
 Fine. Already better than `assert`.
 
@@ -84,7 +92,7 @@ The Sequential Probability Ratio Test updates evidence after every trial and ask
 
 If an agent passes 12/12, you probably don't need 38 more runs to know it's likely above a 90% threshold. If it faceplants immediately, you don't need to keep paying to watch it drown.
 
-After each trial, update the log-likelihood ratio:
+After each trial, update the [log-likelihood ratio](https://en.wikipedia.org/wiki/Likelihood-ratio_test):
 
 $$\text{pass: } \Lambda \mathrel{+}= \log(p_0 / p_1)$$
 
@@ -148,7 +156,7 @@ A 90% pass rate from 10 runs and a 90% pass rate from 100 runs are not the same 
 
 The naive interval, $\hat{p} \pm z\sqrt{\hat{p}(1-\hat{p})/n}$, breaks badly near the edges. If you go 10/10, it gives you [1.0, 1.0], which is obviously nonsense.
 
-Use Wilson intervals instead:
+Use [Wilson intervals](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval#Wilson_score_interval) instead:
 
 $$\text{center} = \frac{\hat{p} + z^2/2n}{1 + z^2/n}$$
 
@@ -170,11 +178,11 @@ $$P(\geq 1 \text{ false rejection}) = 1 - (1-0.05)^{10} \approx 0.40$$
 
 So now you've got up to a **40% chance of a bogus red build**.
 
-That's not a corner case. That's what happens when you pile multiple tests onto the same stochastic system and ignore family-wise error.
+That's not a corner case. That's what happens when you pile [multiple tests](https://en.wikipedia.org/wiki/Multiple_comparisons_problem) onto the same stochastic system and ignore [family-wise error](https://en.wikipedia.org/wiki/Family-wise_error_rate).
 
-If you care about controlling the probability of any false rejection, use Bonferroni. It's conservative, but simple.
+If you care about controlling the probability of any false rejection, use [Bonferroni](https://en.wikipedia.org/wiki/Bonferroni_correction). It's conservative, but simple.
 
-If you care more about overall discovery power and can tolerate a controlled fraction of false rejections, use Benjamini-Hochberg.
+If you care more about overall discovery power and can tolerate a controlled fraction of false rejections, use [Benjamini-Hochberg](https://en.wikipedia.org/wiki/False_discovery_rate#Benjamini%E2%80%93Hochberg_procedure).
 
 <iframe src="/embeds/bh-procedure.html" style="width:100%;height:400px;border:none;overflow:hidden;" loading="lazy"></iframe>
 
@@ -286,7 +294,7 @@ Same for no-op runs. If the agent does nothing and instantly returns, that shoul
 
 ### Use paired tests when the data is paired
 
-If baseline and treatment are run on the same task under the same conditions, use a paired test. McNemar is often the right choice for binary outcomes.
+If baseline and treatment are run on the same task under the same conditions, use a [paired test](https://en.wikipedia.org/wiki/Paired_difference_test). [McNemar's test](https://en.wikipedia.org/wiki/McNemar%27s_test) is often the right choice for binary outcomes.
 
 Looking at raw success rates without a paired test is how people talk themselves into fake conclusions.
 
