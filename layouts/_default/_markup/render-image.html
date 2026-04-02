@@ -1,0 +1,8 @@
+{{- $isNoteHero := and (eq $.Page.Section "notes") (hasPrefix .Destination "/images/notes/") -}}
+<img
+  src="{{ .Destination | safeURL }}"
+  alt="{{ .Text }}"
+  {{- if .Title }} title="{{ .Title }}"{{ end }}
+  {{- if $isNoteHero }} class="note-hero-img"{{ end }}
+  loading="lazy"
+/>
