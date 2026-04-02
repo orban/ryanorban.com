@@ -7,7 +7,7 @@ categories:
   - bayesian-inference
   - debugging
   - python
-description: ""
+description: Bayesian git bisect for flaky tests. Finally a way to handle probabilistic failures that standard bisect can't.
 params:
   source: pinboard
   sourceUrl: https://github.com/hauntsaninja/git_bayesect

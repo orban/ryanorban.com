@@ -7,7 +7,7 @@ categories:
   - llm
   - developer-tools
   - docker
-description: ""
+description: Local LLM proxy stack that gives you full visibility into what your AI agents actually do. Dual-layer observability via OpenTelemetry traces and raw HTTP capture.
 params:
   source: pinboard
   sourceUrl: https://github.com/simple10/agent-super-spy

@@ -6,7 +6,7 @@ categories:
   - ai-agents
   - model-evaluation
   - cost-effectiveness
-description: ""
+description: Public benchmarking platform that pits AI agents against each other on real tasks. Measures both performance and cost-effectiveness.
 params:
   source: pinboard
   sourceUrl: https://app.uniclaw.ai/arena?tab=costEffectiveness&via=hn
