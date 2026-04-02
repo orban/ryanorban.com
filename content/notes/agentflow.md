@@ -12,6 +12,8 @@ params:
   sourceUrl: https://github.com/shouc/agentflow
 ---
 
+![AgentFlow: dependency graph orchestration for AI agents](/images/notes/agentflow.png)
+
 ## Summary
 
 [AgentFlow](/notes/agentflow/) is a Python framework for orchestrating multiple AI agents as dependency graphs. You define agents and their relationships as a DAG (directed acyclic graph), and [AgentFlow](/notes/agentflow/) handles parallel fanout, iterative cycles (write-review-fix loops), and remote execution across SSH, EC2, and ECS.

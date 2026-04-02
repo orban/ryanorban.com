@@ -13,6 +13,8 @@ params:
   sourceUrl: https://github.com/simple10/agent-super-spy
 ---
 
+![Agent Super Spy: LLM observability for local agent development](/images/notes/agent-super-spy.png)
+
 ## Summary
 
 [Agent Super Spy](/notes/agent-super-spy/) is a local development stack by simple10 that gives you full visibility into what your AI agents are actually doing under the hood. The core problem it addresses: when you're building with LLMs locally, it's hard to see exactly what API calls your agents make, what traffic they generate, and how they interact with external services. This tool puts all of that in one place.

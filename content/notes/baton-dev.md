@@ -12,6 +12,8 @@ params:
   sourceUrl: https://getbaton.dev/
 ---
 
+![Baton: parallel AI agent orchestration via git worktrees](/images/notes/baton-dev.png)
+
 ## Summary
 
 Baton is a desktop app that lets you run multiple AI agents (like Claude Code, Gemini CLI, Codex) simultaneously on different features, each in its own git worktree. The core insight is that git worktrees provide natural isolation — each agent gets its own branch and working directory, so they can't step on each other's changes.

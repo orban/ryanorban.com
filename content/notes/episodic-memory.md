@@ -13,6 +13,8 @@ params:
   sourceUrl: https://github.com/obra/episodic-memory
 ---
 
+![Episodic Memory: semantic search for Claude Code conversation history](/images/notes/episodic-memory.png)
+
 ## Summary
 
 [Episodic Memory](/notes/episodic-memory/) is a tool by obra (Jesse Vincent) that gives Claude Code searchable access to past conversations. It indexes your conversation transcripts locally using vector embeddings and SQLite, then exposes semantic search through both a CLI and an MCP server — so you can find previous discussions by meaning, not just keywords.

@@ -13,6 +13,8 @@ params:
   sourceUrl: https://github.com/hauntsaninja/git_bayesect
 ---
 
+![git_bayesect: Bayesian git bisect for flaky tests](/images/notes/git-bayesect.png)
+
 ## Summary
 
 [git_bayesect](/notes/git-bayesect/) is a Python tool by hauntsaninja (Shantanu) that applies Bayesian inference to the problem of git bisect. Standard bisect requires deterministic pass/fail outcomes, which breaks down when you're hunting for a commit that made a flaky test worse rather than introducing a clean failure. git_bayesect handles this probabilistic case by treating test outcomes as observations drawn from an unknown distribution and inferring where the underlying failure rate shifted.

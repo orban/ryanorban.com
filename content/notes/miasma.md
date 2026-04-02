@@ -12,6 +12,8 @@ params:
   sourceUrl: https://github.com/austin-weeks/miasma
 ---
 
+![Miasma: AI scraper honeypot that serves poisoned training data](/images/notes/miasma.png)
+
 ## Summary
 
 [Miasma](/notes/miasma/) is a lightweight HTTP server that defends websites against AI web scrapers by trapping them in an endless pit of poisoned data. When a scraper hits it, Miasma serves corrupted training data alongside self-referential links, creating a recursive loop where the bot keeps consuming worthless content forever.

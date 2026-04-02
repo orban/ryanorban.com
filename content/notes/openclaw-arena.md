@@ -12,6 +12,8 @@ params:
   sourceUrl: https://app.uniclaw.ai/arena?tab=costEffectiveness&via=hn
 ---
 
+![OpenClaw Arena: real-world AI agent benchmarking](/images/notes/openclaw-arena.png)
+
 ## Summary
 
 [OpenClaw Arena](/notes/openclaw-arena/) is a public benchmarking platform from Uniclaw that pits AI agents against each other on real-world tasks rather than synthetic benchmarks. You submit a task description, pick 2-5 LLM models to compete, and each model runs inside an isolated virtual machine with full tool access. A separate judge agent then reviews the outputs by examining code, running tests, and analyzing results, producing two winners: one for raw performance and one for cost-effectiveness.

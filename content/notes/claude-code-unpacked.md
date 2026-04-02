@@ -12,6 +12,8 @@ params:
   sourceUrl: https://ccunpacked.dev/
 ---
 
+![Claude Code Unpacked: reverse-engineering the agent harness](/images/notes/claude-code-unpacked.png)
+
 ## Summary
 
 [Claude Code Unpacked](/notes/claude-code-unpacked/) is a community project that maps Claude Code's internals by analyzing its source code. It documents the agent loop, the 50+ built-in tools, the multi-agent orchestration system, and several unreleased features — essentially producing the technical documentation that Anthropic hasn't published.

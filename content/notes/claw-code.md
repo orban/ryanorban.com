@@ -12,6 +12,8 @@ params:
   sourceUrl: https://github.com/instructkr/claw-code
 ---
 
+![Claw-Code: cleanroom agent harness reimplementation in Rust](/images/notes/claw-code.png)
+
 ## Summary
 
 [Claw-Code](/notes/claw-code/) is a cleanroom reimplementation of an AI agent harness system, written primarily in Rust (93%) with Python components. Rather than distributing leaked source code, the maintainers reverse-engineered the architectural patterns and rebuilt from scratch using AI-assisted development tools like oh-my-codex to scaffold the work across multiple Rust crates.
