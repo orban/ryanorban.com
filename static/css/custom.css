@@ -1,7 +1,15 @@
 /* ==========================================================================
-   ryanorban.com — Understated Craft
-   Small, intentional changes. Warmth through restraint.
+   ryanorban.com — Editorial Warmth
+   Instrument Serif headings, Geist Sans body, generous spacing.
    ========================================================================== */
+
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   --bg: #fafaf8;
@@ -14,13 +22,16 @@
   --border-light: #eeebe7;
   --surface: #f2f0ec;
   --code-bg: #1c1e26;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-body: 'Geist Sans', 'Geist', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
-/* --- Warm background --- */
+/* --- Base --- */
 body {
   background-color: var(--bg) !important;
   color: var(--text) !important;
-  font-family: 'Geist Sans', 'Geist', system-ui, -apple-system, sans-serif !important;
+  font-family: var(--font-body) !important;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -31,15 +42,18 @@ header {
 }
 
 header a[href="/"] {
-  font-family: 'Geist Sans', 'Geist', system-ui, -apple-system, sans-serif !important;
-  font-weight: 700 !important;
+  font-family: var(--font-display) !important;
+  font-weight: 400 !important;
+  font-size: 1.25rem !important;
   color: var(--text) !important;
+  letter-spacing: -0.01em !important;
 }
 
 /* --- Nav --- */
 nav a {
-  color: var(--text-mid) !important;
+  color: var(--text-muted) !important;
   transition: color 0.15s ease !important;
+  font-size: 0.875rem !important;
 }
 
 nav a:hover {
@@ -53,45 +67,59 @@ nav a.ancestor {
 
 /* --- Headings --- */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Geist Sans', 'Geist', system-ui, -apple-system, sans-serif !important;
   color: var(--text) !important;
 }
 
-/* Page titles */
-article > h1:first-of-type,
-article.main > div:first-child > h1 {
-  font-weight: 800 !important;
-  letter-spacing: -0.03em !important;
+/* Page titles — serif display font */
+h1 {
+  font-family: var(--font-display) !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.02em !important;
+  font-size: 2.25rem !important;
+  line-height: 1.2 !important;
 }
 
-/* Section labels (Recent posts, etc.) */
+/* Section labels (Recent Posts, Recent Notes, etc.) */
 main > div > h2,
 section > h2 {
-  font-size: 0.75rem !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.7rem !important;
   font-weight: 600 !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.08em !important;
+  letter-spacing: 0.1em !important;
   color: var(--text-muted) !important;
   border-bottom: 1px solid var(--border-light) !important;
-  padding-bottom: 0.5rem !important;
+  padding-bottom: 0.6rem !important;
+  margin-top: 3rem !important;
+  margin-bottom: 1.5rem !important;
 }
 
 /* Article subheadings */
 article.main h2 {
-  font-weight: 700 !important;
+  font-family: var(--font-display) !important;
+  font-weight: 400 !important;
+  font-size: 1.65rem !important;
   letter-spacing: -0.02em !important;
   text-transform: none !important;
   border-bottom: none !important;
   color: var(--text) !important;
+  margin-top: 2.5rem !important;
+  margin-bottom: 1rem !important;
 }
 
 article.main h3 {
+  font-family: var(--font-body) !important;
   font-weight: 700 !important;
+  font-size: 1.15rem !important;
   letter-spacing: -0.01em !important;
+  margin-top: 2rem !important;
+  margin-bottom: 0.75rem !important;
 }
 
 article.main h4 {
+  font-family: var(--font-body) !important;
   font-weight: 600 !important;
+  font-size: 1rem !important;
 }
 
 /* --- Body text --- */
@@ -133,9 +161,10 @@ article h3 a:hover {
 /* --- Dates --- */
 time {
   color: var(--text-muted) !important;
+  font-size: 0.85rem !important;
 }
 
-/* --- Post excerpt --- */
+/* --- Post excerpt on homepage --- */
 article > div:last-child p {
   color: var(--text-mid) !important;
 }
@@ -145,7 +174,7 @@ article > div:last-child p {
 pre {
   background-color: var(--code-bg) !important;
   border-radius: 8px !important;
-  font-family: 'JetBrains Mono', monospace !important;
+  font-family: var(--font-mono) !important;
   font-size: 0.85rem !important;
 }
 
@@ -160,7 +189,7 @@ pre {
 
 /* Inline code */
 code:not(pre code) {
-  font-family: 'JetBrains Mono', monospace !important;
+  font-family: var(--font-mono) !important;
   font-size: 0.72em !important;
   font-weight: 400 !important;
   background: var(--surface) !important;
@@ -196,13 +225,18 @@ hr {
 footer {
   border-top-color: var(--border) !important;
   color: var(--text-muted) !important;
+  margin-top: 4rem !important;
 }
 
 /* --- Taxonomy tags --- */
 a.taxonomy {
   background: var(--surface) !important;
   border-color: var(--border) !important;
-  color: var(--text-mid) !important;
+  color: var(--text-muted) !important;
+  font-size: 0.72rem !important;
+  padding: 0.2em 0.55em !important;
+  border-radius: 4px !important;
+  transition: color 0.15s ease, border-color 0.15s ease !important;
 }
 
 a.taxonomy:hover {
@@ -225,25 +259,215 @@ article.main img.note-hero-img {
   margin-bottom: 1.5rem !important;
 }
 
-/* Thumbnail in notes list */
-.note-list-thumb {
-  width: 48px !important;
-  height: 48px !important;
-  max-width: 48px !important;
-  object-fit: cover !important;
-  border-radius: 6px !important;
-  border: 1px solid var(--border) !important;
+/* ==========================================================================
+   Notes list — card layout
+   ========================================================================== */
+
+.notes-list {
+  display: flex !important;
+  flex-direction: column !important;
 }
 
-/* Description line in notes list */
-.note-list-desc {
-  font-size: 0.8rem !important;
+.note-card {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 1rem !important;
+  padding: 1.25rem 0 !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  margin: 0 !important;
+}
+
+.note-card:first-child {
+  padding-top: 0.25rem !important;
+}
+
+.note-card:last-child {
+  border-bottom: none !important;
+}
+
+.note-card-thumb-link {
+  flex-shrink: 0 !important;
+  display: block !important;
+  text-decoration: none !important;
+  line-height: 0 !important;
+}
+
+.note-card-thumb {
+  width: 84px !important;
+  height: 52px !important;
+  max-width: 84px !important;
+  object-fit: cover !important;
+  object-position: top left !important;
+  border-radius: 6px !important;
+  border: 1px solid var(--border) !important;
+  transition: border-color 0.15s ease;
+  margin: 0 !important;
+}
+
+.note-card:hover .note-card-thumb {
+  border-color: var(--accent) !important;
+}
+
+.note-card-body {
+  flex: 1 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.3rem !important;
+}
+
+.note-card-title {
+  font-family: var(--font-body) !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.note-card-title a {
+  color: var(--text) !important;
+  text-decoration: none !important;
+  transition: color 0.15s ease;
+}
+
+.note-card-title a:hover {
+  color: var(--accent) !important;
+}
+
+.note-card-desc {
+  font-size: 0.82rem !important;
   color: var(--text-muted) !important;
-  line-height: 1.4 !important;
-  margin: 0.15rem 0 0 0 !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
   overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
+}
+
+.note-card-tags {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.35rem !important;
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0.2rem 0 0 0 !important;
+}
+
+.note-card-tags li {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* ==========================================================================
+   Homepage refinements
+   ========================================================================== */
+
+main {
+  padding-bottom: 2rem !important;
+}
+
+/* Post list titles — serif for editorial feel */
+section > article h3,
+main > div > article h3 {
+  font-family: var(--font-display) !important;
+  font-weight: 400 !important;
+  font-size: 1.25rem !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.3 !important;
+}
+
+/* ==========================================================================
+   Pagination
+   ========================================================================== */
+
+nav[aria-label="pagination"],
+.pagination {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  margin-top: 3rem !important;
+  padding-top: 1.5rem !important;
+  border-top: 1px solid var(--border-light) !important;
+}
+
+nav[aria-label="pagination"] a,
+nav[aria-label="pagination"] span,
+.pagination a,
+.pagination span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 2rem !important;
+  height: 2rem !important;
+  font-size: 0.85rem !important;
+  color: var(--text-muted) !important;
+  text-decoration: none !important;
+  border-radius: 6px !important;
+  transition: color 0.15s ease, background 0.15s ease !important;
+}
+
+nav[aria-label="pagination"] a:hover,
+.pagination a:hover {
+  color: var(--text) !important;
+  background: var(--surface) !important;
+}
+
+nav[aria-label="pagination"] .active,
+nav[aria-label="pagination"] [aria-current="page"],
+.pagination .active {
+  color: var(--text) !important;
+  font-weight: 600 !important;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+footer {
+  font-size: 0.78rem !important;
+  letter-spacing: 0.01em !important;
+}
+
+footer a {
+  color: var(--text-muted) !important;
+  text-decoration: none !important;
+  transition: color 0.15s ease !important;
+}
+
+footer a:hover {
+  color: var(--accent) !important;
+}
+
+/* ==========================================================================
+   Mobile refinements
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  .note-card-thumb {
+    width: 64px !important;
+    height: 40px !important;
+    max-width: 64px !important;
+  }
+
+  .note-card-title {
+    font-size: 0.88rem !important;
+  }
+
+  .note-card-desc {
+    font-size: 0.78rem !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  h1 {
+    font-size: 1.75rem !important;
+  }
 }
 
 /* --- Selection --- */

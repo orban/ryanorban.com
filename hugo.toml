@@ -47,7 +47,7 @@ enableRobotsTXT = true
     name = "Ryan Orban"
     email = "me@ryanorban.com"
 
-  [params.homepage]
+  [params.home]
     showRecentPosts = true
     recentPostsLimit = 3
     showRecentNotes = true
