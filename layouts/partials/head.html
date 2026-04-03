@@ -34,10 +34,10 @@
 {{- end }}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin />
 {{ partialCached "head/css" . }}
-<link rel="stylesheet" href="/css/custom.css" />
+<link rel="stylesheet" href="/css/custom.css?v={{ now.Unix }}" />
 {{ partialCached "head/js" . }}
 {{- if or .Params.math site.Params.math }}
   {{ partial "head/math" . }}

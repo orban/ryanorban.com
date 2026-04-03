@@ -1,52 +1,40 @@
-<div class="not-prose">
-  <ol>
-    {{ range . }}
-      {{ $slug := .File.ContentBaseName }}
-      {{ $imgPath := printf "images/notes/%s.png" $slug }}
-      {{ $hasImg := fileExists (printf "static/%s" $imgPath) }}
-      <li>
-        <article class="flex flex-row items-center gap-3 py-1">
-          {{- if $hasImg }}
-            <a href="{{ .RelPermalink }}" class="shrink-0">
-              <img
-                src="/{{ $imgPath }}"
-                alt=""
-                class="note-list-thumb"
-                loading="lazy"
-              />
-            </a>
-          {{- end }}
-          <div class="flex flex-col grow min-w-0">
-            <header>
-              <h3>
+<div class="not-prose notes-list">
+  {{ range . }}
+    {{ $slug := .File.ContentBaseName }}
+    {{ $imgPath := printf "images/notes/%s.png" $slug }}
+    {{ $hasImg := fileExists (printf "static/%s" $imgPath) }}
+    <article class="note-card">
+      {{- if $hasImg }}
+        <a href="{{ .RelPermalink }}" class="note-card-thumb-link">
+          <img
+            src="/{{ $imgPath }}"
+            alt=""
+            class="note-card-thumb"
+            loading="lazy"
+          />
+        </a>
+      {{- end }}
+      <div class="note-card-body">
+        <h3 class="note-card-title">
+          <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+        </h3>
+        {{- with .Description }}
+          <p class="note-card-desc">{{ . }}</p>
+        {{- end }}
+        {{ with .Page.GetTerms "categories" }}
+          <ul class="note-card-tags">
+            {{ range . }}
+              <li>
                 <a
                   href="{{ .RelPermalink }}"
-                  class="truncate text-sm underline decoration-slate-300 decoration-2 underline-offset-4 hover:decoration-inherit"
-                  title="{{ .Title }}"
-                  >{{ .Title }}</a
-                >
-              </h3>
-            </header>
-            {{- with .Description }}
-              <p class="note-list-desc">{{ . }}</p>
-            {{- end }}
-          </div>
-          {{ with .Page.GetTerms "categories" }}
-            <ul class="flex flex-row items-center justify-end space-x-2 shrink-0">
-              {{ range . }}
-                <li>
-                  <a
-                    href="{{ .RelPermalink }}"
-                    class="taxonomy"
-                    title="See notes on {{ .LinkTitle }}"
-                    >{{ .LinkTitle }}</a
-                  >
-                </li>
-              {{ end }}
-            </ul>
-          {{ end }}
-        </article>
-      </li>
-    {{ end -}}
-  </ol>
+                  class="taxonomy"
+                  title="See notes on {{ .LinkTitle }}"
+                >{{ .LinkTitle }}</a>
+              </li>
+            {{ end }}
+          </ul>
+        {{ end }}
+      </div>
+    </article>
+  {{ end }}
 </div>
