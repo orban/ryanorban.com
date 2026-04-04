@@ -49,6 +49,11 @@ enableRobotsTXT = true
     creativeCommonsLicense = "none"
     showThemeCredit = true
 
+  [params.plausible]
+    enable = true
+    host = "https://plausible.ryo.wtf"
+    domain = "ryanorban.com"
+
   [params.robotsTxt]
     blockAI = true
 

@@ -43,3 +43,8 @@
   {{ partial "head/math" . }}
 {{- end }}
 {{ partial "head/jsonld" . }}
+{{- with site.Params.plausible }}
+  {{- if .enable }}
+    <script defer data-domain="{{ .domain }}" src="{{ .host }}/js/script.js"></script>
+  {{- end }}
+{{- end }}
