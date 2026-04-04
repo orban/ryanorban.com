@@ -15,29 +15,23 @@ enableRobotsTXT = true
 
 [menus]
   [[menus.main]]
-    name = "About"
-    pageRef = "/about"
-    weight = 10
-  [[menus.main]]
-    name = "Posts"
+    name = "Writing"
     pageRef = "/posts"
-    weight = 20
+    weight = 10
   [[menus.main]]
     name = "Notes"
     pageRef = "/notes"
+    weight = 20
+  [[menus.main]]
+    name = "About"
+    pageRef = "/about"
     weight = 30
   [[menus.main]]
-    name = "Advising"
-    pageRef = "/advising"
+    name = "GitHub"
+    url = "https://github.com/orban"
     weight = 40
-  [[menus.main]]
-    name = "Office Hours"
-    pageRef = "/office-hours"
-    weight = 50
-  [[menus.main]]
-    name = "Graph"
-    pageRef = "/graph"
-    weight = 60
+    [menus.main.params]
+      external = true
 
 [params]
   dateFormat = ":date_long"
@@ -48,10 +42,8 @@ enableRobotsTXT = true
     email = "me@ryanorban.com"
 
   [params.home]
-    showRecentPosts = true
-    recentPostsLimit = 3
-    showRecentNotes = true
-    recentNotesLimit = 5
+    showRecentPosts = false
+    showRecentNotes = false
 
   [params.footer]
     creativeCommonsLicense = "none"

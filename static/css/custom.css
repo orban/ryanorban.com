@@ -42,11 +42,11 @@ header {
 }
 
 header a[href="/"] {
-  font-family: var(--font-display) !important;
-  font-weight: 400 !important;
-  font-size: 1.25rem !important;
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+  font-size: 1.1rem !important;
   color: var(--text) !important;
-  letter-spacing: -0.01em !important;
+  letter-spacing: -0.02em !important;
 }
 
 /* --- Nav --- */
@@ -70,12 +70,12 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text) !important;
 }
 
-/* Page titles — serif display font */
+/* Page titles */
 h1 {
-  font-family: var(--font-display) !important;
-  font-weight: 400 !important;
-  letter-spacing: -0.02em !important;
-  font-size: 2.25rem !important;
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+  font-size: 2rem !important;
   line-height: 1.2 !important;
 }
 
@@ -96,9 +96,9 @@ section > h2 {
 
 /* Article subheadings */
 article.main h2 {
-  font-family: var(--font-display) !important;
-  font-weight: 400 !important;
-  font-size: 1.65rem !important;
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+  font-size: 1.4rem !important;
   letter-spacing: -0.02em !important;
   text-transform: none !important;
   border-bottom: none !important;
@@ -365,21 +365,216 @@ article.main img.note-hero-img {
 }
 
 /* ==========================================================================
-   Homepage refinements
+   Homepage
    ========================================================================== */
 
 main {
   padding-bottom: 2rem !important;
 }
 
-/* Post list titles — serif for editorial feel */
+/* Hero lead paragraph */
+article.main > p:first-child {
+  font-size: 1.25rem !important;
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  color: var(--text) !important;
+  letter-spacing: -0.02em !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Hero body paragraph */
+article.main > p:nth-child(2) {
+  font-size: 0.95rem !important;
+  line-height: 1.65 !important;
+  color: var(--text-mid) !important;
+}
+
+/* Hero links row */
+.hero-links {
+  margin: 1.5rem 0 0.5rem 0 !important;
+  padding-top: 0.75rem !important;
+  border-top: 1px solid var(--border-light) !important;
+}
+
+.hero-links {
+  font-family: var(--font-mono) !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.02em !important;
+}
+
+.hero-links a {
+  color: var(--text-mid) !important;
+  text-decoration: none !important;
+  transition: color 0.15s ease !important;
+}
+
+.hero-links a:hover {
+  color: var(--accent) !important;
+}
+
+.hero-links .sep {
+  color: var(--border) !important;
+  margin: 0 0.5rem !important;
+}
+
+/* Hero subline */
+.hero-subline {
+  font-size: 0.78rem !important;
+  color: var(--text-muted) !important;
+  margin: 0.35rem 0 0 0 !important;
+  line-height: 1.5 !important;
+}
+
+/* Section headings on homepage — monospace labels */
+article.main > h3 {
+  font-family: var(--font-mono) !important;
+  font-size: 0.65rem !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.12em !important;
+  color: var(--text-muted) !important;
+  border-top: 1px solid var(--border) !important;
+  border-bottom: none !important;
+  padding-top: 2.5rem !important;
+  padding-bottom: 0 !important;
+  margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Focus section intro */
+article.main > h3#current-focus + p {
+  font-size: 0.9rem !important;
+  color: var(--text-mid) !important;
+  line-height: 1.6 !important;
+}
+
+/* Focus grid */
+.focus-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 0 !important;
+  margin-top: 1.25rem !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  background: var(--surface) !important;
+}
+
+.focus-block {
+  padding: 1.15rem 1.35rem !important;
+}
+
+.focus-block:nth-child(1) {
+  border-bottom: 1px solid var(--border-light) !important;
+  border-right: 1px solid var(--border-light) !important;
+}
+.focus-block:nth-child(2) {
+  border-bottom: 1px solid var(--border-light) !important;
+}
+.focus-block:nth-child(3) {
+  border-right: 1px solid var(--border-light) !important;
+}
+
+.focus-block h3,
+.focus-block h4 {
+  font-family: var(--font-body) !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  margin: 0 0 0.3rem 0 !important;
+  padding: 0 !important;
+  color: var(--text) !important;
+  text-transform: none !important;
+  letter-spacing: -0.01em !important;
+  border: none !important;
+}
+
+.focus-block p {
+  font-size: 0.78rem !important;
+  color: var(--text-mid) !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+}
+
+/* Work descriptor */
+.work-descriptor {
+  display: block !important;
+  font-size: 0.78rem !important;
+  color: var(--text-muted) !important;
+  font-family: var(--font-mono) !important;
+  margin-top: -0.15rem !important;
+  margin-bottom: 0.4rem !important;
+}
+
+/* Work item headings (### becomes h4) */
+article.main > h4 {
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  text-transform: none !important;
+  letter-spacing: -0.01em !important;
+  border: none !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.15rem !important;
+  padding-top: 1.25rem !important;
+  border-top: 1px solid var(--border-light) !important;
+}
+
+/* First work item after a section heading — no top border */
+article.main > h3 + h4,
+article.main > h3 + p + h4,
+article.main > h3 + .focus-grid + h4 {
+  border-top: none !important;
+  padding-top: 0 !important;
+}
+
+/* Work item body text — tighter */
+article.main > h4 ~ p:not(.hero-subline):not(.work-descriptor ~ p ~ p) {
+  font-size: 0.88rem !important;
+  line-height: 1.6 !important;
+}
+
+/* Post list titles */
 section > article h3,
 main > div > article h3 {
-  font-family: var(--font-display) !important;
-  font-weight: 400 !important;
-  font-size: 1.25rem !important;
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: 1.1rem !important;
   letter-spacing: -0.01em !important;
   line-height: 1.3 !important;
+}
+
+/* Bottom sections (Writing, Projects, About, Contact) — tighter */
+article.main > h3#writing ~ p,
+article.main > h3#projects-and-experiments ~ p,
+article.main > h3#about ~ p,
+article.main > h3#get-in-touch ~ p {
+  font-size: 0.88rem !important;
+  line-height: 1.6 !important;
+  color: var(--text-mid) !important;
+}
+
+/* Project list items */
+article.main > h3#projects-and-experiments ~ ul li,
+article.main > h3#writing ~ ul li {
+  font-size: 0.85rem !important;
+  line-height: 1.5 !important;
+}
+
+@media (max-width: 640px) {
+  .focus-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .focus-block:nth-child(1),
+  .focus-block:nth-child(2),
+  .focus-block:nth-child(3) {
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-light) !important;
+  }
+
+  article.main > p:first-child {
+    font-size: 1.15rem !important;
+  }
 }
 
 /* ==========================================================================
