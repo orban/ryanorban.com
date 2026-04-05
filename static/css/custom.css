@@ -300,6 +300,17 @@ article.main img.note-hero-img {
   margin-bottom: 1.5rem !important;
 }
 
+/* --- Dense inline charts --- */
+.chart-scroll {
+  margin: 1.5rem 0 !important;
+}
+
+.chart-scroll > svg {
+  display: block !important;
+  margin: 0 !important;
+  height: auto !important;
+}
+
 /* ==========================================================================
    Notes list — card layout
    ========================================================================== */
@@ -786,6 +797,34 @@ article.main > h3#writing ~ ul li {
   .about-contact img {
     width: 96px !important;
     height: 96px !important;
+  }
+
+  .chart-scroll {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 0.35rem !important;
+  }
+
+  .chart-scroll > svg {
+    max-width: none !important;
+  }
+
+  .chart-scroll--wide > svg {
+    width: 840px !important;
+  }
+
+  .chart-scroll--xwide > svg {
+    width: 1040px !important;
+  }
+
+  .chart-scroll::after {
+    content: "Scroll to view full chart";
+    display: block;
+    margin-top: 0.45rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.01em;
   }
 }
 
