@@ -32,12 +32,13 @@
 {{- range .AlternativeOutputFormats -}}
   <link rel="{{ .Rel }}" type="{{ .MediaType.Type }}" href="{{ .Permalink | safeURL }}" />
 {{- end }}
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preload" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 {{ partialCached "head/css" . }}
-<link rel="stylesheet" href="/css/custom.css?v={{ now.Unix }}" />
+{{- with resources.FromString "css/custom-inline.css" (readFile "static/css/custom.css") -}}
+  {{- with . | minify -}}
+    <style>{{ .Content | safeCSS }}</style>
+  {{- end -}}
+{{- end }}
 {{ partialCached "head/js" . }}
 {{- if or .Params.math site.Params.math }}
   {{ partial "head/math" . }}
