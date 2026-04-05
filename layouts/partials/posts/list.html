@@ -1,0 +1,26 @@
+<div class="not-prose posts-list">
+  <ol>
+    {{- range . }}
+      {{- $excerpt := .Description | default (.Summary | plainify | htmlUnescape | chomp) -}}
+      {{- if not $excerpt -}}
+        {{- $excerpt = .Plain | plainify | htmlUnescape | chomp -}}
+      {{- end -}}
+      <li class="post-card">
+        <article>
+          <header>
+            <h3 class="post-card-title">
+              <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+            </h3>
+            {{- $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" -}}
+            {{- $dateHuman := .Date | time.Format (default ":date_long" .Site.Params.dateFormat) -}}
+            <time datetime="{{ $dateMachine }}">{{ $dateHuman }}</time>
+          </header>
+
+          {{- with $excerpt }}
+            <p class="post-card-desc">{{ . | truncate 220 }}</p>
+          {{- end }}
+        </article>
+      </li>
+    {{- end }}
+  </ol>
+</div>

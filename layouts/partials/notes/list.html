@@ -23,7 +23,7 @@
         {{- end }}
         {{ with .Page.GetTerms "categories" }}
           <ul class="note-card-tags">
-            {{ range . }}
+            {{ range first 4 . }}
               <li>
                 <a
                   href="{{ .RelPermalink }}"
