@@ -7,11 +7,6 @@ I build infrastructure for production AI systems.
 
 I work on the layer around the model: agent runtimes, evaluation, retrieval, distributed systems, and security. My background spans software engineering, machine learning, technical leadership, and company building.
 
-<div class="hero-links">
-<a href="/posts/">Writing</a><span class="sep">/</span><a href="/notes/">Notes</a><span class="sep">/</span><a href="https://github.com/orban">GitHub</a><span class="sep">/</span><a href="https://www.linkedin.com/in/ryanorban">LinkedIn</a><span class="sep">/</span><a href="mailto:me@ryanorban.com">Email</a>
-</div>
-<p class="hero-subline">Former CTO at Galvanize and Tribe AI. Co-founder of Zipfian Academy. Founder of Cadea.</p>
-
 ## Current focus
 
 Right now I am focused on the execution layer around modern AI systems: the runtime, data, evaluation, and control infrastructure that makes large models usable in real applications.
