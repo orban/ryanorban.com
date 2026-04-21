@@ -51,7 +51,7 @@ enableRobotsTXT = true
 
   [params.plausible]
     enable = true
-    host = "https://plausible.ryo.wtf"
+    host = "https://plausible.srv.ryo.wtf"
     domain = "ryanorban.com"
 
   [params.robotsTxt]
