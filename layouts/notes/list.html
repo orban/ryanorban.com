@@ -1,0 +1,363 @@
+{{ define "main" }}
+  {{ $pages := .Pages }}
+  {{ $total := len $pages }}
+
+  {{/* Display-name overrides sourced from data/categories.yaml.
+       Slugs not listed fall back to title-case of the humanized slug. */}}
+  {{ $displayOverrides := site.Data.categories.display }}
+
+  {{/* Build category list from site.Taxonomies, counting only notes */}}
+  {{ $allCats := slice }}
+  {{ range $slug, $tax := site.Taxonomies.categories }}
+    {{ $n := 0 }}
+    {{ range $tax.Pages }}
+      {{ if eq .Section "notes" }}{{ $n = add $n 1 }}{{ end }}
+    {{ end }}
+    {{ if gt $n 0 }}
+      {{ $display := index $displayOverrides $slug | default ($slug | humanize | title) }}
+      {{ $allCats = $allCats | append (dict "name" $display "slug" $slug "n" $n) }}
+    {{ end }}
+  {{ end }}
+  {{ $allCats = sort $allCats "n" "desc" }}
+  {{ $catCount := len $allCats }}
+
+  {{/* Slug → display map for per-card tag rendering */}}
+  {{ $displayBySlug := dict }}
+  {{ range $allCats }}
+    {{ $displayBySlug = merge $displayBySlug (dict .slug .name) }}
+  {{ end }}
+
+  {{/* Primary chip row: subjects with 3+ notes, capped at 14.
+       Everything else goes into the expandable overflow. */}}
+  {{ $primary := slice }}
+  {{ $tail := slice }}
+  {{ range $allCats }}
+    {{ if and (lt (len $primary) 14) (ge .n 3) }}
+      {{ $primary = $primary | append . }}
+    {{ else }}
+      {{ $tail = $tail | append . }}
+    {{ end }}
+  {{ end }}
+
+  {{/* Date range */}}
+  {{ $dates := slice }}
+  {{ range $pages }}{{ $dates = $dates | append .Date }}{{ end }}
+  {{ $dates = sort $dates }}
+  {{ $earliest := index $dates 0 }}
+  {{ $latest := index $dates (sub (len $dates) 1) }}
+
+  <section class="notes-index">
+    <header class="notes-masthead">
+      <h1 class="notes-masthead-title">
+        <span>Notes</span>
+        {{- with .OutputFormats.Get "rss" }}
+          <a
+            rel="alternate"
+            type="application/rss+xml"
+            href="{{ .RelPermalink }}"
+            title="Subscribe to the Notes RSS feed"
+            class="notes-masthead-rss"
+            aria-label="RSS feed"
+          >{{ partial "svg/rss.html" }}</a>
+        {{- end }}
+      </h1>
+      <p class="notes-masthead-meta">
+        <span data-count-total>{{ $total }}</span> entries
+        <span class="notes-masthead-sep">·</span>
+        {{ $earliest.Format "Jan 2006" | upper }} → {{ $latest.Format "Jan 2006" | upper }}
+        <span class="notes-masthead-sep">·</span>
+        {{ $catCount }} subjects
+      </p>
+      <p class="notes-masthead-lede">
+        An index of what's caught my attention — tools, papers, essays, rabbit holes.
+      </p>
+    </header>
+
+    {{ .Content }}
+
+    <div class="notes-toolbar" data-notes-toolbar>
+      <div class="notes-toolbar-row">
+        <label class="notes-search" aria-label="Search notes">
+          <svg class="notes-search-icon" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="7" cy="7" r="5"/>
+            <line x1="10.5" y1="10.5" x2="14" y2="14" stroke-linecap="round"/>
+          </svg>
+          <input
+            type="search"
+            class="notes-search-input"
+            placeholder="Search titles, descriptions, subjects…"
+            autocomplete="off"
+            spellcheck="false"
+            data-notes-search
+          />
+          <kbd class="notes-search-kbd">/</kbd>
+        </label>
+        <div class="notes-counter" data-notes-counter>
+          <span data-count-shown>{{ $total }}</span>
+          <span class="notes-counter-sep">of</span>
+          <span>{{ $total }}</span>
+        </div>
+      </div>
+
+      <div class="notes-chips" data-notes-chips>
+        {{ range $primary }}
+          <button
+            type="button"
+            class="notes-chip"
+            data-notes-chip="{{ .slug }}"
+            aria-pressed="false"
+          >
+            <span class="notes-chip-name">{{ .name }}</span>
+            <span class="notes-chip-count">{{ .n }}</span>
+          </button>
+        {{ end }}
+        {{ if gt (len $tail) 0 }}
+          <button type="button" class="notes-chip notes-chip-more" data-notes-chip-more>
+            + {{ len $tail }} more
+          </button>
+          <div class="notes-chips-overflow" data-notes-chips-overflow hidden>
+            {{ range $tail }}
+              <button
+                type="button"
+                class="notes-chip"
+                data-notes-chip="{{ .slug }}"
+                aria-pressed="false"
+              >
+                <span class="notes-chip-name">{{ .name }}</span>
+                <span class="notes-chip-count">{{ .n }}</span>
+              </button>
+            {{ end }}
+          </div>
+        {{ end }}
+      </div>
+    </div>
+
+    <div class="notes-empty" data-notes-empty hidden>
+      <p class="notes-empty-line">Nothing in the index matches <span data-notes-empty-query></span>.</p>
+      <button type="button" class="notes-empty-clear" data-notes-clear>Clear filters</button>
+    </div>
+
+    {{/* Year groups — notes are sorted newest-first via Hugo's default ordering */}}
+    <div class="notes-stream" data-notes-stream>
+      {{ $currentYear := "" }}
+      {{ range $pages }}
+        {{ $y := .Date.Format "2006" }}
+        {{ if ne $y $currentYear }}
+          {{ if ne $currentYear "" }}</div></section>{{ end }}
+          {{ $currentYear = $y }}
+          <section class="notes-year-group" data-notes-year="{{ $y }}">
+            <header class="notes-year-header">
+              <span class="notes-year-num">{{ $y }}</span>
+              <span class="notes-year-rule" aria-hidden="true"></span>
+              <span class="notes-year-count" data-notes-year-count>—</span>
+            </header>
+            <div class="notes-year-body">
+        {{ end }}
+        {{ $slug := .File.ContentBaseName }}
+        {{ $imgPath := printf "images/notes/%s.png" $slug }}
+        {{ $hasImg := fileExists (printf "static/%s" $imgPath) }}
+        {{ $catSlugs := slice }}
+        {{ $catDisplays := slice }}
+        {{ range .GetTerms "categories" }}
+          {{ $s := .LinkTitle | urlize }}
+          {{ $catSlugs = $catSlugs | append $s }}
+          {{ $catDisplays = $catDisplays | append (index $displayBySlug $s | default (.LinkTitle)) }}
+        {{ end }}
+        {{ $catsAttr := delimit $catSlugs " " }}
+        {{ $catSpaced := replace $catsAttr "-" " " }}
+        {{ $searchBlob := lower (printf "%s %s %s %s %s" .Title (or .Description "") $catsAttr $catSpaced (delimit $catDisplays " ")) }}
+        <article
+          class="note-card"
+          data-note
+          data-note-title="{{ .Title }}"
+          data-note-search="{{ $searchBlob }}"
+          data-note-cats="{{ $catsAttr }}"
+          data-note-year="{{ $y }}"
+          data-note-date="{{ .Date.Format "2006-01-02" }}"
+        >
+          {{- if $hasImg }}
+            <a href="{{ .RelPermalink }}" class="note-card-thumb-link" tabindex="-1" aria-hidden="true">
+              <img src="/{{ $imgPath }}" alt="" class="note-card-thumb" loading="lazy" />
+            </a>
+          {{- end }}
+          <div class="note-card-body">
+            <div class="note-card-row">
+              <h3 class="note-card-title">
+                <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+              </h3>
+              <time class="note-card-date" datetime="{{ .Date.Format "2006-01-02" }}">
+                {{ .Date.Format "Jan 2" }}
+              </time>
+            </div>
+            {{- with .Description }}
+              <p class="note-card-desc">{{ . }}</p>
+            {{- end }}
+            {{ with .GetTerms "categories" }}
+              <ul class="note-card-tags">
+                {{ range first 4 . }}
+                  {{ $s := .LinkTitle | urlize }}
+                  {{ $label := index $displayBySlug $s | default .LinkTitle }}
+                  <li>
+                    <a
+                      href="{{ .RelPermalink }}"
+                      class="taxonomy"
+                      title="See notes on {{ $label }}"
+                    >{{ $label }}</a>
+                  </li>
+                {{ end }}
+              </ul>
+            {{ end }}
+          </div>
+        </article>
+      {{ end }}
+      {{ if ne $currentYear "" }}</div></section>{{ end }}
+    </div>
+  </section>
+
+  <script>
+    (function() {
+      const root = document.querySelector('[data-notes-stream]');
+      if (!root) return;
+      const searchInput = document.querySelector('[data-notes-search]');
+      const chipsEl = document.querySelector('[data-notes-chips]');
+      const chipMoreBtn = document.querySelector('[data-notes-chip-more]');
+      const chipsOverflow = document.querySelector('[data-notes-chips-overflow]');
+      const shownEl = document.querySelector('[data-count-shown]');
+      const emptyEl = document.querySelector('[data-notes-empty]');
+      const emptyQueryEl = document.querySelector('[data-notes-empty-query]');
+      const clearBtn = document.querySelector('[data-notes-clear]');
+      const yearGroups = document.querySelectorAll('[data-notes-year]');
+      const cards = document.querySelectorAll('[data-note]');
+
+      const state = { q: '', cats: new Set() };
+
+      // Chip expand/collapse
+      if (chipMoreBtn && chipsOverflow) {
+        chipMoreBtn.addEventListener('click', () => {
+          const shown = chipsOverflow.hasAttribute('hidden') ? false : true;
+          if (shown) {
+            chipsOverflow.setAttribute('hidden', '');
+            chipMoreBtn.textContent = '+ ' + chipsOverflow.children.length + ' more';
+          } else {
+            chipsOverflow.removeAttribute('hidden');
+            chipMoreBtn.textContent = 'Show less';
+          }
+        });
+      }
+
+      function applyFilter() {
+        const q = state.q.trim().toLowerCase();
+        const cats = state.cats;
+        let shown = 0;
+        const perYear = {};
+        cards.forEach(card => {
+          const title = card.getAttribute('data-note-search') || '';
+          const cardCats = (card.getAttribute('data-note-cats') || '').split(' ');
+          const matchesQuery = !q || title.includes(q);
+          let matchesCats = true;
+          if (cats.size) {
+            for (const c of cats) { if (!cardCats.includes(c)) { matchesCats = false; break; } }
+          }
+          const visible = matchesQuery && matchesCats;
+          card.toggleAttribute('hidden', !visible);
+          if (visible) {
+            shown++;
+            const y = card.getAttribute('data-note-year');
+            perYear[y] = (perYear[y] || 0) + 1;
+          }
+        });
+        yearGroups.forEach(g => {
+          const y = g.getAttribute('data-notes-year');
+          const n = perYear[y] || 0;
+          g.toggleAttribute('hidden', n === 0);
+          const countEl = g.querySelector('[data-notes-year-count]');
+          if (countEl) countEl.textContent = n + (n === 1 ? ' note' : ' notes');
+        });
+        if (shownEl) shownEl.textContent = shown;
+        if (emptyEl) {
+          emptyEl.toggleAttribute('hidden', shown !== 0);
+          if (shown === 0 && emptyQueryEl) {
+            emptyQueryEl.textContent = q ? '“' + q + '”' : 'those filters';
+          }
+        }
+      }
+
+      function setQuery(v) { state.q = v; syncUrl(); applyFilter(); }
+      function toggleCat(slug, btn) {
+        if (state.cats.has(slug)) { state.cats.delete(slug); }
+        else { state.cats.add(slug); }
+        document.querySelectorAll('[data-notes-chip="' + slug + '"]').forEach(b => {
+          b.setAttribute('aria-pressed', state.cats.has(slug) ? 'true' : 'false');
+        });
+        syncUrl(); applyFilter();
+      }
+      function clearAll() {
+        state.q = '';
+        state.cats.clear();
+        if (searchInput) searchInput.value = '';
+        document.querySelectorAll('.notes-chip[aria-pressed="true"]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+        syncUrl(); applyFilter();
+      }
+      function syncUrl() {
+        const params = new URLSearchParams();
+        if (state.q) params.set('q', state.q);
+        if (state.cats.size) params.set('c', Array.from(state.cats).join(','));
+        const qs = params.toString();
+        const url = location.pathname + (qs ? '?' + qs : '');
+        history.replaceState(null, '', url);
+      }
+      function hydrateFromUrl() {
+        const params = new URLSearchParams(location.search);
+        const q = params.get('q') || '';
+        const c = params.get('c');
+        if (q) {
+          state.q = q;
+          if (searchInput) searchInput.value = q;
+        }
+        if (c) {
+          c.split(',').filter(Boolean).forEach(slug => {
+            state.cats.add(slug);
+            document.querySelectorAll('[data-notes-chip="' + slug + '"]').forEach(b => b.setAttribute('aria-pressed', 'true'));
+          });
+        }
+      }
+
+      // Debounced search
+      let t;
+      if (searchInput) {
+        searchInput.addEventListener('input', e => {
+          clearTimeout(t);
+          t = setTimeout(() => setQuery(e.target.value), 60);
+        });
+        searchInput.addEventListener('keydown', e => {
+          if (e.key === 'Escape') { searchInput.value = ''; setQuery(''); searchInput.blur(); }
+        });
+      }
+
+      // Chip clicks (event delegation covers main + overflow)
+      if (chipsEl) {
+        chipsEl.addEventListener('click', e => {
+          const btn = e.target.closest('.notes-chip:not(.notes-chip-more)');
+          if (!btn) return;
+          const slug = btn.getAttribute('data-notes-chip');
+          if (slug) toggleCat(slug, btn);
+        });
+      }
+
+      if (clearBtn) clearBtn.addEventListener('click', clearAll);
+
+      // Keyboard: '/' to focus search (unless typing in a field already)
+      document.addEventListener('keydown', e => {
+        if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          const tag = (document.activeElement && document.activeElement.tagName) || '';
+          if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+          e.preventDefault();
+          if (searchInput) searchInput.focus();
+        }
+      });
+
+      hydrateFromUrl();
+      applyFilter();
+    })();
+  </script>
+{{ end }}
