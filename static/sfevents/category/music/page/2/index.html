@@ -1,0 +1,2380 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#111827" name="theme-color"/>
+<title>Discover events · San Francisco events</title>
+<!-- Local-first UI: a public deployment should compile/self-host Tailwind and add SRI to third-party assets. -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+        :root {
+            --ink: #121722;
+            --muted: #5d6573;
+            --paper: #f4f1e9;
+            --panel: #fffdf8;
+            --line: #ded9cd;
+            --cobalt: #2f55e7;
+            --cobalt-dark: #1f3db8;
+            --orange: #f05a2a;
+            --navy: #111827;
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 8% 0%, rgba(240, 90, 42, 0.08), transparent 28rem),
+                var(--paper);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        ::selection { background: #cbd7ff; color: var(--ink); }
+        .display-face { font-family: Georgia, "Times New Roman", serif; letter-spacing: -0.035em; }
+        .skip-link {
+            position: fixed;
+            left: 1rem;
+            top: -5rem;
+            z-index: 100;
+            border-radius: 0.5rem;
+            background: white;
+            padding: 0.75rem 1rem;
+            color: var(--ink);
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+        }
+        .skip-link:focus { top: 1rem; }
+        .focus-ring:focus-visible,
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 3px solid rgba(47, 85, 231, 0.35);
+            outline-offset: 3px;
+        }
+        .site-header {
+            background: rgba(17, 24, 39, 0.96);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .nav-link {
+            display: inline-flex;
+            min-height: 2.5rem;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 999px;
+            padding: 0.5rem 0.9rem;
+            color: #cbd5e1;
+            font-size: 0.875rem;
+            font-weight: 700;
+            transition: 150ms ease;
+        }
+        .nav-link:hover { color: white; background: rgba(255, 255, 255, 0.08); }
+        .nav-link[aria-current="page"] { color: var(--ink); background: white; }
+        .filter-shell {
+            border: 1px solid rgba(18, 23, 34, 0.1);
+            background: rgba(255, 253, 248, 0.92);
+            box-shadow: 0 18px 60px rgba(30, 36, 50, 0.08);
+            backdrop-filter: blur(16px);
+        }
+        .field-control {
+            width: 100%;
+            min-height: 3rem;
+            border: 1px solid #cfc9bc;
+            border-radius: 0.75rem;
+            background: white;
+            color: var(--ink);
+            padding: 0.7rem 0.9rem;
+            font-size: 0.9375rem;
+            transition: border-color 150ms ease, box-shadow 150ms ease;
+        }
+        .field-control:hover { border-color: #aaa397; }
+        .field-control:focus {
+            border-color: var(--cobalt);
+            box-shadow: 0 0 0 4px rgba(47, 85, 231, 0.1);
+            outline: none;
+        }
+        .event-card {
+            border: 1px solid rgba(18, 23, 34, 0.1);
+            background: var(--panel);
+            box-shadow: 0 2px 0 rgba(18, 23, 34, 0.04);
+            transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+        }
+        .event-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(47, 85, 231, 0.35);
+            box-shadow: 0 14px 34px rgba(30, 36, 50, 0.1);
+        }
+        .event-media {
+            background:
+                linear-gradient(135deg, rgba(47, 85, 231, 0.15), rgba(240, 90, 42, 0.12)),
+                #ece8de;
+        }
+        .date-divider::after {
+            content: "";
+            height: 1px;
+            flex: 1;
+            background: var(--line);
+        }
+        .badge {
+            display: inline-flex;
+            min-height: 1.75rem;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.3rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 750;
+            line-height: 1;
+        }
+        .badge-neutral { background: #eeece6; color: #434a55; }
+        .badge-free { background: #dff6e7; color: #176b3a; }
+        .badge-verified { background: #e7edff; color: #2446bf; }
+        .badge-cancelled { background: #fbe4de; color: #a32a12; }
+        .badge-postponed { background: #fdf0d8; color: #8a5a06; }
+        .button-primary {
+            display: inline-flex;
+            min-height: 2.75rem;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+            background: var(--cobalt);
+            padding: 0.65rem 1rem;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 800;
+            transition: 150ms ease;
+        }
+        .button-primary:hover { background: var(--cobalt-dark); transform: translateY(-1px); }
+        .button-secondary {
+            display: inline-flex;
+            min-height: 2.75rem;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            border-radius: 0.75rem;
+            background: white;
+            padding: 0.65rem 1rem;
+            color: var(--ink);
+            font-size: 0.875rem;
+            font-weight: 750;
+            transition: 150ms ease;
+        }
+        .button-secondary:hover { border-color: #aaa397; background: #faf8f3; }
+        .text-link { color: var(--cobalt); font-weight: 750; }
+        .text-link:hover { color: var(--cobalt-dark); text-decoration: underline; text-underline-offset: 3px; }
+        .htmx-request { opacity: 0.45; transition: opacity 180ms ease; }
+        .htmx-indicator { display: none; }
+        .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-flex; }
+        .fc { --fc-border-color: #ded9cd; --fc-button-bg-color: #2f55e7; --fc-button-border-color: #2f55e7; --fc-button-hover-bg-color: #1f3db8; --fc-button-hover-border-color: #1f3db8; }
+        .fc .fc-toolbar-title { font-family: Georgia, "Times New Roman", serif; font-size: 1.65rem; letter-spacing: -0.025em; }
+        .fc .fc-button { border-radius: 0.6rem; font-weight: 700; box-shadow: none; }
+        .fc-event { cursor: pointer; border-radius: 0.3rem; }
+        .fc-event:hover { opacity: 0.86; }
+
+        @media (max-width: 440px) {
+            .nav-link svg { display: none; }
+            .nav-link { padding-inline: 0.7rem; }
+        }
+        @media (max-width: 640px) {
+            .fc .fc-toolbar { align-items: flex-start; flex-direction: column; gap: 0.75rem; }
+            .fc .fc-toolbar-chunk:last-child { width: 100%; display: flex; }
+            .fc .fc-toolbar-chunk:last-child .fc-button-group { width: 100%; }
+            .fc .fc-toolbar-chunk:last-child .fc-button { flex: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen antialiased">
+<a class="skip-link" href="#main-content">Skip to events</a>
+<header class="site-header sticky top-0 z-50 text-white">
+<div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+<a aria-label="EventScout home" class="group flex items-center gap-3 rounded-lg" href="/sfevents/">
+<span class="grid h-10 w-10 place-items-center rounded-xl bg-[#f05a2a] text-sm font-black tracking-tight text-white shadow-lg shadow-orange-950/20">ES</span>
+<span>
+<span class="block text-lg font-black leading-none tracking-tight">EventScout</span>
+<span class="mt-1 hidden text-[0.68rem] font-bold uppercase tracking-[0.16em] text-slate-400 sm:block">San Francisco event index</span>
+</span>
+</a>
+<nav aria-label="Primary navigation" class="flex items-center gap-1">
+<a aria-current="page" class="nav-link" href="/sfevents/">
+<svg aria-hidden="true" class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                    Discover
+                </a>
+<a class="nav-link" href="/sfevents/calendar/">
+<svg aria-hidden="true" class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3M5 11h14M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                    Calendar
+                </a>
+</nav>
+</div>
+</header>
+<main class="mx-auto min-h-[calc(100vh-12rem)] max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8" id="main-content">
+<section class="mb-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
+<div>
+<p class="mb-3 text-xs font-black uppercase tracking-[0.22em] text-[#f05a2a]">San Francisco · live index</p>
+<h1 class="display-face max-w-4xl text-4xl font-bold leading-[0.98] text-[#121722] sm:text-5xl lg:text-6xl">
+            What’s happening in the city.
+        </h1>
+<p class="mt-4 max-w-2xl text-base leading-7 text-[#5d6573] sm:text-lg">
+            Public events from across San Francisco, merged into one list with duplicate listings collapsed.
+        </p>
+</div>
+<div class="flex items-baseline gap-3 border-l-4 border-[#f05a2a] pl-4 lg:block">
+<strong class="display-face text-4xl text-[#121722]">1600</strong>
+<span class="text-sm font-bold uppercase tracking-[0.12em] text-[#5d6573] lg:mt-1 lg:block">active events indexed</span>
+</div>
+</section>
+<section aria-labelledby="filter-heading" class="filter-shell mb-8 rounded-2xl p-4 lg:sticky lg:top-[4.9rem] lg:z-30">
+<div class="mb-3 flex items-center justify-between gap-4 lg:hidden">
+<h2 class="text-sm font-black uppercase tracking-[0.16em] text-[#5d6573]" id="filter-heading">Find events</h2>
+<a class="text-link text-sm" href="/sfevents/">Reset</a>
+</div>
+<form aria-label="Filter events" class="grid gap-3 md:grid-cols-[minmax(15rem,1fr)_12rem_14rem_auto] md:items-end" onsubmit="return false" role="search">
+<div>
+<label class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#5d6573]" for="event-search">Search</label>
+<div class="relative">
+<svg aria-hidden="true" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<input autocomplete="off" class="field-control pl-10" id="event-search" name="search" placeholder="Artist, venue, neighborhood…" type="search" value=""/>
+</div>
+</div>
+<div>
+<label class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#5d6573]" for="date-filter">When</label>
+<select class="field-control" id="date-filter" name="date">
+<option selected="" value="upcoming">Upcoming</option>
+<option value="today">Today</option>
+<option value="tomorrow">Tomorrow</option>
+<option value="week">Next 7 days</option>
+</select>
+</div>
+<div>
+<label class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#5d6573]" for="category-filter">Category</label>
+<select class="field-control" id="category-filter" name="category">
+<option value="">All categories</option>
+<option value="Arts">Arts</option>
+<option value="Arts Family">Arts Family</option>
+<option value="Comedy">Comedy</option>
+<option value="Community">Community</option>
+<option value="Dj Parties">Dj Parties</option>
+<option value="Education">Education</option>
+<option value="Experiences">Experiences</option>
+<option value="Film">Film</option>
+<option value="Food &amp; Drink">Food &amp; Drink</option>
+<option selected="" value="Music">Music</option>
+<option value="Outdoor Recreation">Outdoor Recreation</option>
+<option value="Shopping">Shopping</option>
+<option value="Sports &amp; Fitness">Sports &amp; Fitness</option>
+<option value="Theater">Theater</option>
+<option value="Theatre Performing Arts">Theatre Performing Arts</option>
+</select>
+</div>
+<div class="hidden md:block">
+<a class="button-secondary min-w-24" href="/sfevents/">Reset</a>
+</div>
+</form>
+<div class="htmx-indicator mt-3 items-center gap-2 text-sm font-semibold text-[#2f55e7]" id="filter-loading" role="status">
+<svg aria-hidden="true" class="h-4 w-4 animate-spin" fill="none" viewbox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4Z" fill="currentColor"></path></svg>
+        Updating events
+    </div>
+</section>
+<section aria-label="Event results">
+<div aria-busy="false" aria-live="polite" id="event-list">
+<div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+<div>
+<p class="text-xs font-black uppercase tracking-[0.18em] text-[#f05a2a]">Next up</p>
+<h2 class="display-face mt-1 text-3xl font-bold text-[#121722]">Events, soonest first</h2>
+</div>
+<p class="text-sm font-semibold text-[#5d6573]">
+        Showing 50 events
+    </p>
+</div>
+<div class="space-y-4">
+<div class="date-divider flex items-center gap-4 pt-4 first:pt-0">
+<h3 class="whitespace-nowrap text-sm font-black uppercase tracking-[0.13em] text-[#434a55]">
+                    
+                        Saturday
+                        <span class="font-semibold normal-case tracking-normal text-[#7a808b]">· August 08</span>
+</h3>
+</div>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Coffee &amp; Beats: Chris Sedaya, Luka K, Monoclick" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1440/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T11:00:00">
+                                
+                                11:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1440/">
+                                    Coffee &amp; Beats: Chris Sedaya, Luka K, Monoclick
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Hedge Coffee</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1440/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.instagram.com/p/DbWCLGTyQOd/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Live on Larkin: Free Street Fest 2026 (Tenderloin)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/42/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T12:00:00">
+                                
+                                12:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/42/">
+                                    Live on Larkin: Free Street Fest 2026 (Tenderloin)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/42/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/live-on-larkin-free-street-fest-2026-tenderloin/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Harry Potter and the Deathly Hallows Part 2 Live in Concert (August 8-9)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/43/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T13:00:00">
+                                
+                                1:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/43/">
+                                    Harry Potter and the Deathly Hallows Part 2 Live in Concert (August 8-9)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$80</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/43/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/harry-potter-and-the-deathly-hallows-part-2-in-concert-august-8-9/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for The Little Mermaid Sing-Along" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/171/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33457957/2ed9d74f-5b54-4b92-9e64-3f2c38c1252a.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T13:00:00">
+                                
+                                1:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/171/">
+                                    The Little Mermaid Sing-Along
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">The Castro</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Music</span>
+<span class="badge badge-verified">
+<svg aria-hidden="true" class="mr-1 h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0Z" fill-rule="evenodd"></path></svg>
+                                2 sources
+                            </span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/171/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/8/8/the-little-mermaid-sing-along-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for “San Francisco Mime Troupe” Live Summer Musical in the Park (2026)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/56/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T14:00:00">
+                                
+                                2:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/56/">
+                                    “San Francisco Mime Troupe” Live Summer Musical in the Park (2026)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/56/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/san-francisco-mime-troupe-live-summer-musical-in-the-park-2026-15/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for “Sketchboard”: Figure Drawing Art Class &amp; Live Music | SF" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/57/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T14:00:00">
+                                
+                                2:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/57/">
+                                    “Sketchboard”: Figure Drawing Art Class &amp; Live Music | SF
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Donation</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/57/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/sketchboard-figure-drawing-art-class-live-music-sf-105/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Jungle Cruise Boat Party: MF Mama, Lucy Stoner, Duchess &amp; Corrine, Cronique, A.N.T." class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1441/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T15:00:00">
+                                
+                                3:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1441/">
+                                    Jungle Cruise Boat Party: MF Mama, Lucy Stoner, Duchess &amp; Corrine, Cronique, A.N.T.
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Fisherman's Wharf</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$108.25</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1441/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://rhythmicremedies.org/events" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Melodies Of Love" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1795/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T15:00:00">
+                                
+                                3:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1795/">
+                                    Melodies Of Love
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">El Rio</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$12.51</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1795/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.eventbrite.com/e/melodies-of-love-disco-house-italo-daytime-patio-party-at-el-rio-tickets-1992792323484" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Dmc Usa Finals 2026 - San Francisco: J.Rocc, Illmind" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1442/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T16:00:00">
+                                
+                                4:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1442/">
+                                    Dmc Usa Finals 2026 - San Francisco: J.Rocc, Illmind
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">The Midway</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$49</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1442/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.tixr.com/groups/midwaysf/events/dmc-usa-finals-2026-san-francisco-188791" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Meghan Trainor" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/167/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/28585785/ebe3d6f0-7966-4b60-8a30-9e117d1250cf.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T18:30:00">
+                                
+                                6:30 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/167/">
+                                    Meghan Trainor
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Chase Center</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/167/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/8/8/meghan-trainor-the-get-in-girl-tour-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for AXIAL TILT - AN ALL-STAR GRATEFUL DEAD CELEBRATION" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/166/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/32319946/dcbf7685-04e4-4ac5-b488-ef0f6f961547.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T20:00:00">
+                                
+                                8:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/166/">
+                                    AXIAL TILT - AN ALL-STAR GRATEFUL DEAD CELEBRATION
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Great American Music Hall</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/166/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/8/8/axial-tilt-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Corinne Bailey Rae" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/170/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/30428936/6df7cc28-1815-40cb-bf81-eb2adeb1c940.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T20:00:00">
+                                
+                                8:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/170/">
+                                    Corinne Bailey Rae
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">The Fillmore</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Music</span>
+<span class="badge badge-verified">
+<svg aria-hidden="true" class="mr-1 h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0Z" fill-rule="evenodd"></path></svg>
+                                2 sources
+                            </span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/170/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/8/8/like-a-star-celebrating-20-years-of-corinne-bailey-rae-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Max Luv, Ecto, Uni Yasmin" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1443/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:00:00">
+                                
+                                9:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1443/">
+                                    Max Luv, Ecto, Uni Yasmin
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Mothership</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1443/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://ra.co/events/2499424" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Parkside Boogie: OSL After Party" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1444/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:00:00">
+                                
+                                9:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1444/">
+                                    Parkside Boogie: OSL After Party
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Chug Pub</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1444/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://posh.vip/e/parkside-boogie-osl-after-party?t=chugclub" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Energee Mode: 222, Reedemit, Charl3s" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1445/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:00:00">
+                                
+                                9:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1445/">
+                                    Energee Mode: 222, Reedemit, Charl3s
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">XEX Club</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$5</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1445/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://partiful.com/e/flzhVAW1jGIoRpHAVndR" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Incubator: Discnogirl, DJ Audit, erika, jmo corleone, Lonald J. Bandz" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1446/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:00:00">
+                                
+                                9:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1446/">
+                                    Incubator: Discnogirl, DJ Audit, erika, jmo corleone, Lonald J. Bandz
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Underground</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$11.50-$20</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1446/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://ra.co/events/2488388" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Summer Disco Ball" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1447/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:00:00">
+                                
+                                9:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1447/">
+                                    Summer Disco Ball
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Cat Club</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$12</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1447/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.eventbrite.com/e/summer-disco-ball-tickets-1995182042197" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Vini Vici" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1448/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:00:00">
+                                
+                                9:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1448/">
+                                    Vini Vici
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">The Midway</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$31</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1448/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://tixr.com/e/194353" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Secret Psychedelica: Leo 2026 - Ghreg on Earth, Barcellos, A Living Earth, Krissh, Michael Liu, MC Enhale, Treeko, Rayne, Sneakerz, Ergot, 1Becoming11" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1449/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:00:00">
+                                
+                                9:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1449/">
+                                    Secret Psychedelica: Leo 2026 - Ghreg on Earth, Barcellos, A Living Earth, Krissh, Michael Liu, MC Enhale, Treeko, Rayne, Sneakerz, Ergot, 1Becoming11
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">DNA Lounge</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$10-$18</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1449/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.dnalounge.com/calendar/2026/08-08d.html" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Outside Lands Saturday w/ Night Tales, Yanzy, Ancarco, 888 Thieves, Irona, Dantz" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1450/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:00:00">
+                                
+                                9:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1450/">
+                                    Outside Lands Saturday w/ Night Tales, Yanzy, Ancarco, 888 Thieves, Irona, Dantz
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Madarae</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$14.64-$1200</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1450/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.eventbrite.com/e/outside-lands-saturday-w-special-guest-dj-at-madarae-tickets-1995803062686" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Care Bears Rave: Ketamine Princess, Zerowishes, Ultraviolet, Gizmo, Alleyeowl, Radioesoterica" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1451/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:00:00">
+                                
+                                9:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1451/">
+                                    Care Bears Rave: Ketamine Princess, Zerowishes, Ultraviolet, Gizmo, Alleyeowl, Radioesoterica
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">TBA</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$10</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1451/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.instagram.com/p/DaWOeC7Ep2L/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Parkside Boogie: Osl Free After Party" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1609/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:00:00">
+                                
+                                9:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1609/">
+                                    Parkside Boogie: Osl Free After Party
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Chug Pub</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1609/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://posh.vip/f/c85b8?t=19hz" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Ky Newman b2b Drew Phillips, DJ Hoes Mad b2b DJ Woe" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1791/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/zahdmQfzidpMFzYNsuQxXokjAG8=/290x130/top/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F35%2F157726351213802598_orig.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:00:00">
+                                
+                                9:00 PM
+                                –3:00 AM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1791/">
+                                    Ky Newman b2b Drew Phillips, DJ Hoes Mad b2b DJ Woe
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Public Works</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$37</span>
+<span class="badge badge-neutral">Music</span>
+<span class="badge badge-verified">
+<svg aria-hidden="true" class="mr-1 h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0Z" fill-rule="evenodd"></path></svg>
+                                2 sources
+                            </span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1791/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://tixr.com/groups/publicsf/kydrew" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Goldie Boutilier" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/168/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/32896299/1c551f5c-f205-4030-bdf2-fca17895b45c.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:30:00">
+                                
+                                9:30 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/168/">
+                                    Goldie Boutilier
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">The Independent</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/168/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/8/8/goldie-boutilier-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Sports" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/176/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/32896501/df6ec97b-de7f-4ea6-9cc4-eb31282acece.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:30:00">
+                                
+                                9:30 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/176/">
+                                    Sports
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Rickshaw Stop</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Music</span>
+<span class="badge badge-verified">
+<svg aria-hidden="true" class="mr-1 h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0Z" fill-rule="evenodd"></path></svg>
+                                2 sources
+                            </span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/176/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/8/8/sports-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Broken Hill" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/741/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/KTN94GjEkeELYcf1O8oZB0hQagM=/290x130/center/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F05%2F15767905vid2087607370_orig.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:30:00">
+                                
+                                9:30 PM
+                                –2:00 AM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/741/">
+                                    Broken Hill
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Audio</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$10</span>
+<span class="badge badge-neutral">Music</span>
+<span class="badge badge-verified">
+<svg aria-hidden="true" class="mr-1 h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0Z" fill-rule="evenodd"></path></svg>
+                                2 sources
+                            </span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/741/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://ra.co/events/2497251" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Goth Meets Techno: Miss Crafty, Chapas, Xtcemi, Xilenyia" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/743/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/HqyOxaZN5Bm1vd-ZzUZNTb71OEA=/290x130/top/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F72%2F15772572449515652_orig.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T21:30:00">
+                                
+                                9:30 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/743/">
+                                    Goth Meets Techno: Miss Crafty, Chapas, Xtcemi, Xilenyia
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">DNA Lounge</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$10-$15</span>
+<span class="badge badge-neutral">Music</span>
+<span class="badge badge-verified">
+<svg aria-hidden="true" class="mr-1 h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0Z" fill-rule="evenodd"></path></svg>
+                                2 sources
+                            </span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/743/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.dnalounge.com/calendar/2026/08-08.html" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Camoufly - Outside Lands Night Show!" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/169/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/32896530/ecfe35db-d73e-401c-a32f-e92c560a9a35.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T22:00:00">
+                                
+                                10:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/169/">
+                                    Camoufly - Outside Lands Night Show!
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">The Great Northern</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$35</span>
+<span class="badge badge-neutral">Music</span>
+<span class="badge badge-verified">
+<svg aria-hidden="true" class="mr-1 h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0Z" fill-rule="evenodd"></path></svg>
+                                3 sources
+                            </span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/169/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.ticketmaster.com/camoufly-outside-lands-night-show-san-francisco-california-08-08-2026/event/1C0064D2EBD581A2" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for PURA Saturdays" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/177/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33503103/7ef6a01e-20c3-4270-9094-723112d01248.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T22:00:00">
+                                
+                                10:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/177/">
+                                    PURA Saturdays
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">1015 Folsom</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/177/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/8/8/pura-saturdays-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Mostly Cloudy: Dina + Queenie" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/180/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T22:00:00">
+                                
+                                10:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/180/">
+                                    Mostly Cloudy: Dina + Queenie
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Monarch</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$9.60-$14.70</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/180/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://ra.co/events/2481173" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Tres Mortimer, Nile, Miami Pete" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/735/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/4uXT_yhPw9N3eKGEfmmb8BoTUEI=/290x130/center/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F36%2F15772636vid376872539_orig.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T22:00:00">
+                                
+                                10:00 PM
+                                –2:00 AM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/735/">
+                                    Tres Mortimer, Nile, Miami Pete
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Halcyon</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$12</span>
+<span class="badge badge-neutral">Music</span>
+<span class="badge badge-verified">
+<svg aria-hidden="true" class="mr-1 h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0Z" fill-rule="evenodd"></path></svg>
+                                2 sources
+                            </span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/735/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dice.fm/event/8eq262-tres-mortimer-8th-aug-halcyon-sf-san-francisco-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for DJ CHEF DRE at LVL55" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/740/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T22:00:00">
+                                
+                                10:00 PM
+                                –2:00 AM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/740/">
+                                    DJ CHEF DRE at LVL55
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Temple SF</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/740/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.sfstation.com/dj-chef-dre-at-lvl55-e15772590" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Euphoria: An Edm Tribute Party w/ Mikey Tan" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/742/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T22:00:00">
+                                
+                                10:00 PM
+                                –2:00 AM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/742/">
+                                    Euphoria: An Edm Tribute Party w/ Mikey Tan
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Temple</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+<span class="badge badge-verified">
+<svg aria-hidden="true" class="mr-1 h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0Z" fill-rule="evenodd"></path></svg>
+                                2 sources
+                            </span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/742/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.tixr.com/e/195070" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for After Lands" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1452/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T22:00:00">
+                                
+                                10:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1452/">
+                                    After Lands
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Paname</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1452/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://mutuals.events/share/plan/620" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for SUB-TERRANEAN: Fluorescent Grey, Fractal Drip, D-Syn, OCHCY, lor322" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1453/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T22:00:00">
+                                
+                                10:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1453/">
+                                    SUB-TERRANEAN: Fluorescent Grey, Fractal Drip, D-Syn, OCHCY, lor322
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">TBA</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$10</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1453/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.instagram.com/p/DbRbRlfkmSe/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Outside Lands After Party: Kbun, Hunna, Corbin Mason, Jonny Kachow, Rhythm N Sound" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1454/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T22:00:00">
+                                
+                                10:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1454/">
+                                    Outside Lands After Party: Kbun, Hunna, Corbin Mason, Jonny Kachow, Rhythm N Sound
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Club Waziema</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1454/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://partiful.com/e/HwQP2qSDaXtlosqtF9Pz?" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Yerba: Matias Aguayo, Eichef" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1455/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T22:00:00">
+                                
+                                10:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1455/">
+                                    Yerba: Matias Aguayo, Eichef
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Yerba Buena Estudios</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$27.95-$44.75</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1455/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://ra.co/events/2491263" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Dad Aug - Marceauxmarceaux" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1786/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T22:00:00">
+                                
+                                10:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1786/">
+                                    Dad Aug - Marceauxmarceaux
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">F8 1192 Folsom</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$12.51-$39.19</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1786/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.eventbrite.com/e/dad-aug-marceauxmarceaux-tickets-1994755546537" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Dark Matter: Minus Man, Cole Grey, Tom Axe" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1790/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T22:00:00">
+                                
+                                10:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1790/">
+                                    Dark Matter: Minus Man, Cole Grey, Tom Axe
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">TBA</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$15</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1790/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://partiful.com/e/wW06O46E5UOaXzQYfr6i" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Hawthorn Feat. Mackswell + Lightmotif, Lucci, Hamilton Wu" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1793/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-08T22:00:00">
+                                
+                                10:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1793/">
+                                    Hawthorn Feat. Mackswell + Lightmotif, Lucci, Hamilton Wu
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Hawthorn</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1793/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.eventbrite.com/e/hawthorn-feat-mackswell-lightmotif-lucci-hamilton-wu-tickets-1996317473302" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<div class="date-divider flex items-center gap-4 pt-4 first:pt-0">
+<h3 class="whitespace-nowrap text-sm font-black uppercase tracking-[0.13em] text-[#434a55]">
+                    
+                        Sunday
+                        <span class="font-semibold normal-case tracking-normal text-[#7a808b]">· August 09</span>
+</h3>
+</div>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Late Night Clubbing #065: Jake Bleu, Hawn" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1456/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-09T01:00:00">
+                                
+                                1:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1456/">
+                                    Late Night Clubbing #065: Jake Bleu, Hawn
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">TBA</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1456/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://posh.vip/e/nyx-late-night-clubbing-065-saturday-w-surprise-guest" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for SF’s “Inner Sunset Flea Market” 2026 w/ Sunset Mercantile (Every 2nd Sunday)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/60/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-09T10:00:00">
+                                
+                                10:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/60/">
+                                    SF’s “Inner Sunset Flea Market” 2026 w/ Sunset Mercantile (Every 2nd Sunday)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/60/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/sfs-inner-sunset-flea-market-2026-w-sunset-mercantile-every-2nd-sunday-4/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Inner Sunset Flea Market" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/64/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/XKnrx3tSdDdVIEN_wgGVm93yr-k=/290x130/top/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F65%2F1577206539508748_orig.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-09T10:00:00">
+                                
+                                10:00 AM
+                                –4:00 PM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/64/">
+                                    Inner Sunset Flea Market
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Irving Street - Inner Sunset</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+<span class="badge badge-verified">
+<svg aria-hidden="true" class="mr-1 h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0Z" fill-rule="evenodd"></path></svg>
+                                2 sources
+                            </span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/64/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/sunset-flea-market-3/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Pistahan 2026: SF’s Filipino Cultural Festival &amp; Parade (Aug. 8-9)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/66/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-09T11:00:00">
+                                
+                                11:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/66/">
+                                    Pistahan 2026: SF’s Filipino Cultural Festival &amp; Parade (Aug. 8-9)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/66/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/pistahan-2026-sfs-filipino-cultural-festival-parade-aug-8-9-2/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Coffee &amp; Beats: Cimarron, DJ S2, Good Question, Monet Mike" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1457/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-09T11:00:00">
+                                
+                                11:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1457/">
+                                    Coffee &amp; Beats: Cimarron, DJ S2, Good Question, Monet Mike
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Hedge Coffee</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1457/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.instagram.com/p/DbWCLGTyQOd/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Patti LaBelle" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/181/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/31346772/4c0a995a-8671-4fe7-9ddb-3185a95f2c99.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-09T12:00:00">
+                                
+                                12:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/181/">
+                                    Patti LaBelle
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Stern Grove</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/181/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/8/9/patti-labelle-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Harry Potter and the Deathly Hallows Part 2 Live in Concert (August 8-9)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/62/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-09T13:00:00">
+                                
+                                1:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/62/">
+                                    Harry Potter and the Deathly Hallows Part 2 Live in Concert (August 8-9)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$80</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/62/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/harry-potter-and-the-deathly-hallows-part-2-live-in-concert-august-8-9/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Golden Gate Park Band’s Symphony in the Park: Music for Kids" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/69/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-09T13:00:00">
+                                
+                                1:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/69/">
+                                    Golden Gate Park Band’s Symphony in the Park: Music for Kids
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/69/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/golden-gate-park-bands-symphony-in-the-park-music-for-kids/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for A League of Their Own, in 35mm" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/184/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33457956/d530b227-343c-49a2-8083-ba4e2f1bd81d.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-09T13:00:00">
+                                
+                                1:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/184/">
+                                    A League of Their Own, in 35mm
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">The Castro</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Music</span>
+<span class="badge badge-verified">
+<svg aria-hidden="true" class="mr-1 h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0Z" fill-rule="evenodd"></path></svg>
+                                2 sources
+                            </span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/184/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/8/9/a-league-of-their-own-in-35mm-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for GOLDEN GATE PARK BAND" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/763/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/ty0Hz9dL3oXXLgWQYMCw8vXjuek=/290x130/top/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F14%2F2479514505418326_orig.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-09T13:00:00">
+                                
+                                1:00 PM
+                                –2:30 PM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/763/">
+                                    GOLDEN GATE PARK BAND
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Golden Gate Park</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Music</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/763/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.sfstation.com/golden-gate-park-band-e2479514" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+</div>
+<nav aria-label="Event result pages" class="mt-8 flex items-center justify-between gap-4 border-t border-[#ded9cd] pt-6">
+<div>
+<a class="button-secondary" href="/sfevents/category/music/">
+            ← Previous
+        </a>
+</div>
+<span class="text-sm font-black uppercase tracking-[0.12em] text-[#5d6573]">Page 2</span>
+<div>
+<a class="button-primary" href="/sfevents/category/music/page/3/">
+            Next 50 →
+        </a>
+</div>
+</nav>
+</div>
+</section>
+</main>
+<footer class="mt-12 border-t border-slate-300/70 bg-[#111827] py-8 text-slate-300">
+<div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+<p class="font-semibold text-white">EventScout</p>
+<p>Multiple sources. One cleaner San Francisco calendar.</p>
+<p class="text-xs">Snapshot updated Aug 06, 2026 16:56 UTC</p></div>
+</footer>
+<script>window.__ES_STATIC__ = {"root": "/sfevents/", "datePaths": {"upcoming": "/sfevents/", "today": "/sfevents/today/", "tomorrow": "/sfevents/tomorrow/", "week": "/sfevents/week/"}, "categoryPaths": {"": "/sfevents/", "Arts": "/sfevents/category/arts/", "Arts Family": "/sfevents/category/arts-family/", "Comedy": "/sfevents/category/comedy/", "Community": "/sfevents/category/community/", "Dj Parties": "/sfevents/category/dj-parties/", "Education": "/sfevents/category/education/", "Experiences": "/sfevents/category/experiences/", "Film": "/sfevents/category/film/", "Food & Drink": "/sfevents/category/food-drink/", "Music": "/sfevents/category/music/", "Outdoor Recreation": "/sfevents/category/outdoor-recreation/", "Shopping": "/sfevents/category/shopping/", "Sports & Fitness": "/sfevents/category/sports-fitness/", "Theater": "/sfevents/category/theater/", "Theatre Performing Arts": "/sfevents/category/theatre-performing-arts/"}, "searchIndex": "/sfevents/api/search-index.json", "searchCap": 100};</script><script>
+(function () {
+  var cfg = window.__ES_STATIC__ || {};
+  var dateSelect = document.getElementById('date-filter');
+  if (dateSelect) dateSelect.addEventListener('change', function () {
+    window.location.href = (cfg.datePaths || {})[this.value] || cfg.root;
+  });
+  var catSelect = document.getElementById('category-filter');
+  if (catSelect) catSelect.addEventListener('change', function () {
+    window.location.href = (cfg.categoryPaths || {})[this.value] || cfg.root;
+  });
+  var input = document.getElementById('event-search');
+  var list = document.getElementById('event-list');
+  if (!input || !list) return;
+  var original = list.innerHTML;
+  var index = null;
+  var pending = null;
+  function card(entry) {
+    var article = document.createElement('article');
+    article.className = 'event-card overflow-hidden rounded-2xl';
+    var pad = document.createElement('div');
+    pad.className = 'p-5';
+    var when = document.createElement('time');
+    when.className = 'block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]';
+    when.textContent = entry.when;
+    var heading = document.createElement('h4');
+    heading.className = 'mt-1 text-lg font-black leading-snug text-[#121722]';
+    var link = document.createElement('a');
+    link.href = entry.href;
+    link.className = 'hover:text-[#2f55e7] hover:underline hover:underline-offset-4';
+    link.textContent = entry.title;
+    heading.appendChild(link);
+    var meta = document.createElement('p');
+    meta.className = 'mt-1 text-sm text-[#5d6573]';
+    meta.textContent = [entry.venue, entry.category, entry.price]
+      .filter(Boolean).join(' \u00b7 ');
+    pad.appendChild(when); pad.appendChild(heading); pad.appendChild(meta);
+    if (entry.status && entry.status !== 'scheduled') {
+      var badge = document.createElement('span');
+      badge.className = 'badge badge-' + entry.status;
+      badge.textContent = entry.status;
+      var badgeRow = document.createElement('p');
+      badgeRow.className = 'mt-2';
+      badgeRow.appendChild(badge);
+      pad.appendChild(badgeRow);
+    }
+    article.appendChild(pad);
+    return article;
+  }
+  function render(query) {
+    var tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!tokens.length) { list.innerHTML = original; return; }
+    var matches = index.filter(function (entry) {
+      var haystack = [entry.title, entry.venue, entry.category]
+        .filter(Boolean).join(' ').toLowerCase();
+      return tokens.every(function (token) { return haystack.indexOf(token) !== -1; });
+    });
+    list.textContent = '';
+    var count = document.createElement('p');
+    count.className = 'mb-5 text-sm font-semibold text-[#5d6573]';
+    var shown = Math.min(matches.length, cfg.searchCap);
+    count.textContent = matches.length
+      ? 'Showing ' + shown + ' of ' + matches.length + ' matching events'
+      : 'No matching events \u2014 try a broader search.';
+    list.appendChild(count);
+    var stack = document.createElement('div');
+    stack.className = 'space-y-4';
+    matches.slice(0, cfg.searchCap).forEach(function (entry) { stack.appendChild(card(entry)); });
+    list.appendChild(stack);
+  }
+  input.addEventListener('input', function () {
+    var query = this.value;
+    clearTimeout(pending);
+    pending = setTimeout(function () {
+      if (index) { render(query); return; }
+      fetch(cfg.searchIndex).then(function (resp) { return resp.json(); }).then(function (data) {
+        index = data;
+        render(query);
+      });
+    }, 250);
+  });
+})();
+</script></body>
+</html>
