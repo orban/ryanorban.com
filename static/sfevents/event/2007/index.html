@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#111827" name="theme-color"/>
+<title>North American Scum, Meikee Magnetic - Lcd Soundsystem Vs Daft Punk Dance Party · San Francisco events</title>
+<!-- Local-first UI: a public deployment should compile/self-host Tailwind and add SRI to third-party assets. -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+        :root {
+            --ink: #121722;
+            --muted: #5d6573;
+            --paper: #f4f1e9;
+            --panel: #fffdf8;
+            --line: #ded9cd;
+            --cobalt: #2f55e7;
+            --cobalt-dark: #1f3db8;
+            --orange: #f05a2a;
+            --navy: #111827;
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 8% 0%, rgba(240, 90, 42, 0.08), transparent 28rem),
+                var(--paper);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        ::selection { background: #cbd7ff; color: var(--ink); }
+        .display-face { font-family: Georgia, "Times New Roman", serif; letter-spacing: -0.035em; }
+        .skip-link {
+            position: fixed;
+            left: 1rem;
+            top: -5rem;
+            z-index: 100;
+            border-radius: 0.5rem;
+            background: white;
+            padding: 0.75rem 1rem;
+            color: var(--ink);
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+        }
+        .skip-link:focus { top: 1rem; }
+        .focus-ring:focus-visible,
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 3px solid rgba(47, 85, 231, 0.35);
+            outline-offset: 3px;
+        }
+        .site-header {
+            background: rgba(17, 24, 39, 0.96);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .nav-link {
+            display: inline-flex;
+            min-height: 2.5rem;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 999px;
+            padding: 0.5rem 0.9rem;
+            color: #cbd5e1;
+            font-size: 0.875rem;
+            font-weight: 700;
+            transition: 150ms ease;
+        }
+        .nav-link:hover { color: white; background: rgba(255, 255, 255, 0.08); }
+        .nav-link[aria-current="page"] { color: var(--ink); background: white; }
+        .filter-shell {
+            border: 1px solid rgba(18, 23, 34, 0.1);
+            background: rgba(255, 253, 248, 0.92);
+            box-shadow: 0 18px 60px rgba(30, 36, 50, 0.08);
+            backdrop-filter: blur(16px);
+        }
+        .field-control {
+            width: 100%;
+            min-height: 3rem;
+            border: 1px solid #cfc9bc;
+            border-radius: 0.75rem;
+            background: white;
+            color: var(--ink);
+            padding: 0.7rem 0.9rem;
+            font-size: 0.9375rem;
+            transition: border-color 150ms ease, box-shadow 150ms ease;
+        }
+        .field-control:hover { border-color: #aaa397; }
+        .field-control:focus {
+            border-color: var(--cobalt);
+            box-shadow: 0 0 0 4px rgba(47, 85, 231, 0.1);
+            outline: none;
+        }
+        .event-card {
+            border: 1px solid rgba(18, 23, 34, 0.1);
+            background: var(--panel);
+            box-shadow: 0 2px 0 rgba(18, 23, 34, 0.04);
+            transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+        }
+        .event-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(47, 85, 231, 0.35);
+            box-shadow: 0 14px 34px rgba(30, 36, 50, 0.1);
+        }
+        .event-media {
+            background:
+                linear-gradient(135deg, rgba(47, 85, 231, 0.15), rgba(240, 90, 42, 0.12)),
+                #ece8de;
+        }
+        .date-divider::after {
+            content: "";
+            height: 1px;
+            flex: 1;
+            background: var(--line);
+        }
+        .badge {
+            display: inline-flex;
+            min-height: 1.75rem;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.3rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 750;
+            line-height: 1;
+        }
+        .badge-neutral { background: #eeece6; color: #434a55; }
+        .badge-free { background: #dff6e7; color: #176b3a; }
+        .badge-verified { background: #e7edff; color: #2446bf; }
+        .badge-cancelled { background: #fbe4de; color: #a32a12; }
+        .badge-postponed { background: #fdf0d8; color: #8a5a06; }
+        .button-primary {
+            display: inline-flex;
+            min-height: 2.75rem;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+            background: var(--cobalt);
+            padding: 0.65rem 1rem;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 800;
+            transition: 150ms ease;
+        }
+        .button-primary:hover { background: var(--cobalt-dark); transform: translateY(-1px); }
+        .button-secondary {
+            display: inline-flex;
+            min-height: 2.75rem;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            border-radius: 0.75rem;
+            background: white;
+            padding: 0.65rem 1rem;
+            color: var(--ink);
+            font-size: 0.875rem;
+            font-weight: 750;
+            transition: 150ms ease;
+        }
+        .button-secondary:hover { border-color: #aaa397; background: #faf8f3; }
+        .text-link { color: var(--cobalt); font-weight: 750; }
+        .text-link:hover { color: var(--cobalt-dark); text-decoration: underline; text-underline-offset: 3px; }
+        .htmx-request { opacity: 0.45; transition: opacity 180ms ease; }
+        .htmx-indicator { display: none; }
+        .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-flex; }
+        .fc { --fc-border-color: #ded9cd; --fc-button-bg-color: #2f55e7; --fc-button-border-color: #2f55e7; --fc-button-hover-bg-color: #1f3db8; --fc-button-hover-border-color: #1f3db8; }
+        .fc .fc-toolbar-title { font-family: Georgia, "Times New Roman", serif; font-size: 1.65rem; letter-spacing: -0.025em; }
+        .fc .fc-button { border-radius: 0.6rem; font-weight: 700; box-shadow: none; }
+        .fc-event { cursor: pointer; border-radius: 0.3rem; }
+        .fc-event:hover { opacity: 0.86; }
+
+        @media (max-width: 440px) {
+            .nav-link svg { display: none; }
+            .nav-link { padding-inline: 0.7rem; }
+        }
+        @media (max-width: 640px) {
+            .fc .fc-toolbar { align-items: flex-start; flex-direction: column; gap: 0.75rem; }
+            .fc .fc-toolbar-chunk:last-child { width: 100%; display: flex; }
+            .fc .fc-toolbar-chunk:last-child .fc-button-group { width: 100%; }
+            .fc .fc-toolbar-chunk:last-child .fc-button { flex: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen antialiased">
+<a class="skip-link" href="#main-content">Skip to events</a>
+<header class="site-header sticky top-0 z-50 text-white">
+<div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+<a aria-label="EventScout home" class="group flex items-center gap-3 rounded-lg" href="/sfevents/">
+<span class="grid h-10 w-10 place-items-center rounded-xl bg-[#f05a2a] text-sm font-black tracking-tight text-white shadow-lg shadow-orange-950/20">ES</span>
+<span>
+<span class="block text-lg font-black leading-none tracking-tight">EventScout</span>
+<span class="mt-1 hidden text-[0.68rem] font-bold uppercase tracking-[0.16em] text-slate-400 sm:block">San Francisco event index</span>
+</span>
+</a>
+<nav aria-label="Primary navigation" class="flex items-center gap-1">
+<a class="nav-link" href="/sfevents/">
+<svg aria-hidden="true" class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                    Discover
+                </a>
+<a class="nav-link" href="/sfevents/calendar/">
+<svg aria-hidden="true" class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3M5 11h14M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                    Calendar
+                </a>
+</nav>
+</div>
+</header>
+<main class="mx-auto min-h-[calc(100vh-12rem)] max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8" id="main-content">
+<a class="mb-6 inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-bold text-[#5d6573] hover:text-[#121722]" href="/sfevents/">
+<svg aria-hidden="true" class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="m15 19-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+    Back to discovery
+</a>
+<article>
+<header class="grid overflow-hidden rounded-3xl border border-[#ded9cd] bg-[#fffdf8] shadow-sm lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.8fr)]">
+<div class="p-6 sm:p-9 lg:p-12">
+<p class="mb-4 text-xs font-black uppercase tracking-[0.2em] text-[#f05a2a]">San Francisco event</p>
+<h1 class="display-face text-4xl font-bold leading-[1.02] text-[#121722] sm:text-5xl">North American Scum, Meikee Magnetic - Lcd Soundsystem Vs Daft Punk Dance Party</h1>
+<div class="mt-6 flex flex-wrap gap-2">
+<span class="badge badge-neutral">$15</span>
+<span class="badge badge-neutral">Music</span>
+<span class="badge badge-verified">Verified by 2 sources</span>
+</div>
+</div>
+<div class="event-media relative min-h-64 lg:min-h-full">
+<img alt="" class="absolute inset-0 h-full w-full object-cover" onerror="this.style.display='none'" src="https://t.sfstation.com/buRaIAthVDBTLRO1ohpYCN76Z5c=/290x130/center/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F07%2F15771407vid5306832_orig.jpg"/>
+</div>
+</header>
+<div class="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+<div class="space-y-8">
+<section aria-labelledby="about-heading" class="rounded-2xl border border-[#ded9cd] bg-[#fffdf8] p-6 sm:p-8">
+<p class="mb-2 text-xs font-black uppercase tracking-[0.16em] text-[#f05a2a]">About</p>
+<h2 class="display-face text-3xl font-bold text-[#121722]" id="about-heading">About this event</h2>
+<p class="mt-5 whitespace-pre-wrap text-base leading-7 text-[#434a55]">Genre: french house, electro house, synthpop Organizer: Nascum</p>
+</section>
+<section aria-labelledby="sources-heading" class="rounded-2xl border border-[#ded9cd] bg-[#fffdf8] p-6 sm:p-8">
+<div class="flex flex-wrap items-end justify-between gap-3">
+<div>
+<p class="mb-2 text-xs font-black uppercase tracking-[0.16em] text-[#f05a2a]">Provenance</p>
+<h2 class="display-face text-3xl font-bold text-[#121722]" id="sources-heading">Source listings</h2>
+</div>
+<span class="text-sm font-semibold text-[#5d6573]">2 listings</span>
+</div>
+<p class="mt-3 max-w-2xl text-sm leading-6 text-[#5d6573]">These are the original listings merged into this event.</p>
+<div class="mt-5 divide-y divide-[#e7e2d8] border-y border-[#e7e2d8]">
+<a class="group flex min-h-16 items-center justify-between gap-4 py-4" href="https://wl.eventim.us/event/lcd-soundsystem-vs-daft-punk-night/694083?afflky=RickshawStop" rel="noopener noreferrer" target="_blank">
+<span>
+<strong class="block text-sm text-[#121722] group-hover:text-[#2f55e7]">19Hz</strong>
+<span class="mt-1 block text-xs text-[#7a808b]">Last observed Aug 07, 2026</span>
+</span>
+<span aria-hidden="true" class="text-lg text-[#2f55e7]">↗</span>
+</a>
+<a class="group flex min-h-16 items-center justify-between gap-4 py-4" href="https://www.sfstation.com/lcd-soundsystem-vs-daft-punk-dance-party-e15771407" rel="noopener noreferrer" target="_blank">
+<span>
+<strong class="block text-sm text-[#121722] group-hover:text-[#2f55e7]">SF Station</strong>
+<span class="mt-1 block text-xs text-[#7a808b]">Last observed Aug 06, 2026</span>
+</span>
+<span aria-hidden="true" class="text-lg text-[#2f55e7]">↗</span>
+</a>
+</div>
+</section>
+</div>
+<aside aria-label="Event details" class="rounded-2xl border border-[#ded9cd] bg-[#fffdf8] p-6 shadow-sm lg:sticky lg:top-24">
+<h2 class="text-xs font-black uppercase tracking-[0.17em] text-[#7a808b]">Event details</h2>
+<dl class="mt-5 space-y-5">
+<div class="flex gap-3">
+<svg aria-hidden="true" class="mt-0.5 h-5 w-5 flex-none text-[#f05a2a]" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3M5 11h14M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<div>
+<dt class="text-xs font-black uppercase tracking-[0.1em] text-[#7a808b]">When</dt>
+<dd class="mt-1 font-bold leading-6 text-[#121722]">
+<time datetime="2026-08-21T20:00:00">Friday, August 21, 2026</time>
+</dd>
+<dd class="text-sm text-[#5d6573]">
+                            8:00 PM–2:00 AM
+                        </dd>
+</div>
+</div>
+<div class="flex gap-3">
+<svg aria-hidden="true" class="mt-0.5 h-5 w-5 flex-none text-[#f05a2a]" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<div>
+<dt class="text-xs font-black uppercase tracking-[0.1em] text-[#7a808b]">Where</dt>
+<dd class="mt-1 font-bold leading-6 text-[#121722]">Rickshaw Stop</dd>
+<dd class="mt-1 text-sm leading-5 text-[#5d6573]">155 Fell Street, San Francisco, CA</dd>
+</div>
+</div>
+</dl>
+<div class="mt-6 grid gap-2">
+<a class="button-primary" href="https://wl.eventim.us/event/lcd-soundsystem-vs-daft-punk-night/694083?afflky=RickshawStop" rel="noopener noreferrer" target="_blank">Open original listing ↗</a>
+<a class="button-secondary" href="https://www.google.com/maps/search/?api=1&amp;query=155%20Fell%20Street%2C%20San%20Francisco%2C%20CA" rel="noopener noreferrer" target="_blank">Get directions ↗</a>
+</div>
+<p class="mt-6 border-t border-[#e7e2d8] pt-4 text-xs leading-5 text-[#7a808b]">
+                Updated Aug 07, 2026
+            </p>
+</aside>
+</div>
+</article>
+</main>
+<footer class="mt-12 border-t border-slate-300/70 bg-[#111827] py-8 text-slate-300">
+<div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+<p class="font-semibold text-white">EventScout</p>
+<p>Multiple sources. One cleaner San Francisco calendar.</p>
+<p class="text-xs">Snapshot updated Aug 07, 2026 03:54 UTC</p></div>
+</footer>
+<script>window.__ES_STATIC__ = {"root": "/sfevents/", "datePaths": {"upcoming": "/sfevents/", "today": "/sfevents/today/", "tomorrow": "/sfevents/tomorrow/", "week": "/sfevents/week/"}, "categoryPaths": {"": "/sfevents/", "Arts": "/sfevents/category/arts/", "Arts Family": "/sfevents/category/arts-family/", "Comedy": "/sfevents/category/comedy/", "Community": "/sfevents/category/community/", "Dance": "/sfevents/category/dance/", "Dj Parties": "/sfevents/category/dj-parties/", "Education": "/sfevents/category/education/", "Experiences": "/sfevents/category/experiences/", "Film": "/sfevents/category/film/", "Food & Drink": "/sfevents/category/food-drink/", "Lgbtq": "/sfevents/category/lgbtq/", "Music": "/sfevents/category/music/", "Outdoor Recreation": "/sfevents/category/outdoor-recreation/", "Shopping": "/sfevents/category/shopping/", "Sports & Fitness": "/sfevents/category/sports-fitness/", "Theater": "/sfevents/category/theater/", "Theatre Performing Arts": "/sfevents/category/theatre-performing-arts/"}, "searchIndex": "/sfevents/api/search-index.json", "searchCap": 100};</script><script>
+(function () {
+  var cfg = window.__ES_STATIC__ || {};
+  var dateSelect = document.getElementById('date-filter');
+  if (dateSelect) dateSelect.addEventListener('change', function () {
+    window.location.href = (cfg.datePaths || {})[this.value] || cfg.root;
+  });
+  var catSelect = document.getElementById('category-filter');
+  if (catSelect) catSelect.addEventListener('change', function () {
+    window.location.href = (cfg.categoryPaths || {})[this.value] || cfg.root;
+  });
+  var input = document.getElementById('event-search');
+  var list = document.getElementById('event-list');
+  if (!input || !list) return;
+  var original = list.innerHTML;
+  var index = null;
+  var pending = null;
+  function card(entry) {
+    var article = document.createElement('article');
+    article.className = 'event-card overflow-hidden rounded-2xl';
+    var pad = document.createElement('div');
+    pad.className = 'p-5';
+    var when = document.createElement('time');
+    when.className = 'block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]';
+    when.textContent = entry.when;
+    var heading = document.createElement('h4');
+    heading.className = 'mt-1 text-lg font-black leading-snug text-[#121722]';
+    var link = document.createElement('a');
+    link.href = entry.href;
+    link.className = 'hover:text-[#2f55e7] hover:underline hover:underline-offset-4';
+    link.textContent = entry.title;
+    heading.appendChild(link);
+    var meta = document.createElement('p');
+    meta.className = 'mt-1 text-sm text-[#5d6573]';
+    meta.textContent = [entry.venue, entry.category, entry.price]
+      .filter(Boolean).join(' \u00b7 ');
+    pad.appendChild(when); pad.appendChild(heading); pad.appendChild(meta);
+    if (entry.status && entry.status !== 'scheduled') {
+      var badge = document.createElement('span');
+      badge.className = 'badge badge-' + entry.status;
+      badge.textContent = entry.status;
+      var badgeRow = document.createElement('p');
+      badgeRow.className = 'mt-2';
+      badgeRow.appendChild(badge);
+      pad.appendChild(badgeRow);
+    }
+    article.appendChild(pad);
+    return article;
+  }
+  function render(query) {
+    var tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!tokens.length) { list.innerHTML = original; return; }
+    var matches = index.filter(function (entry) {
+      var haystack = [entry.title, entry.venue, entry.category]
+        .filter(Boolean).join(' ').toLowerCase();
+      return tokens.every(function (token) { return haystack.indexOf(token) !== -1; });
+    });
+    list.textContent = '';
+    var count = document.createElement('p');
+    count.className = 'mb-5 text-sm font-semibold text-[#5d6573]';
+    var shown = Math.min(matches.length, cfg.searchCap);
+    count.textContent = matches.length
+      ? 'Showing ' + shown + ' of ' + matches.length + ' matching events'
+      : 'No matching events \u2014 try a broader search.';
+    list.appendChild(count);
+    var stack = document.createElement('div');
+    stack.className = 'space-y-4';
+    matches.slice(0, cfg.searchCap).forEach(function (entry) { stack.appendChild(card(entry)); });
+    list.appendChild(stack);
+  }
+  input.addEventListener('input', function () {
+    var query = this.value;
+    clearTimeout(pending);
+    pending = setTimeout(function () {
+      if (index) { render(query); return; }
+      fetch(cfg.searchIndex).then(function (resp) { return resp.json(); }).then(function (data) {
+        index = data;
+        render(query);
+      });
+    }, 250);
+  });
+})();
+</script></body>
+</html>
