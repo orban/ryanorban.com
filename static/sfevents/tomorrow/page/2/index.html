@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta content="#111827" name="theme-color"/>
-<title>Acid Tongue: The Farewell Show · San Francisco events</title>
+<title>Discover events · San Francisco events</title>
 <!-- Local-first UI: a public deployment should compile/self-host Tailwind and add SRI to third-party assets. -->
 <script src="https://cdn.tailwindcss.com"></script>
 
@@ -199,7 +199,7 @@
 </span>
 </a>
 <nav aria-label="Primary navigation" class="flex items-center gap-1">
-<a class="nav-link" href="/sfevents/">
+<a aria-current="page" class="nav-link" href="/sfevents/">
 <svg aria-hidden="true" class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
                     Discover
                 </a>
@@ -211,85 +211,233 @@
 </div>
 </header>
 <main class="mx-auto min-h-[calc(100vh-12rem)] max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8" id="main-content">
-<a class="mb-6 inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-bold text-[#5d6573] hover:text-[#121722]" href="/sfevents/">
-<svg aria-hidden="true" class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="m15 19-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-    Back to discovery
+<section class="mb-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
+<div>
+<p class="mb-3 text-xs font-black uppercase tracking-[0.22em] text-[#f05a2a]">San Francisco · live index</p>
+<h1 class="display-face max-w-4xl text-4xl font-bold leading-[0.98] text-[#121722] sm:text-5xl lg:text-6xl">
+            What’s happening in the city.
+        </h1>
+<p class="mt-4 max-w-2xl text-base leading-7 text-[#5d6573] sm:text-lg">
+            Public events from across San Francisco, merged into one list with duplicate listings collapsed.
+        </p>
+</div>
+<div class="flex items-baseline gap-3 border-l-4 border-[#f05a2a] pl-4 lg:block">
+<strong class="display-face text-4xl text-[#121722]">1229</strong>
+<span class="text-sm font-bold uppercase tracking-[0.12em] text-[#5d6573] lg:mt-1 lg:block">active events indexed</span>
+</div>
+</section>
+<section aria-labelledby="filter-heading" class="filter-shell mb-8 rounded-2xl p-4 lg:sticky lg:top-[4.9rem] lg:z-30">
+<div class="mb-3 flex items-center justify-between gap-4 lg:hidden">
+<h2 class="text-sm font-black uppercase tracking-[0.16em] text-[#5d6573]" id="filter-heading">Find events</h2>
+<a class="text-link text-sm" href="/sfevents/">Reset</a>
+</div>
+<form aria-label="Filter events" class="grid gap-3 md:grid-cols-[minmax(15rem,1fr)_12rem_14rem_auto] md:items-end" onsubmit="return false" role="search">
+<div>
+<label class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#5d6573]" for="event-search">Search</label>
+<div class="relative">
+<svg aria-hidden="true" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<input autocomplete="off" class="field-control pl-10" id="event-search" name="search" placeholder="Artist, venue, neighborhood…" type="search" value=""/>
+</div>
+</div>
+<div>
+<label class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#5d6573]" for="date-filter">When</label>
+<select class="field-control" id="date-filter" name="date">
+<option value="upcoming">Upcoming</option>
+<option value="today">Today</option>
+<option selected="" value="tomorrow">Tomorrow</option>
+<option value="week">Next 7 days</option>
+</select>
+</div>
+<div>
+<label class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#5d6573]" for="category-filter">Category</label>
+<select class="field-control" id="category-filter" name="category">
+<option value="">All categories</option>
+<option value="Arts">Arts</option>
+<option value="Arts Family">Arts Family</option>
+<option value="Comedy">Comedy</option>
+<option value="Community">Community</option>
+<option value="Dance">Dance</option>
+<option value="Dj Parties">Dj Parties</option>
+<option value="Education">Education</option>
+<option value="Experiences">Experiences</option>
+<option value="Film">Film</option>
+<option value="Food &amp; Drink">Food &amp; Drink</option>
+<option value="Music">Music</option>
+<option value="Outdoor Recreation">Outdoor Recreation</option>
+<option value="Shopping">Shopping</option>
+<option value="Sports &amp; Fitness">Sports &amp; Fitness</option>
+<option value="Theater">Theater</option>
+<option value="Theatre Performing Arts">Theatre Performing Arts</option>
+</select>
+</div>
+<div class="hidden md:block">
+<a class="button-secondary min-w-24" href="/sfevents/">Reset</a>
+</div>
+</form>
+<div class="htmx-indicator mt-3 items-center gap-2 text-sm font-semibold text-[#2f55e7]" id="filter-loading" role="status">
+<svg aria-hidden="true" class="h-4 w-4 animate-spin" fill="none" viewbox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4Z" fill="currentColor"></path></svg>
+        Updating events
+    </div>
+</section>
+<section aria-label="Event results">
+<div aria-busy="false" aria-live="polite" id="event-list">
+<div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+<div>
+<p class="text-xs font-black uppercase tracking-[0.18em] text-[#f05a2a]">Next up</p>
+<h2 class="display-face mt-1 text-3xl font-bold text-[#121722]">Events, soonest first</h2>
+</div>
+<p class="text-sm font-semibold text-[#5d6573]">
+        Showing 3 events
+    </p>
+</div>
+<div class="space-y-4">
+<div class="date-divider flex items-center gap-4 pt-4 first:pt-0">
+<h3 class="whitespace-nowrap text-sm font-black uppercase tracking-[0.13em] text-[#434a55]">
+                    
+                        Wednesday
+                        <span class="font-semibold normal-case tracking-normal text-[#7a808b]">· August 19</span>
+</h3>
+</div>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Franklin Jonas, The Byzantines" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/363/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/32052936/deba5c03-ba65-4419-bbfa-a94f7e9752a1.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">19</span>
+</span>
 </a>
-<article>
-<header class="grid overflow-hidden rounded-3xl border border-[#ded9cd] bg-[#fffdf8] shadow-sm lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.8fr)]">
-<div class="p-6 sm:p-9 lg:p-12">
-<p class="mb-4 text-xs font-black uppercase tracking-[0.2em] text-[#f05a2a]">San Francisco event</p>
-<h1 class="display-face text-4xl font-bold leading-[1.02] text-[#121722] sm:text-5xl">Acid Tongue: The Farewell Show</h1>
-<div class="mt-6 flex flex-wrap gap-2">
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-19T20:00:00">
+                                
+                                8:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/363/">
+                                    Franklin Jonas, The Byzantines
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Brick &amp; Mortar Music Hall</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
 <span class="badge badge-neutral">Music</span>
 </div>
 </div>
-<div class="event-media relative min-h-64 lg:min-h-full">
-<img alt="" class="absolute inset-0 h-full w-full object-cover" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33242575/12130ba7-98c7-4059-adb6-41e73393f81e.png"/>
-</div>
-</header>
-<div class="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
-<div class="space-y-8">
-<section aria-labelledby="sources-heading" class="rounded-2xl border border-[#ded9cd] bg-[#fffdf8] p-6 sm:p-8">
-<div class="flex flex-wrap items-end justify-between gap-3">
-<div>
-<p class="mb-2 text-xs font-black uppercase tracking-[0.16em] text-[#f05a2a]">Provenance</p>
-<h2 class="display-face text-3xl font-bold text-[#121722]" id="sources-heading">Source listings</h2>
-</div>
-<span class="text-sm font-semibold text-[#5d6573]">1 listing</span>
-</div>
-<p class="mt-3 max-w-2xl text-sm leading-6 text-[#5d6573]">These are the original listings merged into this event.</p>
-<div class="mt-5 divide-y divide-[#e7e2d8] border-y border-[#e7e2d8]">
-<a class="group flex min-h-16 items-center justify-between gap-4 py-4" href="https://dothebay.com/events/2026/9/11/acid-tongue-the-farewell-show-tickets" rel="noopener noreferrer" target="_blank">
-<span>
-<strong class="block text-sm text-[#121722] group-hover:text-[#2f55e7]">DoTheBay</strong>
-<span class="mt-1 block text-xs text-[#7a808b]">Last observed Aug 17, 2026</span>
-</span>
-<span aria-hidden="true" class="text-lg text-[#2f55e7]">↗</span>
-</a>
-</div>
-</section>
-</div>
-<aside aria-label="Event details" class="rounded-2xl border border-[#ded9cd] bg-[#fffdf8] p-6 shadow-sm lg:sticky lg:top-24">
-<h2 class="text-xs font-black uppercase tracking-[0.17em] text-[#7a808b]">Event details</h2>
-<dl class="mt-5 space-y-5">
-<div class="flex gap-3">
-<svg aria-hidden="true" class="mt-0.5 h-5 w-5 flex-none text-[#f05a2a]" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3M5 11h14M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-<div>
-<dt class="text-xs font-black uppercase tracking-[0.1em] text-[#7a808b]">When</dt>
-<dd class="mt-1 font-bold leading-6 text-[#121722]">
-<time datetime="2026-09-11T21:00:00">Friday, September 11, 2026</time>
-</dd>
-<dd class="text-sm text-[#5d6573]">
-                            9:00 PM
-                        </dd>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/363/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/8/19/franklin-jonas-the-byzantines-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
 </div>
 </div>
-<div class="flex gap-3">
-<svg aria-hidden="true" class="mt-0.5 h-5 w-5 flex-none text-[#f05a2a]" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
-<div>
-<dt class="text-xs font-black uppercase tracking-[0.1em] text-[#7a808b]">Where</dt>
-<dd class="mt-1 font-bold leading-6 text-[#121722]">The Chapel</dd>
-<dd class="mt-1 text-sm leading-5 text-[#5d6573]">777 Valencia Street, San Francisco, CA, 94110</dd>
-</div>
-</div>
-</dl>
-<div class="mt-6 grid gap-2">
-<a class="button-primary" href="https://dothebay.com/events/2026/9/11/acid-tongue-the-farewell-show-tickets" rel="noopener noreferrer" target="_blank">Open original listing ↗</a>
-<a class="button-secondary" href="https://www.google.com/maps/search/?api=1&amp;query=777%20Valencia%20Street%2C%20San%20Francisco%2C%20CA%2C%2094110" rel="noopener noreferrer" target="_blank">Get directions ↗</a>
-</div>
-<p class="mt-6 border-t border-[#e7e2d8] pt-4 text-xs leading-5 text-[#7a808b]">
-                Updated Aug 13, 2026
-            </p>
-</aside>
 </div>
 </article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Deb Never" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/364/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33261007/b097d352-2824-4979-8008-1981d9b2c821.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">19</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-19T20:00:00">
+                                
+                                8:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/364/">
+                                    Deb Never
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Rickshaw Stop</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Music</span>
+<span class="badge badge-verified">
+<svg aria-hidden="true" class="mr-1 h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0Z" fill-rule="evenodd"></path></svg>
+                                2 sources
+                            </span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/364/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/8/19/deb-never-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Out of this World Showcase" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1049/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/SD1D0_RCEQw6n9u7DcFlMRz8JYY=/290x130/top/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F05%2F15769905893279079_orig.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Aug</span>
+<span class="block text-xl font-black leading-none">19</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-08-19T20:00:00">
+                                
+                                8:00 PM
+                                –10:00 PM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1049/">
+                                    Out of this World Showcase
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Orbit Room</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1049/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.sfstation.com/out-of-this-world-showcase-e15769905" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+</div>
+<nav aria-label="Event result pages" class="mt-8 flex items-center justify-between gap-4 border-t border-[#ded9cd] pt-6">
+<div>
+<a class="button-secondary" href="/sfevents/tomorrow/">
+            ← Previous
+        </a>
+</div>
+<span class="text-sm font-black uppercase tracking-[0.12em] text-[#5d6573]">Page 2</span>
+<div>
+</div>
+</nav>
+</div>
+</section>
 </main>
 <footer class="mt-12 border-t border-slate-300/70 bg-[#111827] py-8 text-slate-300">
 <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
 <p class="font-semibold text-white">EventScout</p>
 <p>Multiple sources. One cleaner San Francisco calendar.</p>
-<p class="text-xs">Snapshot updated Aug 17, 2026 15:31 UTC</p></div>
+<p class="text-xs">Snapshot updated Aug 18, 2026 02:18 UTC</p></div>
 </footer>
 <script>window.__ES_STATIC__ = {"root": "/sfevents/", "datePaths": {"upcoming": "/sfevents/", "today": "/sfevents/today/", "tomorrow": "/sfevents/tomorrow/", "week": "/sfevents/week/"}, "categoryPaths": {"": "/sfevents/", "Arts": "/sfevents/category/arts/", "Arts Family": "/sfevents/category/arts-family/", "Comedy": "/sfevents/category/comedy/", "Community": "/sfevents/category/community/", "Dance": "/sfevents/category/dance/", "Dj Parties": "/sfevents/category/dj-parties/", "Education": "/sfevents/category/education/", "Experiences": "/sfevents/category/experiences/", "Film": "/sfevents/category/film/", "Food & Drink": "/sfevents/category/food-drink/", "Music": "/sfevents/category/music/", "Outdoor Recreation": "/sfevents/category/outdoor-recreation/", "Shopping": "/sfevents/category/shopping/", "Sports & Fitness": "/sfevents/category/sports-fitness/", "Theater": "/sfevents/category/theater/", "Theatre Performing Arts": "/sfevents/category/theatre-performing-arts/"}, "searchIndex": "/sfevents/api/search-index.json", "searchCap": 100};</script><script>
 (function () {
