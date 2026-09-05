@@ -49,13 +49,13 @@
   <section class="notes-index">
     <header class="notes-masthead">
       <h1 class="notes-masthead-title">
-        <span>Notes</span>
+        <span>{{ .Title }}</span>
         {{- with .OutputFormats.Get "rss" }}
           <a
             rel="alternate"
             type="application/rss+xml"
             href="{{ .RelPermalink }}"
-            title="Subscribe to the Notes RSS feed"
+            title="Subscribe to the Bookmarks RSS feed"
             class="notes-masthead-rss"
             aria-label="RSS feed"
           >{{ partial "svg/rss.html" }}</a>
