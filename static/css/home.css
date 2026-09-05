@@ -376,7 +376,7 @@ body.working-record-site {
   gap: 0.5rem;
   align-items: baseline;
   padding-top: 0.85rem;
-  border-top: 2px solid var(--record-ink);
+  border-top: 2px solid var(--record-accent);
   margin-top: -1px;
 }
 
@@ -821,10 +821,20 @@ body.working-record-site {
     gap: 0.75rem;
   }
 
+  .record-contact > div:not(.record-contact-rail) {
+    display: contents;
+  }
+
+  .record-contact h2 {
+    order: 1;
+  }
+
   .record-contact-rail {
     display: flex;
+    order: 2;
     align-items: center;
     gap: 0.9rem;
+    margin-top: 0.2rem;
   }
 
   .record-contact-rail img {
@@ -833,8 +843,20 @@ body.working-record-site {
   }
 
   .record-contact-rail .record-label {
-    order: 0;
     margin: 0;
+  }
+
+  .record-contact > div > p {
+    order: 3;
+  }
+
+  .record-contact-links {
+    order: 4;
+  }
+
+  .record-contact-email {
+    flex-basis: 100%;
+    text-align: center;
   }
 
   /* Single column: the rail labels sit after their heading, never above it. */
