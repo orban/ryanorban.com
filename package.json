@@ -7,7 +7,10 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "scripts/build.sh",
+    "validate": "python3 scripts/validate_site.py --public public --url-manifest scripts/baselines/public-urls.txt",
+    "validate:live": "python3 scripts/validate_live.py --base-url https://ryanorban.com --url-manifest scripts/baselines/public-urls.txt",
+    "test": "scripts/build.sh"
   },
   "repository": {
     "type": "git",
@@ -23,5 +26,6 @@
   "homepage": "https://github.com/orban/ryanorban.com#readme",
   "dependencies": {
     "vis-network": "^10.0.2"
-  }
+  },
+  "private": true
 }
