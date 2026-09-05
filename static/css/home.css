@@ -1,0 +1,787 @@
+/* Homepage stylesheet. Inlined only on the homepage by layouts/partials/head.html.
+   Scoped to .working-record-site / .record-*. scripts/audit_homepage.py enforces the
+   invariants: no specificity overrides, no parent selectors, no gradients, no shadows. */
+
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('/fonts/instrument-serif-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('/fonts/instrument-serif-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('/fonts/geist-variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Ground sampled from the approved comp (.impeccable/mocks/comp-c.webp). */
+  --record-bg: #f3efe6;
+  --record-paper: #faf8f2;
+  --record-ink: #1f241f;
+  --record-mid: #4d554c;
+  --record-muted: #5f675e;
+  --record-accent: #496b55;
+  --record-accent-dark: #34513e;
+  --record-accent-soft: #9bad90;
+  --record-line: #d9d5c8;
+  --record-line-dark: #b9b5a6;
+  --record-serif: 'Instrument Serif', Georgia, serif;
+  --record-sans: 'Geist Sans', 'Geist', system-ui, -apple-system, sans-serif;
+  --record-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body.working-record-site {
+  margin: 0;
+  background: var(--record-bg);
+  color: var(--record-ink);
+  font-family: var(--record-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.working-record-site ::selection {
+  background: var(--record-accent-soft);
+  color: var(--record-ink);
+}
+
+.working-record-site a {
+  color: inherit;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
+}
+
+.working-record-site a:hover {
+  color: var(--record-accent-dark);
+  text-decoration-color: currentColor;
+}
+
+.working-record-site img {
+  display: block;
+  max-width: 100%;
+}
+
+.working-record-site :focus-visible {
+  outline: 2px solid var(--record-accent-dark);
+  outline-offset: 3px;
+}
+
+.working-record-site time,
+.record-metrics dd,
+.record-trials {
+  font-variant-numeric: tabular-nums;
+}
+
+.record-skip {
+  position: fixed;
+  z-index: 20;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--record-ink);
+  color: #fff;
+  font-size: 0.8rem;
+  transform: translateY(-180%);
+}
+
+.record-skip:focus {
+  transform: translateY(0);
+}
+
+.record-site-header,
+.record-main,
+.record-site-footer {
+  width: min(100% - 3rem, 1180px);
+  margin-inline: auto;
+}
+
+.record-site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 1.5rem 0 1.25rem;
+  border-bottom: 1px solid var(--record-line);
+}
+
+.record-site-name {
+  font-family: var(--record-serif);
+  font-size: 1.45rem;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.record-nav {
+  display: flex;
+  gap: clamp(1rem, 2.5vw, 2rem);
+}
+
+.record-nav a {
+  color: var(--record-mid);
+  font-family: var(--record-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.record-main {
+  min-width: 0;
+}
+
+.working-record {
+  width: 100%;
+}
+
+/* --- Hero: portrait, name, proof ------------------------------------------- */
+
+.record-hero {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.82fr) minmax(0, 1fr) minmax(19rem, 0.92fr);
+  gap: clamp(2rem, 4.5vw, 4rem);
+  align-items: stretch;
+  padding: clamp(2.5rem, 5vw, 4rem) 0 clamp(2.25rem, 4vw, 3rem);
+}
+
+.record-label,
+.record-project-kind,
+.record-row-label,
+.record-byline,
+.record-trials-head,
+.record-trials-read dt,
+.record-writing-list time,
+.record-timeline {
+  margin: 0;
+  color: var(--record-muted);
+  font-family: var(--record-mono);
+  font-size: 0.67rem;
+  font-weight: 500;
+  letter-spacing: 0.075em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.record-portrait {
+  margin: 0;
+  min-width: 0;
+}
+
+.record-portrait img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4 / 5;
+  border: 1px solid var(--record-line-dark);
+  object-fit: cover;
+  object-position: center 28%;
+  filter: saturate(0.72) contrast(1.02);
+}
+
+.record-hero-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.record-hero h1 {
+  margin: 0;
+  font-family: var(--record-serif);
+  font-size: clamp(3.6rem, 6.6vw, 6rem);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 0.9;
+  text-wrap: balance;
+}
+
+.record-byline {
+  margin-top: 1rem;
+}
+
+.record-lede {
+  max-width: 24rem;
+  margin: 1.5rem 0 0;
+  color: var(--record-mid);
+  font-family: var(--record-serif);
+  font-size: clamp(1.45rem, 2.2vw, 1.85rem);
+  line-height: 1.18;
+  text-wrap: balance;
+}
+
+.record-arrow-link {
+  display: inline-block;
+  margin-top: 1.7rem;
+  color: var(--record-accent-dark);
+  font-family: var(--record-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* The proof: a seeded trial figure inside a hairline frame. */
+
+.record-trials {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 1.1rem 1.25rem 1rem;
+  border: 1px solid var(--record-line-dark);
+  background: var(--record-paper);
+}
+
+.record-trials-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--record-ink);
+}
+
+.record-trials-grid {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 0.3rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  line-height: 0;
+}
+
+.record-trials-grid span {
+  display: block;
+  aspect-ratio: 1;
+  border: 1px solid var(--record-line-dark);
+  background: var(--record-paper);
+  /* The one authored motion on the page: the runs fill in sequence, the cells
+     themselves visible from first paint. */
+  animation: record-trial-fill 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i) * 8ms);
+}
+
+.record-trials-grid .is-pass {
+  --record-trial-final: var(--record-accent-soft);
+  --record-trial-final-line: var(--record-accent-soft);
+}
+
+.record-trials-grid .is-fail {
+  --record-trial-final: var(--record-ink);
+  --record-trial-final-line: var(--record-ink);
+}
+
+@keyframes record-trial-fill {
+  from {
+    background: var(--record-paper);
+    border-color: var(--record-line-dark);
+  }
+  to {
+    background: var(--record-trial-final);
+    border-color: var(--record-trial-final-line);
+  }
+}
+
+.record-trials-read {
+  display: grid;
+  gap: 0.55rem;
+  margin: 1.15rem 0 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--record-line);
+}
+
+.record-trials-read div {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
+.record-trials-read dd {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
+.record-trials-naive {
+  color: var(--record-muted);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+.record-trials-verdict {
+  font-weight: 600;
+}
+
+.record-trials-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 1rem 0 0;
+  color: var(--record-muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.record-trials-foot a {
+  align-self: flex-start;
+  color: var(--record-accent-dark);
+}
+
+/* --- Timeline strip closing the fold ---------------------------------------- */
+
+.record-timeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--record-line-dark);
+  border-bottom: 1px solid var(--record-line);
+  list-style: none;
+}
+
+.record-timeline li {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.record-timeline li span {
+  color: var(--record-ink);
+}
+
+/* --- Sections ----------------------------------------------------------------- */
+
+.record-section {
+  padding: clamp(4rem, 8vw, 6.75rem) 0;
+  border-bottom: 1px solid var(--record-line);
+  scroll-margin-top: 1.5rem;
+}
+
+.record-section-header {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 2rem;
+  align-items: baseline;
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+}
+
+.record-section h2,
+.record-contact h2 {
+  max-width: 20ch;
+  margin: 0;
+  font-family: var(--record-serif);
+  font-size: clamp(2.5rem, 5vw, 4.35rem);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.record-rows {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--record-line-dark);
+  list-style: none;
+}
+
+.record-rows li {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 2rem;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--record-line);
+}
+
+.record-rows li:last-child {
+  border-bottom: 0;
+}
+
+.record-row-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-top: 0.25rem;
+}
+
+.record-row-label span {
+  color: var(--record-accent);
+}
+
+.record-rows h3,
+.record-writing-list h3 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.record-rows h3 {
+  font-size: 1.15rem;
+}
+
+.record-rows p:not(.record-row-label) {
+  max-width: 49rem;
+  margin: 0.35rem 0 0;
+  color: var(--record-mid);
+  font-size: 0.96rem;
+  line-height: 1.65;
+}
+
+.record-project {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 2rem;
+  padding: clamp(2rem, 4vw, 3rem) 0;
+  border-top: 1px solid var(--record-line-dark);
+}
+
+.record-project + .record-project {
+  border-top-color: var(--record-line);
+}
+
+.record-project-kind {
+  padding-top: 0.7rem;
+}
+
+.record-project-body {
+  max-width: 46rem;
+}
+
+.record-project-body h3 {
+  margin: 0 0 0.75rem;
+  font-family: var(--record-serif);
+  font-size: clamp(2.3rem, 4vw, 3.4rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.record-project-body h3 a {
+  text-decoration: none;
+}
+
+.record-project-body > p:not(.record-project-links) {
+  margin: 0;
+  color: var(--record-mid);
+  font-size: 0.95rem;
+  line-height: 1.68;
+}
+
+.record-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+  max-width: 34rem;
+  margin: 1.5rem 0 0;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--record-line);
+}
+
+.record-metrics div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.record-metrics dt {
+  margin-top: 0.25rem;
+  color: var(--record-muted);
+  font-family: var(--record-mono);
+  font-size: 0.68rem;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.record-metrics dd {
+  margin: 0;
+  font-family: var(--record-serif);
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.record-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 1.1rem;
+  margin: 1.4rem 0 0;
+  padding: 1.1rem 0 0;
+  border-top: 1px solid var(--record-line);
+  color: var(--record-muted);
+  font-family: var(--record-mono);
+  font-size: 0.63rem;
+  list-style: none;
+  text-transform: uppercase;
+}
+
+.record-project-links,
+.record-contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.4rem;
+  margin: 1.5rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.record-writing-list {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--record-line-dark);
+  list-style: none;
+}
+
+.record-writing-list li {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 2rem;
+  padding: 1.4rem 0;
+  border-bottom: 1px solid var(--record-line);
+}
+
+.record-writing-list time {
+  padding-top: 0.2rem;
+}
+
+.record-writing-list h3 {
+  font-size: 1.05rem;
+}
+
+.record-writing-list h3 a {
+  text-decoration: none;
+}
+
+.record-writing-list p {
+  max-width: 46rem;
+  margin: 0.35rem 0 0;
+  color: var(--record-mid);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.record-more {
+  margin: 1.25rem 0 0 11rem;
+  font-size: 0.8rem;
+}
+
+.record-contact {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 2rem;
+  padding: clamp(4rem, 8vw, 7rem) 0;
+  scroll-margin-top: 1.5rem;
+}
+
+.record-contact h2 {
+  max-width: 19ch;
+}
+
+.record-contact div > p {
+  max-width: 42rem;
+  margin: 1.1rem 0 0;
+  color: var(--record-mid);
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
+.record-site-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.4rem 0 2.5rem;
+  border-top: 1px solid var(--record-line);
+  color: var(--record-muted);
+  font-family: var(--record-mono);
+  font-size: 0.62rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.record-site-footer p {
+  margin: 0;
+}
+
+/* --- Responsive ------------------------------------------------------------- */
+
+@media (max-width: 1000px) {
+  .record-hero {
+    grid-template-columns: minmax(12rem, 0.7fr) minmax(0, 1fr);
+    gap: 2rem 2.5rem;
+  }
+
+  .record-trials {
+    grid-column: 1 / -1;
+  }
+
+  .record-trials-grid {
+    grid-template-columns: repeat(20, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .record-site-header,
+  .record-main,
+  .record-site-footer {
+    width: min(100% - 1.5rem, 1180px);
+  }
+
+  /* Wrapping keeps the header inside 320px once the nav type is readable. */
+  .record-site-header {
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 1rem 0 0.6rem;
+    row-gap: 0.35rem;
+  }
+
+  .record-nav {
+    flex-wrap: wrap;
+    gap: 0.15rem 0.95rem;
+  }
+
+  .record-nav a {
+    padding: 0.45rem 0;
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+  }
+
+  .record-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    padding: 2rem 0 2rem;
+  }
+
+  .record-portrait {
+    width: 7.5rem;
+  }
+
+  .record-portrait img {
+    aspect-ratio: 1;
+    height: auto;
+  }
+
+  .record-hero h1 {
+    font-size: clamp(3.4rem, 17vw, 5rem);
+  }
+
+  .record-lede {
+    max-width: none;
+    font-size: 1.42rem;
+  }
+
+  .record-trials {
+    margin-top: 0.75rem;
+    padding: 0.9rem 0.95rem 0.85rem;
+  }
+
+  .record-trials-grid {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    gap: 0.25rem;
+  }
+
+  .record-trials-read div {
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+  }
+
+  .record-timeline {
+    gap: 0.4rem 1.1rem;
+    padding: 0.85rem 0;
+  }
+
+  .record-section-header,
+  .record-rows li,
+  .record-project,
+  .record-writing-list li,
+  .record-contact {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.7rem;
+  }
+
+  .record-row-label {
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+
+  .record-section {
+    padding: 3.75rem 0;
+  }
+
+  .record-section-header {
+    margin-bottom: 2.2rem;
+  }
+
+  .record-section h2,
+  .record-contact h2 {
+    font-size: clamp(2.5rem, 12vw, 3.4rem);
+  }
+
+  .record-rows li {
+    padding: 1.25rem 0;
+  }
+
+  .record-project {
+    padding: 2.3rem 0 2.6rem;
+  }
+
+  .record-project-kind {
+    padding-top: 0;
+  }
+
+  .record-project-body h3 {
+    font-size: 2.4rem;
+  }
+
+  .record-metrics {
+    gap: 0.35rem;
+  }
+
+  .record-metrics dd {
+    font-size: 1.35rem;
+  }
+
+  .record-more {
+    margin-left: 0;
+  }
+
+  .record-site-footer {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .record-trials-grid span {
+    animation: none;
+    background: var(--record-trial-final);
+    border-color: var(--record-trial-final-line);
+  }
+}

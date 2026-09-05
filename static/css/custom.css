@@ -31,7 +31,7 @@
   --bg: #fafaf8;
   --text: #232220;
   --text-mid: #555350;
-  --text-muted: #8a8784;
+  --text-muted: #73706d;
   --accent: #5a7a64;
   --accent-hover: #476552;
   --accent-soft: #edf2ed;
@@ -202,11 +202,6 @@ article h3 a:hover {
 time {
   color: var(--text-muted) !important;
   font-size: 0.85rem !important;
-}
-
-/* --- Post excerpt on homepage --- */
-article > div:last-child p {
-  color: var(--text-mid) !important;
 }
 
 /* --- Code blocks --- */
@@ -848,134 +843,6 @@ article.main img.note-hero-img {
   padding: 0 !important;
 }
 
-/* ==========================================================================
-   Homepage
-   ========================================================================== */
-
-main {
-  padding-bottom: 2rem !important;
-}
-
-/* Hero lead paragraph */
-article.main > p:first-child {
-  font-size: clamp(1.45rem, 2vw, 2.1rem) !important;
-  font-family: var(--font-body) !important;
-  font-weight: 700 !important;
-  line-height: 1.18 !important;
-  color: var(--text) !important;
-  letter-spacing: -0.04em !important;
-  max-width: 14ch !important;
-  margin-bottom: 1rem !important;
-}
-
-/* Hero body paragraph */
-article.main > p:nth-child(2) {
-  font-size: 1.02rem !important;
-  line-height: 1.78 !important;
-  color: var(--text-mid) !important;
-  max-width: 41rem !important;
-  margin-bottom: 2rem !important;
-}
-
-/* Hero links row */
-.hero-links {
-  margin: 1.5rem 0 0.5rem 0 !important;
-  padding-top: 0.75rem !important;
-  border-top: 1px solid var(--border-light) !important;
-}
-
-.hero-links {
-  font-family: var(--font-mono) !important;
-  font-size: 0.72rem !important;
-  letter-spacing: 0.02em !important;
-}
-
-.hero-links a {
-  color: var(--text-mid) !important;
-  text-decoration: none !important;
-  transition: color 0.15s ease !important;
-}
-
-.hero-links a:hover {
-  color: var(--accent) !important;
-}
-
-.hero-links .sep {
-  color: var(--border) !important;
-  margin: 0 0.5rem !important;
-}
-
-/* Hero subline */
-.hero-subline {
-  font-size: 0.78rem !important;
-  color: var(--text-muted) !important;
-  margin: 0.35rem 0 0 0 !important;
-  line-height: 1.5 !important;
-}
-
-/* Section headings on homepage — monospace labels */
-article.main > h3 {
-  font-family: var(--font-mono) !important;
-  font-size: 0.68rem !important;
-  font-weight: 500 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.16em !important;
-  color: var(--accent) !important;
-  border-top: 1px solid var(--border) !important;
-  border-bottom: none !important;
-  padding-top: 2.75rem !important;
-  padding-bottom: 0 !important;
-  margin-top: 1.25rem !important;
-  margin-bottom: 1.1rem !important;
-}
-
-/* Focus section intro */
-article.main > h3#current-focus + p {
-  font-size: 0.98rem !important;
-  color: var(--text-mid) !important;
-  line-height: 1.72 !important;
-  max-width: 43rem !important;
-}
-
-/* Focus grid */
-.focus-grid {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  gap: 1rem !important;
-  margin-top: 1.5rem !important;
-  background: transparent !important;
-}
-
-.focus-block {
-  padding: 1.35rem 1.4rem 1.25rem !important;
-  border: 1px solid var(--accent-line) !important;
-  border-radius: 10px !important;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(242, 240, 236, 0.9) 100%) !important;
-  box-shadow: 0 1px 0 rgba(35, 34, 32, 0.02) !important;
-}
-
-.focus-block h3,
-.focus-block h4 {
-  font-family: var(--font-body) !important;
-  font-size: 1rem !important;
-  font-weight: 700 !important;
-  line-height: 1.25 !important;
-  margin: 0 0 0.55rem 0 !important;
-  padding: 0 !important;
-  color: var(--text) !important;
-  text-transform: none !important;
-  letter-spacing: -0.02em !important;
-  border: none !important;
-}
-
-.focus-block p {
-  font-size: 0.88rem !important;
-  color: var(--text-mid) !important;
-  line-height: 1.65 !important;
-  margin: 0 !important;
-}
-
 .about-intro {
   font-size: 1.1rem !important;
   line-height: 1.8 !important;
@@ -1061,97 +928,10 @@ article.main > h3#current-focus + p {
   margin-bottom: 0 !important;
 }
 
-/* Work descriptor */
-.work-descriptor {
-  display: block !important;
-  font-size: 0.76rem !important;
-  color: var(--accent) !important;
-  font-family: var(--font-mono) !important;
-  letter-spacing: 0.03em !important;
-  margin-top: 0.05rem !important;
-  margin-bottom: 0.65rem !important;
-}
-
-/* Work item headings (### becomes h4) */
-article.main > h4 {
-  font-family: var(--font-body) !important;
-  font-weight: 700 !important;
-  font-size: 1.28rem !important;
-  text-transform: none !important;
-  letter-spacing: -0.03em !important;
-  border: none !important;
-  margin-top: 2rem !important;
-  margin-bottom: 0.1rem !important;
-  padding-top: 1.6rem !important;
-  border-top: 1px solid var(--border-light) !important;
-}
-
-/* First work item after a section heading — no top border */
-article.main > h3 + h4,
-article.main > h3 + p + h4,
-article.main > h3 + .focus-grid + h4 {
-  border-top: none !important;
-  padding-top: 0 !important;
-}
-
-/* Work item body text — tighter */
-article.main > h4 ~ p:not(.hero-subline):not(.work-descriptor ~ p ~ p) {
-  font-size: 0.96rem !important;
-  line-height: 1.78 !important;
-  max-width: 44rem !important;
-}
-
-/* Post list titles */
-section > article h3,
-main > div > article h3 {
-  font-family: var(--font-body) !important;
-  font-weight: 600 !important;
-  font-size: 1.1rem !important;
-  letter-spacing: -0.01em !important;
-  line-height: 1.3 !important;
-}
-
-/* Bottom sections (Writing, Projects, About, Contact) — tighter */
-article.main > h3#writing ~ p,
-article.main > h3#projects-and-experiments ~ p,
-article.main > h3#about ~ p,
-article.main > h3#get-in-touch ~ p {
-  font-size: 0.88rem !important;
-  line-height: 1.6 !important;
-  color: var(--text-mid) !important;
-}
-
-/* Project list items */
-article.main > h3#projects-and-experiments ~ ul li,
-article.main > h3#writing ~ ul li {
-  font-size: 0.85rem !important;
-  line-height: 1.5 !important;
-}
-
 @media (max-width: 640px) {
   body > div.container {
     row-gap: 1.5rem !important;
     padding-top: 1.1rem !important;
-  }
-
-  .focus-grid {
-    grid-template-columns: 1fr !important;
-    gap: 0.8rem !important;
-  }
-
-  article.main > p:first-child {
-    font-size: 1.3rem !important;
-    max-width: 100% !important;
-  }
-
-  article.main > p:nth-child(2),
-  article.main > h3#current-focus + p,
-  article.main > h4 ~ p:not(.hero-subline):not(.work-descriptor ~ p ~ p) {
-    max-width: 100% !important;
-  }
-
-  article.main > h4 {
-    font-size: 1.08rem !important;
   }
 
   .about-role {
