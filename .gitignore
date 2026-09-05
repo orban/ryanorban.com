@@ -21,4 +21,5 @@ __pycache__/
 public-overlay/
 public-release-d/
 public-invalid/
+!.impeccable/config.json
 node_modules

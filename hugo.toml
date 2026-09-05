@@ -15,23 +15,25 @@ enableRobotsTXT = true
 
 [menus]
   [[menus.main]]
+    name = "Work"
+    url = "/#work"
+    weight = 10
+  [[menus.main]]
     name = "Writing"
     pageRef = "/posts"
-    weight = 10
+    weight = 20
   [[menus.main]]
     name = "Bookmarks"
     pageRef = "/notes"
-    weight = 20
+    weight = 25
   [[menus.main]]
     name = "About"
     pageRef = "/about"
     weight = 30
   [[menus.main]]
-    name = "GitHub"
-    url = "https://github.com/orban"
+    name = "Contact"
+    url = "/#contact"
     weight = 40
-    [menus.main.params]
-      external = true
 
 [params]
   dateFormat = ":date_long"
@@ -71,3 +73,10 @@ enableRobotsTXT = true
   [markup.goldmark.parser]
     [markup.goldmark.parser.attribute]
       block = true
+
+# The homepage carries its design direction contract as an HTML comment that must survive
+# the production build (scripts/audit_homepage.py checks for it).
+[minify]
+  [minify.tdewolff]
+    [minify.tdewolff.html]
+      keepComments = true
