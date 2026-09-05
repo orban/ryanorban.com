@@ -44,7 +44,6 @@
         <h1 id="record-title">Ryan Orban</h1>
         <p class="record-byline">Founder and engineering leader · San Francisco</p>
         <p class="record-lede">The same AI agent succeeds once and fails the next. I build the systems that measure which.</p>
-        <a class="record-arrow-link" href="#record">The full record <span aria-hidden="true">↓</span></a>
       </div>
       <figure class="record-trials" role="group" aria-labelledby="trials-title" aria-describedby="trials-caption">
         <p class="record-trials-head" id="trials-title"><span>One task · {{ $n }} runs</span><span>Bar {{ $barPct }}%</span></p>
@@ -71,6 +70,7 @@
       <li><span>Placement.com</span> <time datetime="2019">2019–21</time></li>
       <li><span>Tribe AI</span> <time datetime="2021">2021–23</time></li>
       <li><span>Cadea</span> <time datetime="2023">2023–25</time></li>
+      <li class="record-timeline-link-item"><a class="record-timeline-link" href="#record">The full record <span aria-hidden="true">↓</span></a></li>
     </ol>
 
     <section class="record-section record-track" id="record" aria-labelledby="record-heading">
@@ -137,33 +137,37 @@
         <h2 id="work-heading">Two systems. Two measurement problems.</h2>
       </header>
 
+      <div class="record-work-grid">
       <article class="record-project">
-        <p class="record-project-kind">Evaluation research · Python</p>
         <div class="record-project-body">
           <h3><a href="https://github.com/orban/moirai">Moirai</a></h3>
+          <p class="record-project-kind">Evaluation research · Python</p>
           <p>Aligns repeated agent trajectories, finds where behavior diverges, tests which choices predict success, and exports those moments as preference data.</p>
           <dl class="record-metrics">
             <div><dt>Runs analyzed</dt><dd>12,854</dd></div>
             <div><dt>Mixed-outcome tasks</dt><dd>1,096</dd></div>
             <div><dt>Preference pairs</dt><dd>11,006</dd></div>
+            <div><dt>Output</dt><dd>Divergence points, ranked by outcome</dd></div>
           </dl>
           <p class="record-project-links"><a href="https://github.com/orban/moirai">Moirai on GitHub</a><a href="/posts/what-stochastic-variation-reveals/">Read the analysis</a></p>
         </div>
       </article>
 
       <article class="record-project">
-        <p class="record-project-kind">Statistical CI/CD · TypeScript</p>
         <div class="record-project-body">
           <h3><a href="https://github.com/orban/cerberus">Cerberus</a></h3>
+          <p class="record-project-kind">Statistical CI/CD · TypeScript</p>
           <p>Treats every agent invocation as a Bernoulli trial, then uses sequential tests and confidence intervals to decide whether the system is reliable enough to ship.</p>
-          <ul class="record-methods" role="list" aria-label="Cerberus methods">
-            <li>Sequential stopping</li>
-            <li>Wilson intervals</li>
-            <li>CI-native exit codes</li>
-          </ul>
+          <dl class="record-metrics">
+            <div><dt>Unit</dt><dd>One invocation, one Bernoulli trial</dd></div>
+            <div><dt>Stopping rule</dt><dd>Sequential probability ratio test</dd></div>
+            <div><dt>Interval</dt><dd>Wilson, 95%</dd></div>
+            <div><dt>Output</dt><dd>CI-native exit codes</dd></div>
+          </dl>
           <p class="record-project-links"><a href="https://github.com/orban/cerberus">Cerberus on GitHub</a><a href="/posts/stop-testing-agents-like-deterministic-code/">Read the argument</a></p>
         </div>
       </article>
+      </div>
     </section>
 
     <section class="record-section record-writing" id="writing" aria-labelledby="writing-heading">
@@ -188,11 +192,14 @@
     </section>
 
     <section class="record-contact" id="contact" aria-labelledby="contact-heading">
-      <p class="record-label">Contact</p>
+      <div class="record-contact-rail">
+        <img src="/images/ryan-orban.jpg" width="800" height="800" alt="Ryan Orban" loading="lazy" />
+        <p class="record-label">Contact</p>
+      </div>
       <div>
         <h2 id="contact-heading">Have a production AI system that needs an owner?</h2>
         <p>I’m looking for a team with a consequential system to run: agent evaluation, observability, memory, and the infrastructure that makes any of it measurable. The most useful first message is the problem you can’t currently measure.</p>
-        <p class="record-contact-links"><a href="mailto:me@ryanorban.com">Email</a><a href="https://github.com/orban">GitHub</a><a href="https://www.linkedin.com/in/ryanorban">LinkedIn</a><a href="/about/">Full background</a></p>
+        <p class="record-contact-links"><a class="record-contact-email" href="mailto:me@ryanorban.com">me@ryanorban.com</a><a href="https://github.com/orban">GitHub</a><a href="https://www.linkedin.com/in/ryanorban">LinkedIn</a><a href="/about/">Full background</a></p>
       </div>
     </section>
   </article>

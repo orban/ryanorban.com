@@ -49,9 +49,9 @@
   --record-ink: #1f241f;
   --record-mid: #4d554c;
   --record-muted: #5f675e;
-  --record-accent: #496b55;
-  --record-accent-dark: #34513e;
-  --record-accent-soft: #9bad90;
+  --record-accent: #3b7350;
+  --record-accent-dark: #2c5a3d;
+  --record-accent-soft: #7ea87a;
   --record-line: #d9d5c8;
   --record-line-dark: #b9b5a6;
   --record-serif: 'Instrument Serif', Georgia, serif;
@@ -283,17 +283,17 @@ body.working-record-site {
 .record-trials-grid span {
   display: block;
   aspect-ratio: 1;
-  border: 1px solid var(--record-line-dark);
+  border: 1px solid transparent;
   background: var(--record-paper);
-  /* The one authored motion on the page: the runs fill in sequence, the cells
-     themselves visible from first paint. */
-  animation: record-trial-fill 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: calc(var(--i) * 8ms);
+  /* The one authored motion on the page: the runs draw in sequence, left to
+     right, the cells outlined from first paint. */
+  animation: record-trial-draw 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i) * 9ms);
 }
 
 .record-trials-grid .is-pass {
-  --record-trial-final: var(--record-accent-soft);
-  --record-trial-final-line: var(--record-accent-soft);
+  --record-trial-final: var(--record-paper);
+  --record-trial-final-line: var(--record-line-dark);
 }
 
 .record-trials-grid .is-fail {
@@ -301,10 +301,10 @@ body.working-record-site {
   --record-trial-final-line: var(--record-ink);
 }
 
-@keyframes record-trial-fill {
+@keyframes record-trial-draw {
   from {
     background: var(--record-paper);
-    border-color: var(--record-line-dark);
+    border-color: transparent;
   }
   to {
     background: var(--record-trial-final);
@@ -363,8 +363,9 @@ body.working-record-site {
 .record-timeline {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1.75rem;
-  padding: 1rem 0;
+  align-items: flex-start;
+  gap: 0.5rem clamp(1.25rem, 3vw, 2.5rem);
+  padding: 0 0 0.9rem;
   border-top: 1px solid var(--record-line-dark);
   border-bottom: 1px solid var(--record-line);
   list-style: none;
@@ -374,16 +375,33 @@ body.working-record-site {
   display: flex;
   gap: 0.5rem;
   align-items: baseline;
+  padding-top: 0.85rem;
+  border-top: 2px solid var(--record-ink);
+  margin-top: -1px;
 }
 
 .record-timeline li span {
   color: var(--record-ink);
 }
 
+.record-timeline-link-item {
+  margin-left: auto;
+  border-top: 0;
+}
+
+.record-timeline-link {
+  color: var(--record-accent-dark);
+  font-family: var(--record-mono);
+  font-size: 0.67rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 /* --- Sections ----------------------------------------------------------------- */
 
 .record-section {
-  padding: clamp(4rem, 8vw, 6.75rem) 0;
+  padding: clamp(3.5rem, 7vw, 6rem) 0 clamp(2.5rem, 5vw, 4rem);
   border-bottom: 1px solid var(--record-line);
   scroll-margin-top: 1.5rem;
 }
@@ -409,6 +427,9 @@ body.working-record-site {
 }
 
 .record-rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(2rem, 5vw, 4.5rem);
   margin: 0;
   padding: 0;
   border-top: 1px solid var(--record-line-dark);
@@ -417,14 +438,25 @@ body.working-record-site {
 
 .record-rows li {
   display: grid;
-  grid-template-columns: 9rem minmax(0, 1fr);
-  gap: 2rem;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: 1.5rem;
   padding: 1.5rem 0;
   border-bottom: 1px solid var(--record-line);
 }
 
+/* The "Now" row spans the grid so the record closes on the present. */
 .record-rows li:last-child {
+  grid-column: 1 / -1;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
   border-bottom: 0;
+}
+
+.record-rows li:last-child p:not(.record-row-label) {
+  max-width: 40rem;
+}
+
+.record-rows li:hover .record-row-label span {
+  color: var(--record-accent-dark);
 }
 
 .record-row-label {
@@ -457,28 +489,30 @@ body.working-record-site {
   line-height: 1.65;
 }
 
-.record-project {
+.record-work-grid {
   display: grid;
-  grid-template-columns: 9rem minmax(0, 1fr);
-  gap: 2rem;
-  padding: clamp(2rem, 4vw, 3rem) 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 clamp(2rem, 5vw, 4.5rem);
   border-top: 1px solid var(--record-line-dark);
 }
 
-.record-project + .record-project {
-  border-top-color: var(--record-line);
-}
-
-.record-project-kind {
-  padding-top: 0.7rem;
+.record-project {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: clamp(1.75rem, 3vw, 2.5rem) 0 0;
 }
 
 .record-project-body {
-  max-width: 46rem;
+  max-width: 34rem;
+}
+
+.record-project-kind {
+  margin: 0.35rem 0 0.9rem;
 }
 
 .record-project-body h3 {
-  margin: 0 0 0.75rem;
+  margin: 0.25rem 0 0;
   font-family: var(--record-serif);
   font-size: clamp(2.3rem, 4vw, 3.4rem);
   font-weight: 400;
@@ -498,57 +532,49 @@ body.working-record-site {
 
 .record-metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.7rem;
-  max-width: 34rem;
-  margin: 1.5rem 0 0;
-  padding-top: 1.15rem;
-  border-top: 1px solid var(--record-line);
+  margin: 1.4rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--record-line-dark);
 }
 
 .record-metrics div {
-  display: flex;
-  flex-direction: column-reverse;
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--record-line);
 }
 
 .record-metrics dt {
-  margin-top: 0.25rem;
+  margin: 0;
   color: var(--record-muted);
   font-family: var(--record-mono);
-  font-size: 0.68rem;
-  line-height: 1.35;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
   text-transform: uppercase;
 }
 
 .record-metrics dd {
   margin: 0;
-  font-family: var(--record-serif);
-  font-size: 1.75rem;
-  line-height: 1;
-}
-
-.record-methods {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem 1.1rem;
-  margin: 1.4rem 0 0;
-  padding: 1.1rem 0 0;
-  border-top: 1px solid var(--record-line);
-  color: var(--record-muted);
-  font-family: var(--record-mono);
-  font-size: 0.63rem;
-  list-style: none;
-  text-transform: uppercase;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .record-project-links,
 .record-contact-links {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.6rem 1.4rem;
   margin: 1.5rem 0 0;
   font-size: 0.78rem;
   font-weight: 600;
+}
+
+.record-contact-links {
+  margin-top: 1.8rem;
 }
 
 .record-writing-list {
@@ -603,6 +629,34 @@ body.working-record-site {
   max-width: 19ch;
 }
 
+.record-contact-rail img {
+  width: 5.5rem;
+  aspect-ratio: 1;
+  margin-bottom: 0.9rem;
+  border: 1px solid var(--record-line-dark);
+  object-fit: cover;
+  object-position: center 28%;
+  filter: saturate(0.72) contrast(1.02);
+}
+
+.record-contact-email {
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--record-ink);
+  color: var(--record-ink);
+  font-family: var(--record-mono);
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition: background-color 160ms ease-out, color 160ms ease-out;
+}
+
+.record-contact-email:hover,
+.record-contact-email:focus-visible {
+  background: var(--record-ink);
+  color: var(--record-bg);
+}
+
 .record-contact div > p {
   max-width: 42rem;
   margin: 1.1rem 0 0;
@@ -631,6 +685,30 @@ body.working-record-site {
 /* --- Responsive ------------------------------------------------------------- */
 
 @media (max-width: 1000px) {
+  .record-rows,
+  .record-work-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .record-rows li,
+  .record-rows li:last-child {
+    grid-template-columns: 9rem minmax(0, 1fr);
+    gap: 2rem;
+  }
+
+  .record-rows li:nth-last-child(2) {
+    border-bottom: 1px solid var(--record-line);
+  }
+
+  .record-project {
+    padding-top: clamp(1.75rem, 3vw, 2.5rem);
+    border-top: 1px solid var(--record-line);
+  }
+
+  .record-project:first-child {
+    border-top: 0;
+  }
+
   .record-hero {
     grid-template-columns: minmax(12rem, 0.7fr) minmax(0, 1fr);
     gap: 2rem 2.5rem;
@@ -671,27 +749,38 @@ body.working-record-site {
     letter-spacing: 0.03em;
   }
 
+  /* Phones: the portrait pairs with the name and byline in one row; the lede
+     and the figure follow at full width. */
   .record-hero {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.25rem;
-    padding: 2rem 0 2rem;
-  }
-
-  .record-portrait {
-    width: 7.5rem;
+    grid-template-columns: minmax(6.5rem, 34%) minmax(0, 1fr);
+    gap: 1rem 1.1rem;
+    align-items: end;
+    padding: 1.75rem 0 2rem;
   }
 
   .record-portrait img {
-    aspect-ratio: 1;
+    aspect-ratio: 4 / 5;
     height: auto;
   }
 
+  .record-hero-copy {
+    display: contents;
+  }
+
   .record-hero h1 {
-    font-size: clamp(3.4rem, 17vw, 5rem);
+    align-self: end;
+    font-size: clamp(2.6rem, 13vw, 3.6rem);
+  }
+
+  .record-byline {
+    grid-column: 1 / -1;
+    margin-top: 0;
   }
 
   .record-lede {
+    grid-column: 1 / -1;
     max-width: none;
+    margin-top: 0.25rem;
     font-size: 1.42rem;
   }
 
@@ -711,16 +800,69 @@ body.working-record-site {
 
   .record-timeline {
     gap: 0.4rem 1.1rem;
-    padding: 0.85rem 0;
+  }
+
+  .record-timeline-link-item {
+    margin-left: 0;
+    flex-basis: 100%;
   }
 
   .record-section-header,
   .record-rows li,
-  .record-project,
+  .record-rows li:last-child,
   .record-writing-list li,
   .record-contact {
     grid-template-columns: minmax(0, 1fr);
     gap: 0.7rem;
+  }
+
+  .record-metrics div {
+    grid-template-columns: 7rem minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .record-contact-rail {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .record-contact-rail img {
+    width: 3.5rem;
+    margin: 0;
+  }
+
+  .record-contact-rail .record-label {
+    order: 0;
+    margin: 0;
+  }
+
+  /* Single column: the rail labels sit after their heading, never above it. */
+  .record-section-header .record-label {
+    order: 2;
+    margin-top: 0.4rem;
+  }
+
+  /* Rows: heading, then the label as a byline, then the paragraph. */
+  .record-rows li > div,
+  .record-writing-list li > div {
+    display: contents;
+  }
+
+  .record-rows li h3,
+  .record-writing-list li h3 {
+    order: 1;
+  }
+
+  .record-row-label,
+  .record-writing-list time {
+    order: 2;
+    margin-top: -0.2rem;
+  }
+
+  .record-rows li p:not(.record-row-label),
+  .record-writing-list li p {
+    order: 3;
   }
 
   .record-row-label {
@@ -746,23 +888,11 @@ body.working-record-site {
   }
 
   .record-project {
-    padding: 2.3rem 0 2.6rem;
-  }
-
-  .record-project-kind {
-    padding-top: 0;
+    padding-top: 2rem;
   }
 
   .record-project-body h3 {
     font-size: 2.4rem;
-  }
-
-  .record-metrics {
-    gap: 0.35rem;
-  }
-
-  .record-metrics dd {
-    font-size: 1.35rem;
   }
 
   .record-more {

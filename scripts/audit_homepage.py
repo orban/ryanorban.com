@@ -46,7 +46,6 @@ THIRD_PARTY_FONT_HOSTS = ("fonts.googleapis.com", "fonts.gstatic.com", "cdn.jsde
 UNSTYLED_LISTS = {
     "record-timeline",
     "record-rows",
-    "record-methods",
     "record-writing-list",
 }
 
