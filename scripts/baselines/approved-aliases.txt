@@ -1,0 +1,3 @@
+# Pre-migration URLs allowed to render as a Hugo alias (meta refresh) to an equivalent replacement.
+# Format: <source path> <target path>. Add a line only with an explicit approval.
+/posts/page/1/ /posts/
