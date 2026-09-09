@@ -7,3 +7,18 @@ node_modules/
 
 # OS files
 .DS_Store
+.hugo_build.lock
+__pycache__/
+
+# Impeccable design tooling (installed per-machine with `npx impeccable install`, not vendored)
+.github/skills/
+.github/agents/
+.github/hooks/
+.impeccable/*
+!.impeccable/design.json
+
+# Build outputs from the CI-only overlay configs
+public-overlay/
+public-release-d/
+public-invalid/
+node_modules

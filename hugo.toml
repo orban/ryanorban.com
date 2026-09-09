@@ -19,7 +19,7 @@ enableRobotsTXT = true
     pageRef = "/posts"
     weight = 10
   [[menus.main]]
-    name = "Notes"
+    name = "Bookmarks"
     pageRef = "/notes"
     weight = 20
   [[menus.main]]

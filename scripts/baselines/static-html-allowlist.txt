@@ -1,0 +1,7 @@
+# Static HTML files (copied from static/, not rendered from content) that are permitted to exist
+# without a policy-manifest record. They are iframe embeds used by publication pages.
+/embeds/bh-procedure.html
+/embeds/cost-comparison.html
+/embeds/flaky-ci-probability.html
+/embeds/sprt-random-walk.html
+/embeds/wilson-vs-naive-ci.html
