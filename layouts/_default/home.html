@@ -1,205 +1,222 @@
 {{ define "main" }}
-  {{- /* The trial figure: one synthetic task run N times against a release bar.
-         Deterministic — a fixed seed drives a linear congruential generator at build
-         time — so the page is reproducible, and labelled as an illustration in the
-         caption. It exists so the first screen demonstrates the claim in the lede
-         instead of asserting it. Never presented as a measurement of a real system. */ -}}
-  {{- $n := 100 -}}
-  {{- $rate := 912 -}}
-  {{- $bar := 0.90 -}}
-  {{- $x := 20260819 -}}
-  {{- $marks := slice -}}
-  {{- $passes := 0 -}}
-  {{- range $i := seq $n -}}
-    {{- $x = mod (add (mul $x 1103515245) 12345) 2147483648 -}}
-    {{- $r := mod (div $x 65536) 1000 -}}
-    {{- if lt $r $rate -}}
-      {{- $marks = $marks | append true -}}
-      {{- $passes = add $passes 1 -}}
-    {{- else -}}
-      {{- $marks = $marks | append false -}}
-    {{- end -}}
-  {{- end -}}
-  {{- $p := div (float $passes) (float $n) -}}
-  {{- $z := 1.96 -}}
-  {{- $zz := mul $z $z -}}
-  {{- $denom := add 1.0 (div $zz (float $n)) -}}
-  {{- $centre := div (add $p (div $zz (mul 2.0 (float $n)))) $denom -}}
-  {{- $half := div (mul $z (math.Sqrt (add (div (mul $p (sub 1.0 $p)) (float $n)) (div $zz (mul 4.0 (mul (float $n) (float $n))))))) $denom -}}
-  {{- $lo := sub $centre $half -}}
-  {{- $hi := add $centre $half -}}
-  {{- $first := index $marks 0 -}}
-  {{- $clears := ge $lo $bar -}}
-  {{- $pct := math.Round (mul $p 100) -}}
-  {{- $loPct := math.Round (mul $lo 100) -}}
-  {{- $hiPct := math.Round (mul $hi 100) -}}
-  {{- $barPct := math.Round (mul $bar 100) -}}
+  {{- /* The ledger. The page is a record, not a pitch: reverse-chronological rows of
+         work that actually happened, with the writing and the two current tools as
+         supporting entries in the same rhythm. No synthetic demo, no hero image —
+         the portrait is a byline, and the first screen is the record itself. */ -}}
 
-  <article class="working-record">
-    <section class="record-hero" aria-labelledby="record-title">
-      <figure class="record-portrait">
-        <img src="/images/ryan-orban.jpg" width="800" height="800" alt="Ryan Orban" fetchpriority="high" />
-      </figure>
-      <div class="record-hero-copy">
-        <h1 id="record-title">Ryan Orban</h1>
-        <p class="record-byline">Founder and engineering leader · San Francisco</p>
-        <p class="record-lede">The same AI agent succeeds once and fails the next. I build the systems that measure which.</p>
-      </div>
-      <figure class="record-trials" role="group" aria-labelledby="trials-title" aria-describedby="trials-caption">
-        <p class="record-trials-head" id="trials-title"><span>One task · {{ $n }} runs</span><span>Bar {{ $barPct }}%</span></p>
-        <p class="record-trials-grid" aria-hidden="true">
-          {{- range $i, $ok := $marks -}}
-            <span class="{{ if $ok }}is-pass{{ else }}is-fail{{ end }}" style="--i:{{ $i }}"></span>
-          {{- end -}}
-        </p>
-        <dl class="record-trials-read">
-          <div><dt>Run 1 only</dt><dd class="record-trials-naive">{{ if $first }}Pass, ship it{{ else }}Fail, block it{{ end }}</dd></div>
-          <div><dt>All {{ $n }} runs</dt><dd>{{ $pct }}% pass · 95% CI {{ $loPct }}–{{ $hiPct }}%</dd></div>
-          <div><dt>Against the bar</dt><dd class="record-trials-verdict">{{ if $clears }}Cleared{{ else }}Not cleared{{ end }}: the interval starts at {{ $loPct }}%</dd></div>
-        </dl>
-        <figcaption class="record-trials-foot" id="trials-caption">
-          <span>{{ $passes }}/{{ $n }} pass · {{ sub $n $passes }} fail · synthetic and seeded, not a real system.</span>
-          <a href="/posts/stop-testing-agents-like-deterministic-code/">Why one run is a coin flip</a>
-        </figcaption>
-      </figure>
+  <article class="record-page">
+    <section class="record-masthead">
+      <p class="record-where">
+        San Francisco<br />
+        <a href="mailto:me@ryanorban.com">me@ryanorban.com</a><br />
+        <a href="https://github.com/orban">github.com/orban</a><br />
+        <a href="https://www.linkedin.com/in/ryanorban">linkedin.com/in/ryanorban</a>
+      </p>
+      <p class="record-lede">
+        Fifteen years building systems that had to hold up in front of someone:
+        a data science school, a job marketplace’s ranking stack, and a company
+        that didn’t work out, so I gave the remaining money back.
+      </p>
     </section>
 
-    <ol class="record-timeline" role="list" aria-label="Career timeline">
-      <li><span>Nutanix</span> <time datetime="2011">2011–14</time></li>
-      <li><span>Zipfian → Galvanize</span> <time datetime="2014">2014–17</time></li>
-      <li><span>Placement.com</span> <time datetime="2019">2019–21</time></li>
-      <li><span>Tribe AI</span> <time datetime="2021">2021–23</time></li>
-      <li><span>Cadea</span> <time datetime="2023">2023–25</time></li>
-      <li class="record-timeline-link-item"><a class="record-timeline-link" href="#record">The full record <span aria-hidden="true">↓</span></a></li>
-    </ol>
-
-    <section class="record-section record-track" id="record" aria-labelledby="record-heading">
-      <header class="record-section-header">
-        <p class="record-label">The record</p>
-        <h2 id="record-heading">Things I’ve helped make real.</h2>
+    <section class="record-section" id="record" aria-labelledby="record-heading">
+      <header class="record-rule">
+        <h2 id="record-heading">The record</h2>
       </header>
+
       <ol class="record-rows" role="list">
-        <li>
-          <p class="record-row-label"><span>Deployed</span><time datetime="2011">2011–14</time></p>
-          <div>
-            <h3>Nutanix · federal systems</h3>
-            <p>Joined early and moved from testing to first customer deployments to the field. Designed and deployed $100M+ virtualization clusters for Army, Air Force, and intelligence customers.</p>
+        <li class="record-row record-row-now">
+          <p class="record-when"><time datetime="2026">2026</time> <span class="record-now">now</span></p>
+          <div class="record-who">
+            <h3>Agent evaluation</h3>
+            <p class="record-role">Independent · open source</p>
+          </div>
+          <div class="record-what">
+            <p>An agent that passes once has not passed.</p>
           </div>
         </li>
-        <li>
-          <p class="record-row-label"><span>Built</span><time datetime="2014">2014–17</time></p>
-          <div>
-            <h3>Zipfian Academy → Galvanize</h3>
-            <p>Co-founded one of the first immersive data science programs in the US: $1M+ bootstrapped revenue in year one, 98% placement, acquired by Galvanize. As Galvanize CTO, scaled the program across campuses while running engineering, curriculum, and platform teams.</p>
-          </div>
-        </li>
-        <li>
-          <p class="record-row-label"><span>Drove</span><time datetime="2017">2017–19</time></p>
-          <div>
-            <h3>Sabbatical</h3>
-            <p>Two years overland through North, Central, and South America, then back to data and AI systems.</p>
-          </div>
-        </li>
-        <li>
-          <p class="record-row-label"><span>Shipped</span><time datetime="2019">2019–21</time></p>
-          <div>
-            <h3>Placement.com</h3>
-            <p>Built the data science and search platform for a job marketplace: ranking and retrieval with Elasticsearch, Learning to Rank, and BERT embeddings, measured on placement conversion.</p>
-          </div>
-        </li>
-        <li>
-          <p class="record-row-label"><span>Led</span><time datetime="2021">2021–23</time></p>
-          <div>
-            <h3>Tribe AI</h3>
-            <p>Owned product and infrastructure for a network of 150+ senior ML practitioners, standardizing how teams scoped and delivered production AI work.</p>
-          </div>
-        </li>
-        <li>
-          <p class="record-row-label"><span>Founded</span><time datetime="2023">2023–25</time></p>
-          <div>
+
+        <li class="record-row">
+          <p class="record-when"><time datetime="2023">2023–25</time></p>
+          <div class="record-who">
             <h3>Cadea</h3>
-            <p>Secure workspace chatbots with RBAC-aware retrieval and agentic pipelines for regulated data. The prototypes worked, the market was early, so I returned the remaining capital and wrote up the red-teaming, governance, and evaluation playbooks.</p>
+            <p class="record-role">Founder</p>
+          </div>
+          <div class="record-what">
+            <p>
+              Secure workspace chatbots: RBAC-aware retrieval and agentic pipelines over
+              regulated data. The prototypes worked. The buyers were about two years out.
+              I returned the remaining capital and wrote up what I’d learned about
+              red-teaming, data governance, and evals instead of raising again.
+            </p>
           </div>
         </li>
-        <li>
-          <p class="record-row-label"><span>Now</span><time datetime="2026">2026</time></p>
-          <div>
-            <h3>Agent evaluation infrastructure</h3>
-            <p>Building statistical tools for understanding stochastic behavior, extracting training signal, and deciding when an agent is reliable enough to ship.</p>
+
+        <li class="record-row">
+          <p class="record-when"><time datetime="2021">2021–23</time></p>
+          <div class="record-who">
+            <h3>Tribe AI</h3>
+            <p class="record-role">CTO</p>
+          </div>
+          <div class="record-what">
+            <p>
+              Product and infrastructure for a network of 150+ senior ML practitioners.
+              Made scoping and delivery repeatable instead of re-invented per engagement.
+              Ran tech lead duty on client work: LLM prototyping, recommenders, data
+              platforms.
+            </p>
+          </div>
+        </li>
+
+        <li class="record-row">
+          <p class="record-when"><time datetime="2019">2019–21</time></p>
+          <div class="record-who">
+            <h3>Placement.com</h3>
+            <p class="record-role">Head of Data Science</p>
+          </div>
+          <div class="record-what">
+            <p>
+              Ranking, matching, and funnel analytics for a job marketplace: Elasticsearch
+              with Learning to Rank, BERT embeddings, Bayesian A/B tests. Every one of
+              them graded on a single outcome — whether the person got hired.
+            </p>
+          </div>
+        </li>
+
+        <li class="record-row">
+          <p class="record-when"><time datetime="2017">2017–19</time></p>
+          <div class="record-who">
+            <h3>Away</h3>
+            <p class="record-role">Sabbatical</p>
+          </div>
+          <div class="record-what">
+            <p>Two years overland through North, Central, and South America.</p>
+          </div>
+        </li>
+
+        <li class="record-row">
+          <p class="record-when"><time datetime="2014">2014–17</time></p>
+          <div class="record-who">
+            <h3>Zipfian → Galvanize</h3>
+            <p class="record-role">Founder, then CTO</p>
+          </div>
+          <div class="record-what">
+            <p>
+              Bootstrapped one of the first immersive data science programs in the US:
+              ten people, $1M+ of revenue in year one, 98% placement, graduates into
+              Tesla, Facebook, and Google. Galvanize acquired it, and I stayed on as CTO
+              to run engineering, curriculum, and platform across campuses.
+            </p>
+          </div>
+        </li>
+
+        <li class="record-row">
+          <p class="record-when"><time datetime="2011">2011–14</time></p>
+          <div class="record-who">
+            <h3>Nutanix</h3>
+            <p class="record-role">Sr. Systems Engineer</p>
+          </div>
+          <div class="record-what">
+            <p>
+              Distributed systems first, then the field. Designed and deployed $100M+ of
+              virtualization clusters for Army, Air Force, and intelligence customers —
+              rooms where “it usually works” is not an answer anyone accepts.
+            </p>
           </div>
         </li>
       </ol>
     </section>
 
-    <section class="record-section record-work" id="work" aria-labelledby="work-heading">
-      <header class="record-section-header">
-        <p class="record-label">Current work</p>
-        <h2 id="work-heading">Two systems. Two measurement problems.</h2>
+    {{- /* partials/record/data.html owns the projects and the pinned/non-pinned split.
+           baseof.html reads the same partial for the nav, so the nav's Writing item
+           and the Writing section below can never disagree about whether there is
+           anything left to show. */ -}}
+    {{- $record := partialCached "record/data.html" . -}}
+    {{- $projects := $record.projects -}}
+
+    <section class="record-section" id="work" aria-labelledby="work-heading">
+      <header class="record-rule">
+        <h2 id="work-heading">Building now</h2>
       </header>
 
-      <div class="record-work-grid">
-      <article class="record-project">
-        <div class="record-project-body">
-          <h3><a href="https://github.com/orban/moirai">Moirai</a></h3>
-          <p class="record-project-kind">Evaluation research · Python</p>
-          <p>Aligns repeated agent trajectories, finds where behavior diverges, tests which choices predict success, and exports those moments as preference data.</p>
-          <dl class="record-metrics">
-            <div><dt>Runs analyzed</dt><dd>12,854</dd></div>
-            <div><dt>Mixed-outcome tasks</dt><dd>1,096</dd></div>
-            <div><dt>Preference pairs</dt><dd>11,006</dd></div>
-            <div><dt>Output</dt><dd>Divergence points, ranked by outcome</dd></div>
-          </dl>
-          <p class="record-project-links"><a href="https://github.com/orban/moirai">Moirai on GitHub</a><a href="/posts/what-stochastic-variation-reveals/">Read the analysis</a></p>
-        </div>
-      </article>
-
-      <article class="record-project">
-        <div class="record-project-body">
-          <h3><a href="https://github.com/orban/cerberus">Cerberus</a></h3>
-          <p class="record-project-kind">Statistical CI/CD · TypeScript</p>
-          <p>Treats every agent invocation as a Bernoulli trial, then uses sequential tests and confidence intervals to decide whether the system is reliable enough to ship.</p>
-          <dl class="record-metrics">
-            <div><dt>Unit</dt><dd>One invocation, one Bernoulli trial</dd></div>
-            <div><dt>Stopping rule</dt><dd>Sequential probability ratio test</dd></div>
-            <div><dt>Interval</dt><dd>Wilson, 95%</dd></div>
-            <div><dt>Output</dt><dd>CI-native exit codes</dd></div>
-          </dl>
-          <p class="record-project-links"><a href="https://github.com/orban/cerberus">Cerberus on GitHub</a><a href="/posts/stop-testing-agents-like-deterministic-code/">Read the argument</a></p>
-        </div>
-      </article>
-      </div>
-    </section>
-
-    <section class="record-section record-writing" id="writing" aria-labelledby="writing-heading">
-      <header class="record-section-header">
-        <p class="record-label">Writing</p>
-        <h2 id="writing-heading">The work, explained.</h2>
-      </header>
-      {{- $posts := where site.RegularPages "Section" "posts" -}}
-      {{- $posts = first 3 $posts.ByDate.Reverse -}}
-      <ol class="record-writing-list" role="list">
-        {{- range $posts }}
-          <li>
-            <time datetime="{{ .Date | time.Format "2006-01-02" }}">{{ .Date | time.Format "Jan 2006" }}</time>
-            <div>
-              <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
-              <p>{{ .Description }}</p>
+      <ol class="record-rows" role="list">
+        {{- range $projects }}
+          {{- $project := . }}
+          <li class="record-row">
+            <p class="record-when"><span class="record-kind">{{ .kind }}</span></p>
+            <div class="record-who">
+              <h3><a href="{{ .repo }}">{{ .name }}</a></h3>
+              <p class="record-role">{{ .role }}</p>
+            </div>
+            <div class="record-what">
+              <p>{{ .body }}</p>
+              {{- with .metrics }}
+                <dl class="record-metrics">
+                  {{- range . }}
+                    <div><dt>{{ .label }}</dt><dd>{{ .value }}</dd></div>
+                  {{- end }}
+                </dl>
+              {{- end }}
+              <p class="record-project-links">
+                <a href="{{ .repo }}">Source</a>
+                {{- with .post }}
+                  <a href="{{ .RelPermalink }}">{{ $project.postLabel }}</a>
+                {{- end }}
+              </p>
             </div>
           </li>
         {{- end }}
       </ol>
-      <p class="record-more"><a href="/posts/">All writing</a></p>
     </section>
 
-    <section class="record-contact" id="contact" aria-labelledby="contact-heading">
-      <div class="record-contact-rail">
-        <img src="/images/ryan-orban.jpg" width="800" height="800" alt="Ryan Orban" loading="lazy" />
-        <p class="record-label">Contact</p>
-      </div>
-      <div>
-        <h2 id="contact-heading">Have a production AI system that needs an owner?</h2>
-        <p>I’m looking for a team with a consequential system to run: agent evaluation, observability, memory, and the infrastructure that makes any of it measurable. The most useful first message is the problem you can’t currently measure.</p>
-        <p class="record-contact-links"><a class="record-contact-email" href="mailto:me@ryanorban.com">me@ryanorban.com</a><a href="https://github.com/orban">GitHub</a><a href="https://www.linkedin.com/in/ryanorban">LinkedIn</a><a href="/about/">Full background</a></p>
+    {{- /* Writing carries only what Building now hasn't already spoken for. When every
+           published essay is pinned the section is omitted whole — no heading over an
+           empty list, no empty state — and it returns on its own the moment a
+           non-pinned post publishes. The nav item in baseof.html is gated on this same
+           value, so the two cannot fall out of step. */ -}}
+    {{- with $record.writing }}
+      <section class="record-section" id="writing" aria-labelledby="writing-heading">
+        <header class="record-rule">
+          <h2 id="writing-heading">Writing</h2>
+        </header>
+
+        <ol class="record-writing-list" role="list">
+          {{- range first 4 . }}
+            <li class="record-row">
+              <p class="record-when">
+                <time datetime="{{ .Date | time.Format "2006-01-02" }}">{{ .Date | time.Format "Jan 2006" }}</time>
+              </p>
+              <div class="record-entry">
+                <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+                <p>{{ .Description }}</p>
+              </div>
+            </li>
+          {{- end }}
+        </ol>
+        <p class="record-more"><a href="/posts/">All writing</a></p>
+      </section>
+    {{- end }}
+
+    <section class="record-section record-contact" id="contact" aria-labelledby="contact-heading">
+      <header class="record-rule">
+        <h2 id="contact-heading">What I’m looking for</h2>
+      </header>
+      <div class="record-row record-contact-row">
+        <p class="record-when"><span class="record-kind">Email</span></p>
+        <div class="record-contact-body">
+          <p>
+            A team with a system that matters and a measurement problem they can’t keep
+            ignoring: agent evaluation, observability, memory, and the infrastructure
+            that makes any of it legible. Or an argument about any of the above.
+          </p>
+          <p class="record-contact-note">
+            The most useful first message is the thing you currently can’t measure.
+          </p>
+          <p class="record-contact-links">
+            <a class="record-contact-email" href="mailto:me@ryanorban.com">me@ryanorban.com</a>
+            <a href="/about/">Full background</a>
+          </p>
+        </div>
       </div>
     </section>
   </article>

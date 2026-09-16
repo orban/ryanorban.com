@@ -1,0 +1,57 @@
+{{- /* Single source of truth for the homepage's projects and which essays they pin.
+
+       Both layouts/_default/home.html (which renders Building now and Writing) and
+       layouts/_default/baseof.html (which renders the nav) call this, so the nav's
+       Writing item and the Writing section are computed from the same data and
+       cannot disagree. A second copy of this logic would drift; that is the whole
+       reason the pinned set is derived from $projects rather than listed twice.
+
+       Returns a dict:
+         projects — the Building now entries, in render order
+         pinned   — RelPermalinks of posts already spoken for by a project
+         writing  — published posts that are not pinned, newest first
+
+       site.GetPage returns nothing for an unbuilt draft, so a project whose essay is
+       still a draft simply pins nothing. */ -}}
+
+{{- $projects := slice
+  (dict
+    "name" "Moirai"
+    "kind" "Python"
+    "role" "Evaluation research"
+    "repo" "https://github.com/orban/moirai"
+    "post" (site.GetPage "/posts/what-stochastic-variation-reveals")
+    "postLabel" "What the variation reveals"
+    "body" "Run one agent on one task enough times and it branches. Moirai lines those runs up, finds the branch points, tests which choices actually predicted success, and exports the survivors as preference data. Run against SWE-rebench:"
+    "metrics" (slice
+      (dict "label" "Runs analyzed" "value" "12,854")
+      (dict "label" "Mixed-outcome tasks" "value" "1,096")
+      (dict "label" "Preference pairs" "value" "11,006"))
+  )
+  (dict
+    "name" "Cerberus"
+    "kind" "TypeScript"
+    "role" "Statistical CI"
+    "repo" "https://github.com/orban/cerberus"
+    "post" (site.GetPage "/posts/stop-testing-agents-like-deterministic-code")
+    "postLabel" "The argument for it"
+    "body" "A green test run on a stochastic system is one sample, not a verdict. Cerberus treats every invocation as a Bernoulli trial, runs a sequential probability ratio test to decide when it has seen enough, and reports a Wilson interval against your release bar — as an exit code your CI already understands."
+    "metrics" slice
+  )
+-}}
+
+{{- $pinned := slice -}}
+{{- range $projects -}}
+  {{- with .post -}}
+    {{- $pinned = $pinned | append .RelPermalink -}}
+  {{- end -}}
+{{- end -}}
+
+{{- $writing := slice -}}
+{{- range (where site.RegularPages "Section" "posts").ByDate.Reverse -}}
+  {{- if not (in $pinned .RelPermalink) -}}
+    {{- $writing = $writing | append . -}}
+  {{- end -}}
+{{- end -}}
+
+{{- return (dict "projects" $projects "pinned" $pinned "writing" $writing) -}}

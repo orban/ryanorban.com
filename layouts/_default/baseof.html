@@ -9,21 +9,40 @@
   {{- if .IsHome }}
     <body class="working-record-site">
       {{ `<!--
-        Direction contract (impeccable, 2026-09-04).
-        THESIS: A person-led page where the proof shares the first screen with the portrait; it refuses the portfolio fold that makes the reader scroll to meet any evidence.
-        OWN-WORLD: warm paper #f3efe6, near-black ink, one muted green; Instrument Serif for display, Geist for text, JetBrains Mono only for labels and measurement; hairline rules, no shadows, no radii.
-        STORY: an engineering leader sees who this is, what he has run, and one honest measurement; then reads the record and writes.
-        FIRST VIEWPORT: three columns: portrait left, name and one sentence centre, the seeded 100-run figure right in a hairline frame; a ruled timeline strip closes the fold.
-        FORM: the category standard, played straight (canon exit of roll a0c2305e); approved comp .impeccable/mocks/comp-c.webp.
-        FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
+        Direction contract (the ledger, 2026-09-16).
+        THESIS: The page is a record, not a pitch. Real, dated, named work carries the first screen; the thesis about agent reliability is demoted to evidence you can click, and the synthetic demo is gone because a fabricated figure is a weak opening claim.
+        OWN-WORLD: paper #f6f4ef, near-black ink, one oxide accent used only for the now-marker and links; Geist carries every sentence, Instrument Serif appears at two small sizes only, JetBrains Mono only on dates and figures; hairline rules, no shadows, no display type.
+        STORY: a reader meets a person in one byline line, reads one unvarnished sentence, and is immediately inside seven rows of what he actually shipped; the current tools and the writing follow in the same rhythm.
+        FIRST VIEWPORT: byline portrait at 56px beside the name, one lede sentence, then the ledger itself — the newest four rows are above the fold.
+        FORM: a well-set CV that sounds like a person wrote it; nothing on the page is sized to impress.
+        FINISH: every figure on this page is either corroborated by /about/ or extracted from the essay it links to; scripts/audit_homepage.py is the enforcement.
       -->` | safeHTML }}
       <a class="record-skip" href="#maincontent">Skip to main content</a>
       <header class="record-site-header">
-        <a class="record-site-name" href="{{ .Site.Home.RelPermalink }}">Ryan Orban</a>
+        {{- /* The name is the running head and the document's only h1. The portrait
+               rides with it at byline size — a face on the masthead, not a hero. */ -}}
+        <div class="record-byline">
+          <img
+            class="record-portrait"
+            src="/images/ryan-orban.jpg"
+            width="800"
+            height="800"
+            alt="Ryan Orban"
+            fetchpriority="high"
+          />
+          <h1 class="record-site-name">Ryan Orban</h1>
+        </div>
+        {{- /* Writing is conditional: home.html omits that section entirely when every
+               published post is already pinned by a Building now project, so the nav
+               item is gated on the same partial rather than a second copy of the rule.
+               One definition, so the link can never point at a section that isn't
+               there. */ -}}
         <nav class="record-nav" aria-label="Primary navigation">
           <a href="#record">Record</a>
           <a href="#work">Work</a>
-          <a href="#writing">Writing</a>
+          {{- with (partialCached "record/data.html" .).writing }}
+            <a href="#writing">Writing</a>
+          {{- end }}
           <a href="#contact">Contact</a>
         </nav>
       </header>
