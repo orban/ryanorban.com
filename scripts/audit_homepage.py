@@ -26,12 +26,15 @@ MOIRAI_POST = ROOT / "content" / "posts" / "what-stochastic-variation-reveals.md
 EXPECTED_TITLE = "Ryan Orban"
 EXPECTED_H1 = ["Ryan Orban"]
 REQUIRED_H2 = {
-    "Things I’ve helped make real.",
-    "Two systems. Two measurement problems.",
-    "The work, explained.",
-    "Have a production AI system that needs an owner?",
+    "The record",
+    "Building now",
+    "What I’m looking for",
 }
-REQUIRED_NAV = {"Record", "Work", "Writing", "Contact"}
+REQUIRED_NAV = {"Record", "Work", "Contact"}
+# Writing is omitted wholesale when every published post is pinned into "Building
+# now". Heading, nav item, anchor and list travel together, so one derived answer
+# to "should Writing exist on this build?" drives all four.
+WRITING = {"list": "record-writing-list", "h2": "Writing", "nav": "Writing", "id": "writing"}
 REQUIRED_IMAGES = {
     "/images/ryan-orban.jpg",
 }
@@ -43,11 +46,14 @@ LAZY_IMAGES: set[str] = set()
 # Fonts are self-hosted; the homepage must not fetch type from a third party.
 THIRD_PARTY_FONT_HOSTS = ("fonts.googleapis.com", "fonts.gstatic.com", "cdn.jsdelivr.net/npm/geist")
 # list-style: none strips list semantics in Safari/VoiceOver without role="list".
-UNSTYLED_LISTS = {
-    "record-timeline",
-    "record-rows",
-    "record-writing-list",
-}
+# One entry per list *instance*, not per class name, and compared by name and count
+# rather than against a total floor -- a floor can be silently lowered by shrinking
+# the constant, an exact comparison cannot.
+REQUIRED_LISTS = (
+    "record-rows",  # The record
+    "record-rows",  # Building now
+)
+OPTIONAL_LISTS = ("record-writing-list",)  # Writing, only when an unpinned post exists
 
 # Every Moirai figure on the homepage is derived from the essay it links to.
 # The homepage label is the key; the essay is the only authority for the value.
@@ -57,7 +63,7 @@ MOIRAI_CONTRACT = {
     "Preference pairs": r"([\d,]+) preference pairs",
 }
 # Claims the homepage shares with the About page, which is their source here.
-ABOUT_CLAIMS = ("$1M", "150+", "$100M+")
+ABOUT_CLAIMS = ("$1M", "150+", "$100M+", "98%")
 
 BANNED_COPY = re.compile(
     r"(?i)\b(?:"
@@ -260,6 +266,7 @@ def main() -> None:
         )
         output = Path(output_dir)
         html = (output / "index.html").read_text()
+        posts_index = (output / "posts" / "index.html").read_text()
         parser = HomepageParser()
         parser.feed(html)
 
@@ -322,15 +329,34 @@ def main() -> None:
         )
     for claim in ABOUT_CLAIMS:
         check(f"claim {claim} is corroborated by /about/", claim in about and claim in template)
-    # The trial figure is synthetic and says so; its marks must agree with its own read-out.
-    fails = len(re.findall(r"""class=["']?is-fail""", html))
-    passes = 100 - fails
-    check("trial figure is labelled synthetic", "not a real system" in html)
+    # The ledger leads with real, dated work. A synthetic illustration must never
+    # reappear as the opening claim, so the page carries no seeded demo at all.
     check(
-        "trial figure marks agree with its read-out",
-        f"{passes}/100 pass · {fails} fail" in html,
-        f"{fails} fail marks rendered",
+        "no synthetic demo on the page",
+        not re.search(
+            r"""class=["']?is-(?:pass|fail)|synthetic and seeded|not a real system""",
+            html,
+        ),
     )
+    # Figures may only appear where a source of truth vouches for them, so an
+    # unsourced metric cannot be added without failing the contract above.
+    check(
+        "no unsourced figures",
+        set(parser.metrics) == set(MOIRAI_CONTRACT),
+        repr(sorted(set(parser.metrics) ^ set(MOIRAI_CONTRACT))),
+    )
+    # The record's own rows only. "Building now" and the writing list reuse the row
+    # class, and the writing count moves with the post data.
+    ledger = re.search(r"<ol[^>]*class=[\"']?record-rows.*?</ol>", html, re.DOTALL)
+    rows = re.findall(
+        r"<li[^>]*class=[\"']?[^\">]*record-row[^>]*>(.*?)</li>",
+        ledger.group(0) if ledger else "",
+        re.DOTALL,
+    )
+    check("ledger rows present", len(rows) >= 7, f"{len(rows)} rows")
+    # Every ledger row is dated, so the record can be checked rather than believed.
+    undated = [n for n, row in enumerate(rows, 1) if "<time datetime" not in row]
+    check("every ledger row is dated", not undated, f"rows {undated} carry no <time datetime>")
     check("direction contract survives the build", "THESIS:" in html and "FINISH:" in html)
     check(
         "no third-party font requests on the homepage",
@@ -338,6 +364,20 @@ def main() -> None:
     )
 
     # --- document contract ------------------------------------------------
+    # "Should Writing exist on this build?" answered once, from the post data
+    # rather than from the markup under test. A published post that "Building now"
+    # has not pinned is a post Writing must list. Every conditional check below
+    # compares rendered markup against this expectation, never against itself.
+    published = set(re.findall(r"""href=["']?(/posts/[^"'\s>]+/)""", posts_index))
+    work_section = re.search(r"""<section[^>]*id=["']?work\b.*?</section>""", html, re.DOTALL)
+    pinned = set(
+        re.findall(
+            r"""href=["']?(/posts/[^"'\s>]+/)""",
+            work_section.group(0) if work_section else "",
+        )
+    )
+    writing_expected = bool(published - pinned)
+    seen = sorted(" ".join(classes) for classes, _ in parser.lists)
     check("seo title", normalize_text(parser.title) == EXPECTED_TITLE, parser.title)
     description = parser.meta.get("description", "")
     check("seo description present", bool(description))
@@ -348,10 +388,16 @@ def main() -> None:
     )
     check("working record body class", "working-record-site" in parser.body_classes)
     check("single exact h1", parser.h1 == EXPECTED_H1, repr(parser.h1))
+    expected_h2 = REQUIRED_H2 | ({WRITING["h2"]} if writing_expected else set())
     check(
         "required sections present",
-        REQUIRED_H2 <= set(parser.h2),
-        repr(sorted(REQUIRED_H2 - set(parser.h2))),
+        expected_h2 <= set(parser.h2),
+        repr(sorted(expected_h2 - set(parser.h2))),
+    )
+    check(
+        "no orphan section heading",
+        (WRITING["h2"] in set(parser.h2)) == writing_expected,
+        f"heading={WRITING['h2'] in set(parser.h2)} expected={writing_expected}",
     )
     check("unique ids", len(parser.ids) == len(set(parser.ids)), repr(parser.ids))
     check(
@@ -360,12 +406,24 @@ def main() -> None:
         repr(sorted(set(parser.aria_refs) - set(parser.ids))),
     )
     check("skip link", "#maincontent" in parser.links)
-    for anchor in ("record", "work", "writing", "contact"):
+    anchors = ["record", "work", "contact"] + ([WRITING["id"]] if writing_expected else [])
+    for anchor in anchors:
         check(f"{anchor} anchor", anchor in parser.ids)
+    # Nav, heading, anchor and section appear and disappear together: a nav item
+    # pointing at a section that did not render is a dead link.
+    fragments = {link[1:] for link in parser.links if link.startswith("#") and len(link) > 1}
+    dangling = sorted(fragment for fragment in fragments if fragment not in parser.ids)
+    check("fragment links resolve", not dangling, repr(dangling))
     check("email link", "mailto:me@ryanorban.com" in parser.links)
+    expected_nav = REQUIRED_NAV | ({WRITING["nav"]} if writing_expected else set())
     check(
         "primary navigation",
-        REQUIRED_NAV <= set(parser.nav_items),
+        expected_nav <= set(parser.nav_items),
+        repr(parser.nav_items),
+    )
+    check(
+        "no nav item for an absent section",
+        (WRITING["nav"] in set(parser.nav_items)) == writing_expected,
         repr(parser.nav_items),
     )
     check(
@@ -406,8 +464,17 @@ def main() -> None:
     # page needs role="list" to survive Safari/VoiceOver.
     unrolled = [classes for classes, role in parser.lists if role != "list"]
     check("lists keep list semantics", not unrolled, repr(unrolled))
-    check("all homepage lists were seen", len(parser.lists) >= len(UNSTYLED_LISTS))
-    check("writing section is not empty", parser.writing_items > 0)
+    expected_lists = sorted(REQUIRED_LISTS + (OPTIONAL_LISTS if writing_expected else ()))
+    check(
+        "all homepage lists were seen",
+        seen == expected_lists,
+        f"saw {seen}, expected {expected_lists} (published={len(published)} pinned={len(pinned)})",
+    )
+    check(
+        "writing list is populated exactly when an unpinned post exists",
+        parser.writing_items > 0 if writing_expected else parser.writing_items == 0,
+        f"items={parser.writing_items} expected={writing_expected}",
+    )
 
     # --- sharing metadata --------------------------------------------------
     check("social preview image", bool(parser.meta_props.get("og:image")), repr(parser.meta_props))
@@ -418,7 +485,7 @@ def main() -> None:
     )
 
     check("analytics preserved", "plausible.srv.ryo.wtf/js/script.js" in html)
-    check("homepage CSS is emitted", ".record-hero" in html)
+    check("homepage CSS is emitted", ".record-rows" in html)
     # Screened against the rendered page, so copy arriving via post descriptions
     # is covered too — not just the strings hardcoded in the template.
     banned = BANNED_COPY.search(html) or BANNED_COPY.search(template + baseof)
