@@ -1,0 +1,2354 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#111827" name="theme-color"/>
+<title>Discover events · San Francisco events</title>
+<!-- Local-first UI: a public deployment should compile/self-host Tailwind and add SRI to third-party assets. -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+        :root {
+            --ink: #121722;
+            --muted: #5d6573;
+            --paper: #f4f1e9;
+            --panel: #fffdf8;
+            --line: #ded9cd;
+            --cobalt: #2f55e7;
+            --cobalt-dark: #1f3db8;
+            --orange: #f05a2a;
+            --navy: #111827;
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 8% 0%, rgba(240, 90, 42, 0.08), transparent 28rem),
+                var(--paper);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        ::selection { background: #cbd7ff; color: var(--ink); }
+        .display-face { font-family: Georgia, "Times New Roman", serif; letter-spacing: -0.035em; }
+        .skip-link {
+            position: fixed;
+            left: 1rem;
+            top: -5rem;
+            z-index: 100;
+            border-radius: 0.5rem;
+            background: white;
+            padding: 0.75rem 1rem;
+            color: var(--ink);
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+        }
+        .skip-link:focus { top: 1rem; }
+        .focus-ring:focus-visible,
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 3px solid rgba(47, 85, 231, 0.35);
+            outline-offset: 3px;
+        }
+        .site-header {
+            background: rgba(17, 24, 39, 0.96);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .nav-link {
+            display: inline-flex;
+            min-height: 2.5rem;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 999px;
+            padding: 0.5rem 0.9rem;
+            color: #cbd5e1;
+            font-size: 0.875rem;
+            font-weight: 700;
+            transition: 150ms ease;
+        }
+        .nav-link:hover { color: white; background: rgba(255, 255, 255, 0.08); }
+        .nav-link[aria-current="page"] { color: var(--ink); background: white; }
+        .filter-shell {
+            border: 1px solid rgba(18, 23, 34, 0.1);
+            background: rgba(255, 253, 248, 0.92);
+            box-shadow: 0 18px 60px rgba(30, 36, 50, 0.08);
+            backdrop-filter: blur(16px);
+        }
+        .field-control {
+            width: 100%;
+            min-height: 3rem;
+            border: 1px solid #cfc9bc;
+            border-radius: 0.75rem;
+            background: white;
+            color: var(--ink);
+            padding: 0.7rem 0.9rem;
+            font-size: 0.9375rem;
+            transition: border-color 150ms ease, box-shadow 150ms ease;
+        }
+        .field-control:hover { border-color: #aaa397; }
+        .field-control:focus {
+            border-color: var(--cobalt);
+            box-shadow: 0 0 0 4px rgba(47, 85, 231, 0.1);
+            outline: none;
+        }
+        .event-card {
+            border: 1px solid rgba(18, 23, 34, 0.1);
+            background: var(--panel);
+            box-shadow: 0 2px 0 rgba(18, 23, 34, 0.04);
+            transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+        }
+        .event-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(47, 85, 231, 0.35);
+            box-shadow: 0 14px 34px rgba(30, 36, 50, 0.1);
+        }
+        .event-media {
+            background:
+                linear-gradient(135deg, rgba(47, 85, 231, 0.15), rgba(240, 90, 42, 0.12)),
+                #ece8de;
+        }
+        .date-divider::after {
+            content: "";
+            height: 1px;
+            flex: 1;
+            background: var(--line);
+        }
+        .badge {
+            display: inline-flex;
+            min-height: 1.75rem;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.3rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 750;
+            line-height: 1;
+        }
+        .badge-neutral { background: #eeece6; color: #434a55; }
+        .badge-free { background: #dff6e7; color: #176b3a; }
+        .badge-verified { background: #e7edff; color: #2446bf; }
+        .badge-cancelled { background: #fbe4de; color: #a32a12; }
+        .badge-postponed { background: #fdf0d8; color: #8a5a06; }
+        .button-primary {
+            display: inline-flex;
+            min-height: 2.75rem;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+            background: var(--cobalt);
+            padding: 0.65rem 1rem;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 800;
+            transition: 150ms ease;
+        }
+        .button-primary:hover { background: var(--cobalt-dark); transform: translateY(-1px); }
+        .button-secondary {
+            display: inline-flex;
+            min-height: 2.75rem;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            border-radius: 0.75rem;
+            background: white;
+            padding: 0.65rem 1rem;
+            color: var(--ink);
+            font-size: 0.875rem;
+            font-weight: 750;
+            transition: 150ms ease;
+        }
+        .button-secondary:hover { border-color: #aaa397; background: #faf8f3; }
+        .text-link { color: var(--cobalt); font-weight: 750; }
+        .text-link:hover { color: var(--cobalt-dark); text-decoration: underline; text-underline-offset: 3px; }
+        .htmx-request { opacity: 0.45; transition: opacity 180ms ease; }
+        .htmx-indicator { display: none; }
+        .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-flex; }
+        .fc { --fc-border-color: #ded9cd; --fc-button-bg-color: #2f55e7; --fc-button-border-color: #2f55e7; --fc-button-hover-bg-color: #1f3db8; --fc-button-hover-border-color: #1f3db8; }
+        .fc .fc-toolbar-title { font-family: Georgia, "Times New Roman", serif; font-size: 1.65rem; letter-spacing: -0.025em; }
+        .fc .fc-button { border-radius: 0.6rem; font-weight: 700; box-shadow: none; }
+        .fc-event { cursor: pointer; border-radius: 0.3rem; }
+        .fc-event:hover { opacity: 0.86; }
+
+        @media (max-width: 440px) {
+            .nav-link svg { display: none; }
+            .nav-link { padding-inline: 0.7rem; }
+        }
+        @media (max-width: 640px) {
+            .fc .fc-toolbar { align-items: flex-start; flex-direction: column; gap: 0.75rem; }
+            .fc .fc-toolbar-chunk:last-child { width: 100%; display: flex; }
+            .fc .fc-toolbar-chunk:last-child .fc-button-group { width: 100%; }
+            .fc .fc-toolbar-chunk:last-child .fc-button { flex: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen antialiased">
+<a class="skip-link" href="#main-content">Skip to events</a>
+<header class="site-header sticky top-0 z-50 text-white">
+<div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+<a aria-label="EventScout home" class="group flex items-center gap-3 rounded-lg" href="/sfevents/">
+<span class="grid h-10 w-10 place-items-center rounded-xl bg-[#f05a2a] text-sm font-black tracking-tight text-white shadow-lg shadow-orange-950/20">ES</span>
+<span>
+<span class="block text-lg font-black leading-none tracking-tight">EventScout</span>
+<span class="mt-1 hidden text-[0.68rem] font-bold uppercase tracking-[0.16em] text-slate-400 sm:block">San Francisco event index</span>
+</span>
+</a>
+<nav aria-label="Primary navigation" class="flex items-center gap-1">
+<a aria-current="page" class="nav-link" href="/sfevents/">
+<svg aria-hidden="true" class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                    Discover
+                </a>
+<a class="nav-link" href="/sfevents/calendar/">
+<svg aria-hidden="true" class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3M5 11h14M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                    Calendar
+                </a>
+</nav>
+</div>
+</header>
+<main class="mx-auto min-h-[calc(100vh-12rem)] max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8" id="main-content">
+<section class="mb-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
+<div>
+<p class="mb-3 text-xs font-black uppercase tracking-[0.22em] text-[#f05a2a]">San Francisco · live index</p>
+<h1 class="display-face max-w-4xl text-4xl font-bold leading-[0.98] text-[#121722] sm:text-5xl lg:text-6xl">
+            What’s happening in the city.
+        </h1>
+<p class="mt-4 max-w-2xl text-base leading-7 text-[#5d6573] sm:text-lg">
+            Public events from across San Francisco, merged into one list with duplicate listings collapsed.
+        </p>
+</div>
+<div class="flex items-baseline gap-3 border-l-4 border-[#f05a2a] pl-4 lg:block">
+<strong class="display-face text-4xl text-[#121722]">1011</strong>
+<span class="text-sm font-bold uppercase tracking-[0.12em] text-[#5d6573] lg:mt-1 lg:block">active events indexed</span>
+</div>
+</section>
+<section aria-labelledby="filter-heading" class="filter-shell mb-8 rounded-2xl p-4 lg:sticky lg:top-[4.9rem] lg:z-30">
+<div class="mb-3 flex items-center justify-between gap-4 lg:hidden">
+<h2 class="text-sm font-black uppercase tracking-[0.16em] text-[#5d6573]" id="filter-heading">Find events</h2>
+<a class="text-link text-sm" href="/sfevents/">Reset</a>
+</div>
+<form aria-label="Filter events" class="grid gap-3 md:grid-cols-[minmax(15rem,1fr)_12rem_14rem_auto] md:items-end" onsubmit="return false" role="search">
+<div>
+<label class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#5d6573]" for="event-search">Search</label>
+<div class="relative">
+<svg aria-hidden="true" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<input autocomplete="off" class="field-control pl-10" id="event-search" name="search" placeholder="Artist, venue, neighborhood…" type="search" value=""/>
+</div>
+</div>
+<div>
+<label class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#5d6573]" for="date-filter">When</label>
+<select class="field-control" id="date-filter" name="date">
+<option selected="" value="upcoming">Upcoming</option>
+<option value="today">Today</option>
+<option value="tomorrow">Tomorrow</option>
+<option value="week">Next 7 days</option>
+</select>
+</div>
+<div>
+<label class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#5d6573]" for="category-filter">Category</label>
+<select class="field-control" id="category-filter" name="category">
+<option value="">All categories</option>
+<option value="Arts">Arts</option>
+<option value="Arts Family">Arts Family</option>
+<option value="Comedy">Comedy</option>
+<option selected="" value="Community">Community</option>
+<option value="Dance">Dance</option>
+<option value="Dj Parties">Dj Parties</option>
+<option value="Education">Education</option>
+<option value="Experiences">Experiences</option>
+<option value="Film">Film</option>
+<option value="Food &amp; Drink">Food &amp; Drink</option>
+<option value="Music">Music</option>
+<option value="Outdoor Recreation">Outdoor Recreation</option>
+<option value="Shopping">Shopping</option>
+<option value="Sports &amp; Fitness">Sports &amp; Fitness</option>
+<option value="Theater">Theater</option>
+<option value="Theatre Performing Arts">Theatre Performing Arts</option>
+</select>
+</div>
+<div class="hidden md:block">
+<a class="button-secondary min-w-24" href="/sfevents/">Reset</a>
+</div>
+</form>
+<div class="htmx-indicator mt-3 items-center gap-2 text-sm font-semibold text-[#2f55e7]" id="filter-loading" role="status">
+<svg aria-hidden="true" class="h-4 w-4 animate-spin" fill="none" viewbox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4Z" fill="currentColor"></path></svg>
+        Updating events
+    </div>
+</section>
+<section aria-label="Event results">
+<div aria-busy="false" aria-live="polite" id="event-list">
+<div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+<div>
+<p class="text-xs font-black uppercase tracking-[0.18em] text-[#f05a2a]">Next up</p>
+<h2 class="display-face mt-1 text-3xl font-bold text-[#121722]">Events, soonest first</h2>
+</div>
+<p class="text-sm font-semibold text-[#5d6573]">
+        Showing 50 events
+    </p>
+</div>
+<div class="space-y-4">
+<div class="date-divider flex items-center gap-4 pt-4 first:pt-0">
+<h3 class="whitespace-nowrap text-sm font-black uppercase tracking-[0.13em] text-[#434a55]">
+                    
+                        Friday
+                        <span class="font-semibold normal-case tracking-normal text-[#7a808b]">· September 04</span>
+</h3>
+</div>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Big Daddy Cade’s Tribute to B.B. King" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1714/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/Je7QNFS9C6K9O-ZasTNjOns1Q98=/290x130/top/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F39%2F157710397342595_orig.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">04</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-04T18:30:00">
+                                
+                                6:30 PM
+                                –9:00 PM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1714/">
+                                    Big Daddy Cade’s Tribute to B.B. King
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Biscuits &amp; Blues</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1714/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.sfstation.com/big-daddy-cade-s-tribute-to-b-b-king-e15771039" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for CROSSROADS 2026" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1709/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/fY_pA9OcMWWfhKpRaVaA84aTJFU=/290x130/top/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F01%2F24131011791342307_orig.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">04</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-04T19:00:00">
+                                
+                                7:00 PM
+                                –9:30 PM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1709/">
+                                    CROSSROADS 2026
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Gray Area - Grand Theater</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1709/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.sfstation.com/crossroads-2026-e2413101" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for The Compton's Cafeteria Riot" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1742/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/7JN53fHTcJDc8jGjKuYUxG8IySA=/290x130/top/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F45%2F2471545635314208_orig.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">04</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-04T19:00:00">
+                                
+                                7:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1742/">
+                                    The Compton's Cafeteria Riot
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Tenderloin Museum</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1742/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.sfstation.com/the-comptons-cafeteria-riot-e2471545" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for “Pedal Down the Aisle” Wedding-Themed Bike Party Ride (Dolores Park)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/3720/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">04</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-04T19:30:00">
+                                
+                                7:30 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/3720/">
+                                    “Pedal Down the Aisle” Wedding-Themed Bike Party Ride (Dolores Park)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/3720/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/pedal-aisle-weddingthemed-bike-party-ride-dolores-park/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for R.O.I. (RETURN ON INVESTMENT)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1697/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/W-KhcEmbk5fLm2EtzdnQzkKxupU=/290x130/top/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F54%2F15772254858037826_orig.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">04</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-04T20:00:00">
+                                
+                                8:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1697/">
+                                    R.O.I. (RETURN ON INVESTMENT)
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">San Francisco Playhouse - SF Playhouse</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1697/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.sfstation.com/r-o-i-return-on-investment-e15772254" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for The Confessional" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1701/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/rEA4a3RD6bqyXfjqpnQPGceCc-4=/290x130/top/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F30%2F2434330487058964_orig.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">04</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-04T20:00:00">
+                                
+                                8:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1701/">
+                                    The Confessional
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Endgames Improv Theater &amp; Bar</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1701/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.sfstation.com/the-confessional-e2434330" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Your Fucked Up Relationship" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1660/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/jJ0KebY1ncpHCACyfGi8Y_69uNU=/290x130/top/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F67%2F2475067709721113_orig.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">04</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-04T21:00:00">
+                                
+                                9:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1660/">
+                                    Your Fucked Up Relationship
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Endgames Improv Theater &amp; Bar</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1660/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.sfstation.com/your-fucked-up-relationship-e2475067" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for ALAN VUONG" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1686/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/Td6iZmXEATkdq9wD_05zSdHaPpQ=/290x130/top/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F17%2F15772017994766760_orig.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">04</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-04T21:00:00">
+                                
+                                9:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1686/">
+                                    ALAN VUONG
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Rickshaw Stop</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1686/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.sfstation.com/alan-vuong-e15772017" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Dark Sparkle" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/1681/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://t.sfstation.com/2LlAyolXeoeLWcRMjzG0Fd5Ad30=/290x130/center/https%3A%2F%2Fcdn.sfstation.com%2Fassets%2Fimages%2Fevents%2F35%2F2456435vid677672145_orig.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">04</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-04T21:30:00">
+                                
+                                9:30 PM
+                                –2:30 AM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/1681/">
+                                    Dark Sparkle
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">DNA Lounge</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/1681/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://www.sfstation.com/dark-sparkle-e2456435" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<div class="date-divider flex items-center gap-4 pt-4 first:pt-0">
+<h3 class="whitespace-nowrap text-sm font-black uppercase tracking-[0.13em] text-[#434a55]">
+                    
+                        Saturday
+                        <span class="font-semibold normal-case tracking-normal text-[#7a808b]">· September 05</span>
+</h3>
+</div>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for “Healthy Parks Healthy People”: Monthly Nature Walks | Bay Area" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/3767/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">05</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-05T10:00:00">
+                                
+                                10:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/3767/">
+                                    “Healthy Parks Healthy People”: Monthly Nature Walks | Bay Area
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/3767/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/healthy-parks-healthy-people-monthly-nature-walks-bay-area-116/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Madrone x Gamescape: Monthly Game Night" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/3774/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">05</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-05T16:00:00">
+                                
+                                4:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/3774/">
+                                    Madrone x Gamescape: Monthly Game Night
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/3774/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/madrone-gamescape-monthly-game-night/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for SF’s Free Outdoor Movie Night: Black Panther (Yerba Buena Gardens Festival 2026)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/3765/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">05</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-05T17:00:00">
+                                
+                                5:00 PM
+                                –7:00 PM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/3765/">
+                                    SF’s Free Outdoor Movie Night: Black Panther (Yerba Buena Gardens Festival 2026)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/3765/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/sfs-free-outdoor-movie-night-yerba-buena-gardens-festival-2026/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for SF’s Prince vs. Michael Jackson DJ Party (NoPa)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/3768/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">05</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-05T21:00:00">
+                                
+                                9:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/3768/">
+                                    SF’s Prince vs. Michael Jackson DJ Party (NoPa)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$10</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/3768/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/sfs-prince-vs-michael-jackson-dj-party-nopa-58/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<div class="date-divider flex items-center gap-4 pt-4 first:pt-0">
+<h3 class="whitespace-nowrap text-sm font-black uppercase tracking-[0.13em] text-[#434a55]">
+                    
+                        Sunday
+                        <span class="font-semibold normal-case tracking-normal text-[#7a808b]">· September 06</span>
+</h3>
+</div>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for $5 Off Tix: “Hairspray” The Broadway Musical Live in SF (July 10-Sept. 12)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/3864/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">06</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-06T06:00:00">
+                                
+                                6:00 AM
+                                –2:00 PM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/3864/">
+                                    $5 Off Tix: “Hairspray” The Broadway Musical Live in SF (July 10-Sept. 12)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">$5</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/3864/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/5-off-tix-hairspray-the-broadway-musical-live-in-sf-july-10-sept-12-8/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Forever Grateful Exhibition" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2064/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33332535/86da8ca8-71b0-47be-b380-665bfcfeccd4.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">06</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-06T10:00:00">
+                                
+                                10:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2064/">
+                                    Forever Grateful Exhibition
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">San Francisco County Fair Building</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2064/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/9/5/forever-grateful-exhibition-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Chinatown Car Show &amp; Car Parade" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4259/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/34201343/c6974055-a54e-44c5-8e0d-57b1e794b627.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">06</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-06T10:00:00">
+                                
+                                10:00 AM
+                                –3:30 PM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4259/">
+                                    Chinatown Car Show &amp; Car Parade
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Chinese Culture Center Grant Avenue</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4259/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/9/6/chinatown-car-show-car-parade-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for HEAD WEST Marketplace" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2098/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/30899473/7d554f6d-421d-47a5-b4da-41226447cfdf.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">06</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-06T11:00:00">
+                                
+                                11:00 AM
+                                –5:00 PM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2098/">
+                                    HEAD WEST Marketplace
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Ferry Building</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2098/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/9/6/head-west-marketplace-at-ferry-building-1773793205" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Forever Grateful Exhibition" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2105/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33333108/4796a3ff-1e20-42bf-92df-1be3b7997cbf.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">06</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-06T12:00:00">
+                                
+                                12:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2105/">
+                                    Forever Grateful Exhibition
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Haight Street Art Center</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2105/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/7/15/forever-grateful-exhibition-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<div class="date-divider flex items-center gap-4 pt-4 first:pt-0">
+<h3 class="whitespace-nowrap text-sm font-black uppercase tracking-[0.13em] text-[#434a55]">
+                    
+                        Monday
+                        <span class="font-semibold normal-case tracking-normal text-[#7a808b]">· September 07</span>
+</h3>
+</div>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Forever Grateful Exhibition" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2163/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33332535/86da8ca8-71b0-47be-b380-665bfcfeccd4.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">07</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-07T10:00:00">
+                                
+                                10:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2163/">
+                                    Forever Grateful Exhibition
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">San Francisco County Fair Building</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2163/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/9/5/forever-grateful-exhibition-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Forever Grateful Exhibition" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2164/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33333108/4796a3ff-1e20-42bf-92df-1be3b7997cbf.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">07</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-07T12:00:00">
+                                
+                                12:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2164/">
+                                    Forever Grateful Exhibition
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Haight Street Art Center</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2164/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/7/15/forever-grateful-exhibition-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Take a Day Off and Celebrate Labor Day" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4246/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/34202359/dbc30d46-9385-455a-9172-3ade3bfbb843.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">07</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-07T13:00:00">
+                                
+                                1:00 PM
+                                –2:30 PM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4246/">
+                                    Take a Day Off and Celebrate Labor Day
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Spreckels Temple of Music</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4246/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/9/7/take-a-day-off-and-celebrate-labor-day-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Dark Alleys: Darkwave Bowling" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2156/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33646045/5417da6c-0168-48ac-add7-686e56ca53e8.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">07</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-07T18:00:00">
+                                
+                                6:00 PM
+                                –10:00 PM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2156/">
+                                    Dark Alleys: Darkwave Bowling
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Mission Bowling Club</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2156/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/9/7/dark-alleys-darkwave-bowling-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for SF Arcade Bar “Emporium” 8 Free Game Tokens for “Industry Night” (Every Monday)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/3997/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">07</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-07T18:00:00">
+                                
+                                6:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/3997/">
+                                    SF Arcade Bar “Emporium” 8 Free Game Tokens for “Industry Night” (Every Monday)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/3997/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/sf-arcade-bar-emporium-8-free-game-tokens-for-industry-night-every-monday-160/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Labor Day Bonfire Night at SF’s Ocean Beach (2026)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/3992/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">07</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-07T19:00:00">
+                                
+                                7:00 PM
+                                –6:00 AM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/3992/">
+                                    Labor Day Bonfire Night at SF’s Ocean Beach (2026)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/3992/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/labor-day-bonfire-at-ocean-beach/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<div class="date-divider flex items-center gap-4 pt-4 first:pt-0">
+<h3 class="whitespace-nowrap text-sm font-black uppercase tracking-[0.13em] text-[#434a55]">
+                    
+                        Tuesday
+                        <span class="font-semibold normal-case tracking-normal text-[#7a808b]">· September 08</span>
+</h3>
+</div>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Forever Grateful Exhibition" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2210/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33332535/86da8ca8-71b0-47be-b380-665bfcfeccd4.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-08T10:00:00">
+                                
+                                10:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2210/">
+                                    Forever Grateful Exhibition
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">San Francisco County Fair Building</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2210/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/9/5/forever-grateful-exhibition-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Forever Grateful Exhibition" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2205/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33333108/4796a3ff-1e20-42bf-92df-1be3b7997cbf.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-08T12:00:00">
+                                
+                                12:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2205/">
+                                    Forever Grateful Exhibition
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Haight Street Art Center</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2205/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/7/15/forever-grateful-exhibition-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for San Francisco Botanical Garden’s Free Day (2nd Tuesdays)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4030/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">08</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-08T20:00:00">
+                                
+                                8:00 PM
+                                –7:30 AM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4030/">
+                                    San Francisco Botanical Garden’s Free Day (2nd Tuesdays)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4030/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/san-francisco-botanical-gardens-free-day-2nd-tuesdays-63/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<div class="date-divider flex items-center gap-4 pt-4 first:pt-0">
+<h3 class="whitespace-nowrap text-sm font-black uppercase tracking-[0.13em] text-[#434a55]">
+                    
+                        Wednesday
+                        <span class="font-semibold normal-case tracking-normal text-[#7a808b]">· September 09</span>
+</h3>
+</div>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Japanese Tea Garden’s Free Admission Hour (Golden Gate Park)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4031/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-09T09:00:00">
+                                
+                                9:00 AM
+                                –9:00 AM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4031/">
+                                    Japanese Tea Garden’s Free Admission Hour (Golden Gate Park)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4031/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/japanese-tea-gardens-free-admission-hour-golden-gate-park-424/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Forever Grateful Exhibition" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2250/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33332535/86da8ca8-71b0-47be-b380-665bfcfeccd4.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-09T10:00:00">
+                                
+                                10:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2250/">
+                                    Forever Grateful Exhibition
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">San Francisco County Fair Building</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2250/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/9/5/forever-grateful-exhibition-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Forever Grateful Exhibition" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2238/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33333108/4796a3ff-1e20-42bf-92df-1be3b7997cbf.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-09T12:00:00">
+                                
+                                12:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2238/">
+                                    Forever Grateful Exhibition
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Haight Street Art Center</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2238/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/7/15/forever-grateful-exhibition-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Joe McEwen with Joel Selvin – Tastykakes, Soul Songs &amp; Shining Stars" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4038/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-09T17:30:00">
+                                
+                                5:30 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4038/">
+                                    Joe McEwen with Joel Selvin – Tastykakes, Soul Songs &amp; Shining Stars
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4038/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/joe-mcewen-joel-selvin-tastykakes-soul-songs-shining-stars/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Storied: SF Season 9 + Intersections SF Launch Party (Madrone Art Bar)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4032/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-09T18:00:00">
+                                
+                                6:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4032/">
+                                    Storied: SF Season 9 + Intersections SF Launch Party (Madrone Art Bar)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4032/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/storied-sf-season-9-intersections-sf-launch-party-madrone-art-bar/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Encuentros" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2242/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33681602/cc8de281-0206-49d2-b102-243c852c98e9.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">09</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-09T19:00:00">
+                                
+                                7:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2242/">
+                                    Encuentros
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">The Palace Theater</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2242/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/9/9/encuentros-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<div class="date-divider flex items-center gap-4 pt-4 first:pt-0">
+<h3 class="whitespace-nowrap text-sm font-black uppercase tracking-[0.13em] text-[#434a55]">
+                    
+                        Thursday
+                        <span class="font-semibold normal-case tracking-normal text-[#7a808b]">· September 10</span>
+</h3>
+</div>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Forever Grateful Exhibition" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2347/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33332535/86da8ca8-71b0-47be-b380-665bfcfeccd4.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">10</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-10T10:00:00">
+                                
+                                10:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2347/">
+                                    Forever Grateful Exhibition
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">San Francisco County Fair Building</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2347/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/9/5/forever-grateful-exhibition-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Forever Grateful Exhibition" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2354/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33333108/4796a3ff-1e20-42bf-92df-1be3b7997cbf.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">10</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-10T12:00:00">
+                                
+                                12:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2354/">
+                                    Forever Grateful Exhibition
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Haight Street Art Center</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2354/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/7/15/forever-grateful-exhibition-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for SF’s “Valencia Live” Night Market in The Mission (Every 2nd Thu)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4138/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">10</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-10T17:00:00">
+                                
+                                5:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4138/">
+                                    SF’s “Valencia Live” Night Market in The Mission (Every 2nd Thu)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4138/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/sfs-valencia-live-night-market-in-the-mission-every-2nd-thu-4/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for John Perkins – The Art of the Steal" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4288/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">10</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-10T17:30:00">
+                                
+                                5:30 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4288/">
+                                    John Perkins – The Art of the Steal
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4288/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/john-perkins-art-steal/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Thursday Night Poem Jam | SF Main Library" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4137/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">10</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-10T18:00:00">
+                                
+                                6:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4137/">
+                                    Thursday Night Poem Jam | SF Main Library
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4137/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/thursday-night-poem-jam-sf-main-library-96/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<div class="date-divider flex items-center gap-4 pt-4 first:pt-0">
+<h3 class="whitespace-nowrap text-sm font-black uppercase tracking-[0.13em] text-[#434a55]">
+                    
+                        Friday
+                        <span class="font-semibold normal-case tracking-normal text-[#7a808b]">· September 11</span>
+</h3>
+</div>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Forever Grateful Exhibition" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/3794/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33333108/4796a3ff-1e20-42bf-92df-1be3b7997cbf.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">11</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-11T12:00:00">
+                                
+                                12:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/3794/">
+                                    Forever Grateful Exhibition
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Haight Street Art Center</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/3794/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/7/15/forever-grateful-exhibition-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Chinatown Night Market 2026" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2422/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33155204/5a0abe50-e372-41c7-bac4-a199e2db09f0.jpg"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">11</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-11T17:00:00">
+                                
+                                5:00 PM
+                                –9:00 PM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2422/">
+                                    Chinatown Night Market 2026
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Chinatown</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2422/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/9/11/chinatown-night-market-2026-1783374170" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Flower Piano 2026: 12 Hidden Pianos in Golden Gate Park (Sept. 10-20)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4149/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">11</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-11T23:00:00">
+                                
+                                11:00 PM
+                                –10:00 AM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4149/">
+                                    Flower Piano 2026: 12 Hidden Pianos in Golden Gate Park (Sept. 10-20)
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Flower Piano 2026: 12 Hidden Pianos in Golden Gate Park (Sept. 10-20) Friday, September 11 – 10:00 am - Ends at 6:00 pm | Cost: FREE* *Free for SF Residents, U.S. military/veterans, Museums for All participants (SNAP/EBT), and members. Flower Piano is included in Botanical Garden General Admission at $18/Adults, $7/Seniors 65+, $7/Youth 5-17, $3/Children 5-11, Free for children 4 and under | San Francisco Botanical Garden One of the most unique interactive music festivals in the Bay Area is back! Flower Piano returns for its 11th year with 11 days of music, 12 pianos, and 130 performances in more...</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4149/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/flower-piano-2026-12-hidden-pianos-in-golden-gate-park-sept-10-20/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<div class="date-divider flex items-center gap-4 pt-4 first:pt-0">
+<h3 class="whitespace-nowrap text-sm font-black uppercase tracking-[0.13em] text-[#434a55]">
+                    
+                        Saturday
+                        <span class="font-semibold normal-case tracking-normal text-[#7a808b]">· September 12</span>
+</h3>
+</div>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Flower Piano 2026: 12 Hidden Pianos in Golden Gate Park (Sept. 10-20)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4141/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">12</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-12T00:00:00">
+                                
+                                12:00 AM
+                                –10:00 AM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4141/">
+                                    Flower Piano 2026: 12 Hidden Pianos in Golden Gate Park (Sept. 10-20)
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Flower Piano 2026: 12 Hidden Pianos in Golden Gate Park (Sept. 10-20) Saturday, September 12 – 10:00 am - Ends at 6:00 pm | Cost: FREE* *Free for SF Residents, U.S. military/veterans, Museums for All participants (SNAP/EBT), and members. Flower Piano is included in Botanical Garden General Admission at $18/Adults, $7/Seniors 65+, $7/Youth 5-17, $3/Children 5-11, Free for children 4 and under | San Francisco Botanical Garden One of the most unique interactive music festivals in the Bay Area is back! Flower Piano returns for its 11th year with 11 days of music, 12 pianos, and 130 performances in more...</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4141/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/flower-piano-2026-12-hidden-pianos-in-golden-gate-park-sept-10-20-2/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Trail &amp; Habitat Volunteer Work: Restoring Laguna Honda’s Lost Trails | SF" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4169/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">12</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-12T09:00:00">
+                                
+                                9:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4169/">
+                                    Trail &amp; Habitat Volunteer Work: Restoring Laguna Honda’s Lost Trails | SF
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4169/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/trail-habitat-volunteer-work-restoring-laguna-hondas-lost-trails-sf-106/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for SF’s Free “Show and Tell” Picnic in the Park for Adults (Panhandle)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4297/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">12</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-12T10:00:00">
+                                
+                                10:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4297/">
+                                    SF’s Free “Show and Tell” Picnic in the Park for Adults (Panhandle)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4297/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/sfs-free-show-picnic-park-adults-panhandle/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for SF’s “Fiesta de las Américas” Cultural Festival &amp; Block Party 2026" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4278/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">12</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-12T11:00:00">
+                                
+                                11:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4278/">
+                                    SF’s “Fiesta de las Américas” Cultural Festival &amp; Block Party 2026
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4278/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/sfs-fiesta-de-las-amricas-mission/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for SF’s ‘Kite by the Bay’ 2026: Kite Festival in the Park (Candlestick Point)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4284/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">12</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-12T13:00:00">
+                                
+                                1:00 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4284/">
+                                    SF’s ‘Kite by the Bay’ 2026: Kite Festival in the Park (Candlestick Point)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4284/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/sfs-free-kite-by-the-bay-kite-festival-candlestick-point/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for “Guttural Scream at the Sea” Massive Group Yell + BYO Fresh Bruit Picnic (The Presdio)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4340/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">12</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-12T16:30:00">
+                                
+                                4:30 PM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4340/">
+                                    “Guttural Scream at the Sea” Massive Group Yell + BYO Fresh Bruit Picnic (The Presdio)
+                                </a>
+</h4>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4340/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/guttural-scream-sea-massive-group-yell-byo-fresh-bruit-picnic-presdio/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<div class="date-divider flex items-center gap-4 pt-4 first:pt-0">
+<h3 class="whitespace-nowrap text-sm font-black uppercase tracking-[0.13em] text-[#434a55]">
+                    
+                        Sunday
+                        <span class="font-semibold normal-case tracking-normal text-[#7a808b]">· September 13</span>
+</h3>
+</div>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Forever Grateful Exhibition" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2574/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/33332535/86da8ca8-71b0-47be-b380-665bfcfeccd4.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">13</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-13T10:00:00">
+                                
+                                10:00 AM
+                                
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2574/">
+                                    Forever Grateful Exhibition
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">San Francisco County Fair Building</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2574/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/9/5/forever-grateful-exhibition-tickets" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for Flower Piano 2026: 12 Hidden Pianos in Golden Gate Park (Sept. 10-20)" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/4404/">
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">13</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-13T10:00:00">
+                                
+                                10:00 AM
+                                –6:00 PM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/4404/">
+                                    Flower Piano 2026: 12 Hidden Pianos in Golden Gate Park (Sept. 10-20)
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Flower Piano 2026: 12 Hidden Pianos in Golden Gate Park (Sept. 10-20) Sunday, September 13 – 10:00 am - Ends at 6:00 pm | Cost: FREE* *Free for SF Residents, U.S. military/veterans, Museums for All participants (SNAP/EBT), and members. Flower Piano is included in Botanical Garden General Admission at $18/Adults, $7/Seniors 65+, $7/Youth 5-17, $3/Children 5-11, Free for children 4 and under | San Francisco Botanical Garden One of the most unique interactive music festivals in the Bay Area is back! Flower Piano returns for its 11th year with 11 days of music, 12 pianos, and 130 performances in more...</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/4404/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://sf.funcheap.com/flower-piano-2026-12-hidden-pianos-in-golden-gate-park-sept-10-20-3/" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+<article class="event-card overflow-hidden rounded-2xl">
+<div class="flex min-h-32">
+<a aria-label="View details for HEAD WEST Marketplace" class="event-media relative w-24 flex-none overflow-hidden sm:w-36" href="/sfevents/event/2545/">
+<img alt="" class="absolute inset-0 h-full w-full object-cover transition duration-300 hover:scale-105" loading="lazy" onerror="this.style.display='none'" src="https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/30899733/2da765b1-e0df-4b72-9707-8b0bbb6d533b.png"/>
+<span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-center text-white sm:hidden">
+<span class="block text-[0.65rem] font-black uppercase tracking-[0.14em]">Sep</span>
+<span class="block text-xl font-black leading-none">13</span>
+</span>
+</a>
+<div class="flex min-w-0 flex-1 flex-col p-3.5 sm:p-5">
+<div class="flex min-w-0 flex-1 flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+<div class="min-w-0">
+<time class="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]" datetime="2026-09-13T11:00:00">
+                                
+                                11:00 AM
+                                –5:00 PM
+                                
+                            </time>
+<h4 class="text-base font-black leading-snug text-[#121722] sm:text-lg">
+<a class="line-clamp-2 hover:text-[#2f55e7] hover:underline hover:decoration-2 hover:underline-offset-4" href="/sfevents/event/2545/">
+                                    HEAD WEST Marketplace
+                                </a>
+</h4>
+<p class="mt-2 flex items-start gap-1.5 text-sm leading-5 text-[#5d6573]">
+<svg aria-hidden="true" class="mt-0.5 h-4 w-4 flex-none" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><circle cx="12" cy="10" r="2.5" stroke-width="2"></circle></svg>
+<span class="line-clamp-1">Hayes Valley</span>
+</p>
+</div>
+<div class="mt-3 flex flex-wrap gap-1.5 lg:mt-0 lg:max-w-52 lg:justify-end">
+<span class="badge badge-free">Free</span>
+<span class="badge badge-neutral">Community</span>
+</div>
+</div>
+<div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#e7e2d8] pt-3">
+<a class="text-link text-sm" href="/sfevents/event/2545/">Event details →</a>
+<a class="text-sm font-semibold text-[#6b7280] hover:text-[#121722] hover:underline hover:underline-offset-4" href="https://dothebay.com/events/2026/9/13/head-west-marketplace-at-hayes-valley" rel="noopener noreferrer" target="_blank">Original listing ↗</a>
+</div>
+</div>
+</div>
+</article>
+</div>
+<nav aria-label="Event result pages" class="mt-8 flex items-center justify-between gap-4 border-t border-[#ded9cd] pt-6">
+<div>
+</div>
+<span class="text-sm font-black uppercase tracking-[0.12em] text-[#5d6573]">Page 1</span>
+<div>
+<a class="button-primary" href="/sfevents/category/community/page/2/">
+            Next 50 →
+        </a>
+</div>
+</nav>
+</div>
+</section>
+</main>
+<footer class="mt-12 border-t border-slate-300/70 bg-[#111827] py-8 text-slate-300">
+<div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+<p class="font-semibold text-white">EventScout</p>
+<p>Multiple sources. One cleaner San Francisco calendar.</p>
+<p class="text-xs">Snapshot updated Sep 04, 2026 18:14 UTC</p></div>
+</footer>
+<script>window.__ES_STATIC__ = {"root": "/sfevents/", "datePaths": {"upcoming": "/sfevents/", "today": "/sfevents/today/", "tomorrow": "/sfevents/tomorrow/", "week": "/sfevents/week/"}, "categoryPaths": {"": "/sfevents/", "Arts": "/sfevents/category/arts/", "Arts Family": "/sfevents/category/arts-family/", "Comedy": "/sfevents/category/comedy/", "Community": "/sfevents/category/community/", "Dance": "/sfevents/category/dance/", "Dj Parties": "/sfevents/category/dj-parties/", "Education": "/sfevents/category/education/", "Experiences": "/sfevents/category/experiences/", "Film": "/sfevents/category/film/", "Food & Drink": "/sfevents/category/food-drink/", "Music": "/sfevents/category/music/", "Outdoor Recreation": "/sfevents/category/outdoor-recreation/", "Shopping": "/sfevents/category/shopping/", "Sports & Fitness": "/sfevents/category/sports-fitness/", "Theater": "/sfevents/category/theater/", "Theatre Performing Arts": "/sfevents/category/theatre-performing-arts/"}, "searchIndex": "/sfevents/api/search-index.json", "searchCap": 100};</script><script>
+(function () {
+  var cfg = window.__ES_STATIC__ || {};
+  var dateSelect = document.getElementById('date-filter');
+  if (dateSelect) dateSelect.addEventListener('change', function () {
+    window.location.href = (cfg.datePaths || {})[this.value] || cfg.root;
+  });
+  var catSelect = document.getElementById('category-filter');
+  if (catSelect) catSelect.addEventListener('change', function () {
+    window.location.href = (cfg.categoryPaths || {})[this.value] || cfg.root;
+  });
+  var input = document.getElementById('event-search');
+  var list = document.getElementById('event-list');
+  if (!input || !list) return;
+  var original = list.innerHTML;
+  var index = null;
+  var pending = null;
+  function card(entry) {
+    var article = document.createElement('article');
+    article.className = 'event-card overflow-hidden rounded-2xl';
+    var pad = document.createElement('div');
+    pad.className = 'p-5';
+    var when = document.createElement('time');
+    when.className = 'block text-xs font-black uppercase tracking-[0.12em] text-[#f05a2a]';
+    when.textContent = entry.when;
+    var heading = document.createElement('h4');
+    heading.className = 'mt-1 text-lg font-black leading-snug text-[#121722]';
+    var link = document.createElement('a');
+    link.href = entry.href;
+    link.className = 'hover:text-[#2f55e7] hover:underline hover:underline-offset-4';
+    link.textContent = entry.title;
+    heading.appendChild(link);
+    var meta = document.createElement('p');
+    meta.className = 'mt-1 text-sm text-[#5d6573]';
+    meta.textContent = [entry.venue, entry.category, entry.price]
+      .filter(Boolean).join(' \u00b7 ');
+    pad.appendChild(when); pad.appendChild(heading); pad.appendChild(meta);
+    if (entry.status && entry.status !== 'scheduled') {
+      var badge = document.createElement('span');
+      badge.className = 'badge badge-' + entry.status;
+      badge.textContent = entry.status;
+      var badgeRow = document.createElement('p');
+      badgeRow.className = 'mt-2';
+      badgeRow.appendChild(badge);
+      pad.appendChild(badgeRow);
+    }
+    article.appendChild(pad);
+    return article;
+  }
+  function render(query) {
+    var tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!tokens.length) { list.innerHTML = original; return; }
+    var matches = index.filter(function (entry) {
+      var haystack = [entry.title, entry.venue, entry.category]
+        .filter(Boolean).join(' ').toLowerCase();
+      return tokens.every(function (token) { return haystack.indexOf(token) !== -1; });
+    });
+    list.textContent = '';
+    var count = document.createElement('p');
+    count.className = 'mb-5 text-sm font-semibold text-[#5d6573]';
+    var shown = Math.min(matches.length, cfg.searchCap);
+    count.textContent = matches.length
+      ? 'Showing ' + shown + ' of ' + matches.length + ' matching events'
+      : 'No matching events \u2014 try a broader search.';
+    list.appendChild(count);
+    var stack = document.createElement('div');
+    stack.className = 'space-y-4';
+    matches.slice(0, cfg.searchCap).forEach(function (entry) { stack.appendChild(card(entry)); });
+    list.appendChild(stack);
+  }
+  input.addEventListener('input', function () {
+    var query = this.value;
+    clearTimeout(pending);
+    pending = setTimeout(function () {
+      if (index) { render(query); return; }
+      fetch(cfg.searchIndex).then(function (resp) { return resp.json(); }).then(function (data) {
+        index = data;
+        render(query);
+      });
+    }, 250);
+  });
+})();
+</script></body>
+</html>

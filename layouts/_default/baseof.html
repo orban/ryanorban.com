@@ -1,0 +1,67 @@
+<!doctype html>
+<html
+  lang="{{ or site.Language.LanguageCode }}"
+  dir="{{ or site.Language.LanguageDirection `ltr` }}"
+>
+  <head>
+    {{ partial "head.html" . }}
+  </head>
+  {{- if .IsHome }}
+    <body class="working-record-site">
+      {{ `<!--
+        Direction contract (impeccable, 2026-09-04).
+        THESIS: A person-led page where the proof shares the first screen with the portrait; it refuses the portfolio fold that makes the reader scroll to meet any evidence.
+        OWN-WORLD: warm paper #f3efe6, near-black ink, one muted green; Instrument Serif for display, Geist for text, JetBrains Mono only for labels and measurement; hairline rules, no shadows, no radii.
+        STORY: an engineering leader sees who this is, what he has run, and one honest measurement; then reads the record and writes.
+        FIRST VIEWPORT: three columns: portrait left, name and one sentence centre, the seeded 100-run figure right in a hairline frame; a ruled timeline strip closes the fold.
+        FORM: the category standard, played straight (canon exit of roll a0c2305e); approved comp .impeccable/mocks/comp-c.webp.
+        FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
+      -->` | safeHTML }}
+      <a class="record-skip" href="#maincontent">Skip to main content</a>
+      <header class="record-site-header">
+        <a class="record-site-name" href="{{ .Site.Home.RelPermalink }}">Ryan Orban</a>
+        <nav class="record-nav" aria-label="Primary navigation">
+          <a href="#record">Record</a>
+          <a href="#work">Work</a>
+          <a href="#writing">Writing</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </header>
+      <main class="record-main" id="maincontent">
+        {{ block "main" . }}{{ end }}
+      </main>
+      <footer class="record-site-footer">
+        <p>Ryan Orban · San Francisco</p>
+        <p><a href="/about/">About</a> · <a href="/notes/">Bookmarks</a> · <a href="https://github.com/orban">GitHub</a> · <a href="https://www.linkedin.com/in/ryanorban">LinkedIn</a></p>
+      </footer>
+    </body>
+  {{- else }}
+    <body>
+      <div class="container mx-auto flex max-w-prose flex-col space-y-10 p-4 md:p-6">
+        <header class="flex flex-row items-center justify-between">
+          {{ partial "header.html" . }}
+        </header>
+        <main class="prose prose-slate relative md:prose-lg prose-h1:text-[2em]" id="maincontent">
+          {{ block "main" . }}{{ end }}
+        </main>
+        <footer class="mt-20 border-t border-neutral-100 pt-2 text-xs">
+          {{ partial "footer.html" . }}
+        </footer>
+      </div>
+      {{ if .Store.Get "hasMermaid" }}
+        <script
+          src="https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js"
+          integrity="sha256-G8ouPAnw4zzMbnAenHnVz6h9XpKbNdOkrqTh7AadyHs="
+          crossorigin="anonymous"
+        ></script>
+        <script type="text/javascript">
+          mermaid.initialize({
+            startOnLoad: true,
+            theme: 'neutral',
+            fontFamily: "'LatoLatinWeb', sans-serif"
+          });
+        </script>
+      {{ end }}
+    </body>
+  {{- end }}
+</html>

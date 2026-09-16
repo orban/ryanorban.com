@@ -1,29 +1,206 @@
 {{ define "main" }}
-  <article class="main">
-    {{- with .Content }}
-      {{ . }}
-    {{ end -}}
+  {{- /* The trial figure: one synthetic task run N times against a release bar.
+         Deterministic — a fixed seed drives a linear congruential generator at build
+         time — so the page is reproducible, and labelled as an illustration in the
+         caption. It exists so the first screen demonstrates the claim in the lede
+         instead of asserting it. Never presented as a measurement of a real system. */ -}}
+  {{- $n := 100 -}}
+  {{- $rate := 912 -}}
+  {{- $bar := 0.90 -}}
+  {{- $x := 20260819 -}}
+  {{- $marks := slice -}}
+  {{- $passes := 0 -}}
+  {{- range $i := seq $n -}}
+    {{- $x = mod (add (mul $x 1103515245) 12345) 2147483648 -}}
+    {{- $r := mod (div $x 65536) 1000 -}}
+    {{- if lt $r $rate -}}
+      {{- $marks = $marks | append true -}}
+      {{- $passes = add $passes 1 -}}
+    {{- else -}}
+      {{- $marks = $marks | append false -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $p := div (float $passes) (float $n) -}}
+  {{- $z := 1.96 -}}
+  {{- $zz := mul $z $z -}}
+  {{- $denom := add 1.0 (div $zz (float $n)) -}}
+  {{- $centre := div (add $p (div $zz (mul 2.0 (float $n)))) $denom -}}
+  {{- $half := div (mul $z (math.Sqrt (add (div (mul $p (sub 1.0 $p)) (float $n)) (div $zz (mul 4.0 (mul (float $n) (float $n))))))) $denom -}}
+  {{- $lo := sub $centre $half -}}
+  {{- $hi := add $centre $half -}}
+  {{- $first := index $marks 0 -}}
+  {{- $clears := ge $lo $bar -}}
+  {{- $pct := math.Round (mul $p 100) -}}
+  {{- $loPct := math.Round (mul $lo 100) -}}
+  {{- $hiPct := math.Round (mul $hi 100) -}}
+  {{- $barPct := math.Round (mul $bar 100) -}}
+
+  <article class="working-record">
+    <section class="record-hero" aria-labelledby="record-title">
+      <figure class="record-portrait">
+        <img src="/images/ryan-orban.jpg" width="800" height="800" alt="Ryan Orban" fetchpriority="high" />
+      </figure>
+      <div class="record-hero-copy">
+        <h1 id="record-title">Ryan Orban</h1>
+        <p class="record-byline">Founder and engineering leader · San Francisco</p>
+        <p class="record-lede">The same AI agent succeeds once and fails the next. I build the systems that measure which.</p>
+      </div>
+      <figure class="record-trials" role="group" aria-labelledby="trials-title" aria-describedby="trials-caption">
+        <p class="record-trials-head" id="trials-title"><span>One task · {{ $n }} runs</span><span>Bar {{ $barPct }}%</span></p>
+        <p class="record-trials-grid" aria-hidden="true">
+          {{- range $i, $ok := $marks -}}
+            <span class="{{ if $ok }}is-pass{{ else }}is-fail{{ end }}" style="--i:{{ $i }}"></span>
+          {{- end -}}
+        </p>
+        <dl class="record-trials-read">
+          <div><dt>Run 1 only</dt><dd class="record-trials-naive">{{ if $first }}Pass, ship it{{ else }}Fail, block it{{ end }}</dd></div>
+          <div><dt>All {{ $n }} runs</dt><dd>{{ $pct }}% pass · 95% CI {{ $loPct }}–{{ $hiPct }}%</dd></div>
+          <div><dt>Against the bar</dt><dd class="record-trials-verdict">{{ if $clears }}Cleared{{ else }}Not cleared{{ end }}: the interval starts at {{ $loPct }}%</dd></div>
+        </dl>
+        <figcaption class="record-trials-foot" id="trials-caption">
+          <span>{{ $passes }}/{{ $n }} pass · {{ sub $n $passes }} fail · synthetic and seeded, not a real system.</span>
+          <a href="/posts/stop-testing-agents-like-deterministic-code/">Why one run is a coin flip</a>
+        </figcaption>
+      </figure>
+    </section>
+
+    <ol class="record-timeline" role="list" aria-label="Career timeline">
+      <li><span>Nutanix</span> <time datetime="2011">2011–14</time></li>
+      <li><span>Zipfian → Galvanize</span> <time datetime="2014">2014–17</time></li>
+      <li><span>Placement.com</span> <time datetime="2019">2019–21</time></li>
+      <li><span>Tribe AI</span> <time datetime="2021">2021–23</time></li>
+      <li><span>Cadea</span> <time datetime="2023">2023–25</time></li>
+      <li class="record-timeline-link-item"><a class="record-timeline-link" href="#record">The full record <span aria-hidden="true">↓</span></a></li>
+    </ol>
+
+    <section class="record-section record-track" id="record" aria-labelledby="record-heading">
+      <header class="record-section-header">
+        <p class="record-label">The record</p>
+        <h2 id="record-heading">Things I’ve helped make real.</h2>
+      </header>
+      <ol class="record-rows" role="list">
+        <li>
+          <p class="record-row-label"><span>Deployed</span><time datetime="2011">2011–14</time></p>
+          <div>
+            <h3>Nutanix · federal systems</h3>
+            <p>Joined early and moved from testing to first customer deployments to the field. Designed and deployed $100M+ virtualization clusters for Army, Air Force, and intelligence customers.</p>
+          </div>
+        </li>
+        <li>
+          <p class="record-row-label"><span>Built</span><time datetime="2014">2014–17</time></p>
+          <div>
+            <h3>Zipfian Academy → Galvanize</h3>
+            <p>Co-founded one of the first immersive data science programs in the US: $1M+ bootstrapped revenue in year one, 98% placement, acquired by Galvanize. As Galvanize CTO, scaled the program across campuses while running engineering, curriculum, and platform teams.</p>
+          </div>
+        </li>
+        <li>
+          <p class="record-row-label"><span>Drove</span><time datetime="2017">2017–19</time></p>
+          <div>
+            <h3>Sabbatical</h3>
+            <p>Two years overland through North, Central, and South America, then back to data and AI systems.</p>
+          </div>
+        </li>
+        <li>
+          <p class="record-row-label"><span>Shipped</span><time datetime="2019">2019–21</time></p>
+          <div>
+            <h3>Placement.com</h3>
+            <p>Built the data science and search platform for a job marketplace: ranking and retrieval with Elasticsearch, Learning to Rank, and BERT embeddings, measured on placement conversion.</p>
+          </div>
+        </li>
+        <li>
+          <p class="record-row-label"><span>Led</span><time datetime="2021">2021–23</time></p>
+          <div>
+            <h3>Tribe AI</h3>
+            <p>Owned product and infrastructure for a network of 150+ senior ML practitioners, standardizing how teams scoped and delivered production AI work.</p>
+          </div>
+        </li>
+        <li>
+          <p class="record-row-label"><span>Founded</span><time datetime="2023">2023–25</time></p>
+          <div>
+            <h3>Cadea</h3>
+            <p>Secure workspace chatbots with RBAC-aware retrieval and agentic pipelines for regulated data. The prototypes worked, the market was early, so I returned the remaining capital and wrote up the red-teaming, governance, and evaluation playbooks.</p>
+          </div>
+        </li>
+        <li>
+          <p class="record-row-label"><span>Now</span><time datetime="2026">2026</time></p>
+          <div>
+            <h3>Agent evaluation infrastructure</h3>
+            <p>Building statistical tools for understanding stochastic behavior, extracting training signal, and deciding when an agent is reliable enough to ship.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="record-section record-work" id="work" aria-labelledby="work-heading">
+      <header class="record-section-header">
+        <p class="record-label">Current work</p>
+        <h2 id="work-heading">Two systems. Two measurement problems.</h2>
+      </header>
+
+      <div class="record-work-grid">
+      <article class="record-project">
+        <div class="record-project-body">
+          <h3><a href="https://github.com/orban/moirai">Moirai</a></h3>
+          <p class="record-project-kind">Evaluation research · Python</p>
+          <p>Aligns repeated agent trajectories, finds where behavior diverges, tests which choices predict success, and exports those moments as preference data.</p>
+          <dl class="record-metrics">
+            <div><dt>Runs analyzed</dt><dd>12,854</dd></div>
+            <div><dt>Mixed-outcome tasks</dt><dd>1,096</dd></div>
+            <div><dt>Preference pairs</dt><dd>11,006</dd></div>
+            <div><dt>Output</dt><dd>Divergence points, ranked by outcome</dd></div>
+          </dl>
+          <p class="record-project-links"><a href="https://github.com/orban/moirai">Moirai on GitHub</a><a href="/posts/what-stochastic-variation-reveals/">Read the analysis</a></p>
+        </div>
+      </article>
+
+      <article class="record-project">
+        <div class="record-project-body">
+          <h3><a href="https://github.com/orban/cerberus">Cerberus</a></h3>
+          <p class="record-project-kind">Statistical CI/CD · TypeScript</p>
+          <p>Treats every agent invocation as a Bernoulli trial, then uses sequential tests and confidence intervals to decide whether the system is reliable enough to ship.</p>
+          <dl class="record-metrics">
+            <div><dt>Unit</dt><dd>One invocation, one Bernoulli trial</dd></div>
+            <div><dt>Stopping rule</dt><dd>Sequential probability ratio test</dd></div>
+            <div><dt>Interval</dt><dd>Wilson, 95%</dd></div>
+            <div><dt>Output</dt><dd>CI-native exit codes</dd></div>
+          </dl>
+          <p class="record-project-links"><a href="https://github.com/orban/cerberus">Cerberus on GitHub</a><a href="/posts/stop-testing-agents-like-deterministic-code/">Read the argument</a></p>
+        </div>
+      </article>
+      </div>
+    </section>
+
+    <section class="record-section record-writing" id="writing" aria-labelledby="writing-heading">
+      <header class="record-section-header">
+        <p class="record-label">Writing</p>
+        <h2 id="writing-heading">The work, explained.</h2>
+      </header>
+      {{- $posts := where site.RegularPages "Section" "posts" -}}
+      {{- $posts = first 3 $posts.ByDate.Reverse -}}
+      <ol class="record-writing-list" role="list">
+        {{- range $posts }}
+          <li>
+            <time datetime="{{ .Date | time.Format "2006-01-02" }}">{{ .Date | time.Format "Jan 2006" }}</time>
+            <div>
+              <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+              <p>{{ .Description }}</p>
+            </div>
+          </li>
+        {{- end }}
+      </ol>
+      <p class="record-more"><a href="/posts/">All writing</a></p>
+    </section>
+
+    <section class="record-contact" id="contact" aria-labelledby="contact-heading">
+      <div class="record-contact-rail">
+        <img src="/images/ryan-orban.jpg" width="800" height="800" alt="Ryan Orban" loading="lazy" />
+        <p class="record-label">Contact</p>
+      </div>
+      <div>
+        <h2 id="contact-heading">Have a production AI system that needs an owner?</h2>
+        <p>I’m looking for a team with a consequential system to run: agent evaluation, observability, memory, and the infrastructure that makes any of it measurable. The most useful first message is the problem you can’t currently measure.</p>
+        <p class="record-contact-links"><a class="record-contact-email" href="mailto:me@ryanorban.com">me@ryanorban.com</a><a href="https://github.com/orban">GitHub</a><a href="https://www.linkedin.com/in/ryanorban">LinkedIn</a><a href="/about/">Full background</a></p>
+      </div>
+    </section>
   </article>
-
-  {{- if default true site.Params.home.showRecentPosts }}
-    {{- $posts := where site.RegularPages "Section" "posts" -}}
-    {{- with $posts.Limit (int (default 3 site.Params.home.recentPostsLimit)) }}
-      <section>
-        <h2>Recent posts</h2>
-
-        {{ partial "posts/list.html" . }}
-      </section>
-    {{ end -}}
-  {{ end -}}
-
-  {{- if default true site.Params.home.showRecentNotes }}
-    {{- $notes := where site.RegularPages "Section" "notes" -}}
-    {{- with $notes.Limit (int (default 5 site.Params.home.recentNotesLimit)) }}
-      <section>
-        <h2>Recent notes</h2>
-
-        {{ partial "notes/list.html" . }}
-      </section>
-    {{ end -}}
-  {{ end -}}
 {{ end }}

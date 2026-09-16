@@ -1,38 +1,57 @@
-name: Deploy Hugo site to Pages
+# Build, validate, and (only on explicit dispatch) deploy ryanorban.com.
+#
+# Rules:
+# - Pushes to master and pull requests BUILD and VALIDATE the full artifact but never deploy.
+# - Production deployment happens only through `workflow_dispatch` on `master`, guarded by the
+#   reviewer-protected `github-pages` environment.
+# - The validator runs after Hugo and before the artifact is uploaded. A green Hugo build is not
+#   a green release.
+name: Build, validate, and deploy Hugo site
 
 on:
   push:
     branches: ["master"]
+  pull_request:
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Deploy the validated artifact to GitHub Pages (master only)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Builds run per ref so a pull request or a bot push never displaces a queued deploy; only the
+# deploy job holds the single "pages" slot.
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: "build-${{ github.ref }}"
+  cancel-in-progress: true
 
 defaults:
   run:
     shell: bash
 
+env:
+  HUGO_VERSION: "0.158.0"
+  SITE_BASE_URL: "https://ryanorban.com/"
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      HUGO_VERSION: "0.158.0"
+    outputs:
+      artifact-sha: ${{ github.sha }}
     steps:
       - name: Install Hugo CLI
         env:
           HUGO_DEB_PATH: hugo.deb
         run: |
-          wget -O "$HUGO_DEB_PATH" "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb" \
-          && sudo dpkg -i "$HUGO_DEB_PATH"
-
-      - name: Install Dart Sass
-        run: sudo snap install dart-sass
+          wget --quiet --output-document "$HUGO_DEB_PATH" \
+            "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb" \
+          && sudo dpkg --install "$HUGO_DEB_PATH"
+          hugo version
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,24 +68,51 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: npm
 
-      - name: Install JS dependencies
-        run: npm install
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v5
+      - name: Install JS dependencies (locked)
+        run: npm ci
 
-      - name: Install Hugo modules
-        run: hugo mod tidy
+      - name: Resolve Hugo modules and verify lockfiles are unchanged
+        run: |
+          hugo mod tidy
+          git diff --exit-code -- go.mod go.sum package-lock.json
 
-      - name: Build with Hugo
+      - name: Build production artifact
         env:
           HUGO_CACHEDIR: /tmp/hugo_cache
           HUGO_ENVIRONMENT: production
           TZ: America/Los_Angeles
-          BASE_URL: "${{ steps.pages.outputs.base_url }}/"
-        run: hugo --minify --baseURL "$BASE_URL"
+        run: |
+          hugo --cleanDestinationDir --minify --panicOnWarning --baseURL "$SITE_BASE_URL"
+
+      - name: Write build.json
+        run: |
+          python3 - <<'PY'
+          import json, os, datetime
+          payload = {
+              "sha": os.environ["GITHUB_SHA"],
+              "ref": os.environ.get("GITHUB_REF", ""),
+              "run_id": os.environ.get("GITHUB_RUN_ID", ""),
+              "built_at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+          }
+          with open("public/build.json", "w", encoding="utf-8") as fh:
+              json.dump(payload, fh, indent=2, sort_keys=True)
+              fh.write("\n")
+          print(json.dumps(payload, indent=2))
+          PY
+
+      - name: Validate production artifact
+        run: |
+          python3 scripts/validate_site.py \
+            --public public \
+            --url-manifest scripts/baselines/public-urls.txt \
+            --expected-sha "$GITHUB_SHA"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -74,6 +120,15 @@ jobs:
           path: ./public
 
   deploy:
+    # Migration period: production deployment only through workflow_dispatch on master with the
+    # `deploy` input set. Pushes and pull requests build and validate but never deploy.
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      && github.ref == 'refs/heads/master'
+      && inputs.deploy == true
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: "${{ steps.deployment.outputs.page_url }}"
@@ -83,3 +138,19 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Checkout (for the live validator)
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate the Cloudflare-fronted site
+        run: |
+          python3 scripts/validate_live.py \
+            --base-url https://ryanorban.com \
+            --expected-sha "$GITHUB_SHA" \
+            --url-manifest scripts/baselines/public-urls.txt \
+            --wait-seconds 300
