@@ -43,7 +43,7 @@ description: "Ryan Orban is a founder, technology executive, and data scientist 
       <h3>Founder &amp; CEO</h3>
       <p class="about-role-meta">Zipfian Academy</p>
     </div>
-    <p>Bootstrapped one of the first immersive data science programs. Built a 10-person team, grew revenue past $1M in year one, placed graduates at top tech firms, and created a curriculum format that many later programs echoed.</p>
+    <p>Bootstrapped one of the first immersive data science programs. Built a 10-person team, grew revenue past $1M in year one, placed 98% of graduates at top tech firms including Tesla, Facebook, and Google, and created a curriculum format that many later programs echoed.</p>
   </section>
 
   <section class="about-role">
