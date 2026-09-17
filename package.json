@@ -1,0 +1,31 @@
+{
+  "name": "ryanorban.com",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "build": "scripts/build.sh",
+    "validate": "python3 scripts/validate_site.py --public public --url-manifest scripts/baselines/public-urls.txt",
+    "validate:live": "python3 scripts/validate_live.py --base-url https://ryanorban.com --url-manifest scripts/baselines/public-urls.txt",
+    "test": "scripts/build.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orban/ryanorban.com.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/orban/ryanorban.com/issues"
+  },
+  "homepage": "https://github.com/orban/ryanorban.com#readme",
+  "dependencies": {
+    "vis-network": "^10.0.2"
+  },
+  "private": true
+}

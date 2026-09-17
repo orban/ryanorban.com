@@ -1,0 +1,561 @@
+/* Homepage stylesheet. Inlined only on the homepage by layouts/partials/head.html.
+   Scoped to .working-record-site / .record-*. scripts/audit_homepage.py enforces the
+   invariants: no specificity overrides, no parent selectors, no gradients, no shadows.
+
+   The page is a ledger. One column, one spine, hairline rules between entries. Type
+   does the hierarchy: Geist carries every sentence, Instrument Serif appears only at
+   two small sizes (the name, the section headings), JetBrains Mono only on dates and
+   figures where tabular alignment is the point. Nothing is display-sized, because the
+   loudest thing on the page should be the work, not the setting of the work. */
+
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('/fonts/instrument-serif-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('/fonts/instrument-serif-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('/fonts/geist-variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --record-bg: #f6f4ef;
+  --record-paper: #fdfcf9;
+  --record-ink: #17161a;
+  --record-mid: #4a4a52;
+  --record-muted: #62626a;
+  --record-accent: #8a3b1e;
+  --record-accent-dark: #6d2d16;
+  --record-accent-soft: #e4c9b6;
+  --record-line: #e0dcd2;
+  --record-line-dark: #c6c1b4;
+  --record-serif: 'Instrument Serif', Georgia, serif;
+  --record-sans: 'Geist Sans', 'Geist', system-ui, -apple-system, sans-serif;
+  --record-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --record-gutter: clamp(1.25rem, 5vw, 4.5rem);
+  --record-measure: 66rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body.working-record-site {
+  margin: 0;
+  background: var(--record-bg);
+  color: var(--record-ink);
+  font-family: var(--record-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.working-record-site ::selection {
+  background: var(--record-accent-soft);
+  color: var(--record-ink);
+}
+
+.working-record-site a {
+  color: inherit;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+  transition: color 120ms ease, text-decoration-color 120ms ease;
+}
+
+.working-record-site a:hover {
+  color: var(--record-accent-dark);
+  text-decoration-color: currentColor;
+}
+
+.working-record-site img {
+  display: block;
+  max-width: 100%;
+}
+
+.working-record-site :focus-visible {
+  outline: 2px solid var(--record-accent-dark);
+  outline-offset: 3px;
+}
+
+.working-record-site time,
+.record-metrics dd {
+  font-variant-numeric: tabular-nums;
+}
+
+.record-skip {
+  position: absolute;
+  left: -9999px;
+}
+
+.record-skip:focus {
+  left: var(--record-gutter);
+  top: 0.75rem;
+  z-index: 10;
+  padding: 0.5rem 0.75rem;
+  background: var(--record-paper);
+  border: 1px solid var(--record-ink);
+}
+
+/* --- shell ------------------------------------------------------------- */
+
+.record-site-header,
+.record-main,
+.record-site-footer {
+  max-width: var(--record-measure);
+  margin: 0 auto;
+  padding-left: var(--record-gutter);
+  padding-right: var(--record-gutter);
+}
+
+.record-site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 2.25rem;
+  padding-bottom: 1.5rem;
+}
+
+.record-byline {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.record-portrait {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 22%;
+  filter: grayscale(100%) contrast(1.02);
+  flex: none;
+}
+
+.record-site-name {
+  margin: 0;
+  font-family: var(--record-serif);
+  font-size: 1.75rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.005em;
+  text-decoration: none;
+}
+
+.record-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: var(--record-muted);
+}
+
+.record-nav a {
+  text-decoration: none;
+}
+
+.record-nav a:hover {
+  text-decoration: underline;
+}
+
+/* --- masthead ---------------------------------------------------------- */
+/* The lede starts on the same vertical as the ledger's prose column, so the page
+   has one spine from the first sentence to the last row. */
+
+.record-masthead {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 12rem) minmax(0, 1fr);
+  gap: 1.5rem;
+  padding: 1.875rem 0 1.5rem;
+  border-top: 1px solid var(--record-line-dark);
+}
+
+.record-where {
+  grid-column: 1 / 3;
+  margin: 0.25rem 0 0;
+  font-family: var(--record-mono);
+  font-size: 0.75rem;
+  line-height: 1.9;
+  color: var(--record-muted);
+}
+
+.record-lede {
+  margin: 0;
+  max-width: 48ch;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--record-ink);
+  text-wrap: pretty;
+}
+
+/* --- sections ---------------------------------------------------------- */
+
+.record-section {
+  padding: 2.25rem 0 0;
+}
+
+.record-rule {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding-bottom: 1.125rem;
+}
+
+.record-rule h2 {
+  margin: 0;
+  font-family: var(--record-serif);
+  font-size: 1.375rem;
+  font-weight: 400;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.record-rule::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--record-line-dark);
+}
+
+/* --- the ledger -------------------------------------------------------- */
+
+.record-rows,
+.record-writing-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.record-row {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 12rem) minmax(0, 1fr);
+  gap: 0.25rem 1.5rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--record-line);
+}
+
+.record-rows > .record-row:first-child,
+.record-writing-list > .record-row:first-child {
+  border-top: 0;
+  padding-top: 0.25rem;
+}
+
+.record-when {
+  margin: 0;
+  font-family: var(--record-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.9;
+  color: var(--record-muted);
+  white-space: nowrap;
+}
+
+.record-when .record-now {
+  display: inline-block;
+  margin-left: 0.25rem;
+  padding: 0 0.3rem;
+  color: var(--record-paper);
+  background: var(--record-accent);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: 0.1em;
+}
+
+.record-who {
+  margin: 0;
+}
+
+.record-who h3,
+.record-entry h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 550;
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  color: var(--record-ink);
+  text-wrap: balance;
+}
+
+.record-role {
+  margin: 0.0625rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--record-muted);
+}
+
+.record-what p,
+.record-entry p {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--record-mid);
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+.record-entry h3 + p {
+  margin-top: 0.1875rem;
+}
+
+.record-row-now .record-who h3 {
+  color: var(--record-ink);
+}
+
+.record-row-now .record-what p {
+  color: var(--record-ink);
+}
+
+/* --- building now ------------------------------------------------------ */
+
+.record-kind {
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.record-metrics {
+  margin: 1rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 2.25rem;
+  padding-top: 0.625rem;
+  border-top: 1px solid var(--record-line);
+}
+
+.record-metrics > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.record-metrics dt {
+  font-size: 0.6875rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--record-muted);
+}
+
+.record-metrics dd {
+  margin: 0;
+  font-family: var(--record-mono);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--record-accent);
+}
+
+.record-what .record-project-links {
+  margin: 1.125rem 0 0;
+  max-width: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  font-size: 0.8125rem;
+  color: var(--record-accent);
+}
+
+/* --- writing ----------------------------------------------------------- */
+
+.record-writing-list .record-entry {
+  grid-column: 2 / -1;
+}
+
+.record-entry h3 {
+  font-size: 1.0625rem;
+}
+
+.record-more {
+  margin: 1.25rem 0 0 8rem;
+  padding-top: 1.125rem;
+  border-top: 1px solid var(--record-line);
+  font-size: 0.8125rem;
+  color: var(--record-accent);
+}
+
+/* --- contact ----------------------------------------------------------- */
+
+.record-contact {
+  padding-bottom: 1rem;
+}
+
+.record-contact-row {
+  border-top: 0;
+  padding-top: 0.25rem;
+}
+
+.record-contact-body {
+  grid-column: 2 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  max-width: 56ch;
+}
+
+.record-contact-body p {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--record-mid);
+  text-wrap: pretty;
+}
+
+.record-contact-note {
+  padding-left: 0.875rem;
+  border-left: 2px solid var(--record-accent);
+}
+
+.record-contact-links {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  font-size: 0.875rem;
+}
+
+.record-contact-email {
+  font-weight: 550;
+  color: var(--record-accent);
+}
+
+/* --- footer ------------------------------------------------------------ */
+
+.record-site-footer {
+  margin-top: 3.5rem;
+  padding-top: 1.25rem;
+  padding-bottom: 3rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  border-top: 1px solid var(--record-line-dark);
+  font-size: 0.75rem;
+  color: var(--record-muted);
+}
+
+.record-site-footer p {
+  margin: 0;
+}
+
+/* --- responsive -------------------------------------------------------- */
+
+@media (max-width: 62rem) {
+  .record-masthead,
+  .record-row {
+    grid-template-columns: 5.5rem minmax(0, 10rem) minmax(0, 1fr);
+    gap: 0.25rem 1.25rem;
+  }
+
+  .record-masthead {
+    gap: 1.25rem;
+  }
+
+  .record-lede {
+    max-width: 56ch;
+  }
+
+  .record-more {
+    margin-left: 6.75rem;
+  }
+}
+
+@media (max-width: 46rem) {
+  .record-site-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .record-nav {
+    gap: 1.125rem;
+  }
+
+  .record-masthead,
+  .record-row,
+  .record-writing-list .record-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.375rem;
+    padding: 1.25rem 0;
+  }
+
+  .record-masthead {
+    gap: 1.125rem;
+    padding: 1.5rem 0 1.25rem;
+  }
+
+  .record-where,
+  .record-writing-list .record-entry {
+    grid-column: 1;
+  }
+
+  .record-more {
+    margin-left: 0;
+  }
+
+  .record-contact-body {
+    grid-column: 1;
+  }
+
+  .record-site-name {
+    font-size: 1.5rem;
+  }
+
+  .record-when {
+    line-height: 1.4;
+  }
+
+  .record-section {
+    padding-top: 2.25rem;
+  }
+
+  .record-rule h2 {
+    font-size: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .working-record-site a {
+    transition: none;
+  }
+}

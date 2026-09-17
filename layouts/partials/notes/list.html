@@ -1,0 +1,40 @@
+<div class="not-prose notes-list">
+  {{ range . }}
+    {{ $slug := .File.ContentBaseName }}
+    {{ $imgPath := printf "images/notes/%s.png" $slug }}
+    {{ $hasImg := fileExists (printf "static/%s" $imgPath) }}
+    <article class="note-card">
+      {{- if $hasImg }}
+        <a href="{{ .RelPermalink }}" class="note-card-thumb-link">
+          <img
+            src="/{{ $imgPath }}"
+            alt=""
+            class="note-card-thumb"
+            loading="lazy"
+          />
+        </a>
+      {{- end }}
+      <div class="note-card-body">
+        <h3 class="note-card-title">
+          <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+        </h3>
+        {{- with .Description }}
+          <p class="note-card-desc">{{ . }}</p>
+        {{- end }}
+        {{ with .Page.GetTerms "categories" }}
+          <ul class="note-card-tags">
+            {{ range first 4 . }}
+              <li>
+                <a
+                  href="{{ .RelPermalink }}"
+                  class="taxonomy"
+                  title="See notes on {{ .LinkTitle }}"
+                >{{ .LinkTitle }}</a>
+              </li>
+            {{ end }}
+          </ul>
+        {{ end }}
+      </div>
+    </article>
+  {{ end }}
+</div>

@@ -1,0 +1,44 @@
+# Display-name overrides for category slugs.
+# Used by layouts/notes/list.html and layouts/partials/page/meta.html.
+# Slugs not listed here fall back to title-case of the humanized slug
+# (e.g. "machine-learning" -> "Machine Learning").
+display:
+  ai: AI
+  ai-agents: AI Agents
+  ai-coding: AI Coding
+  ai-defense: AI Defense
+  ai-generated-code: AI-Generated Code
+  ai-infrastructure: AI Infrastructure
+  ai-literacy: AI Literacy
+  ai-ml: AI / ML
+  ai-safety: AI Safety
+  ai-security: AI Security
+  ai-tools: AI Tools
+  ai-ux: AI UX
+  llm: LLM
+  llm-as-judge: LLM-as-Judge
+  llm-benchmarks: LLM Benchmarks
+  llm-observability: LLM Observability
+  llm-security: LLM Security
+  mcp: MCP
+  cli: CLI
+  tui: TUI
+  gpu: GPU
+  ide: IDE
+  cto: CTO
+  sql: SQL
+  ssh: SSH
+  nlp: NLP
+  bm25: BM25
+  iot: IoT
+  macos: macOS
+  ios: iOS
+  cpp: C++
+  esp32: ESP32
+  wasm: WebAssembly
+  github: GitHub
+  3d: 3D
+  3blue1brown: 3Blue1Brown
+  raspberry-pi: Raspberry Pi
+  san-francisco: San Francisco
+  quantecon: QuantEcon

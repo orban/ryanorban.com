@@ -1,0 +1,87 @@
+{{/*
+  Category-based graph: notes are connected when they share >= 2 categories.
+  Overrides the theme's link-based graph.json.json, which required explicit
+  wiki-links between notes — useless for bookmark-style notes that don't
+  cross-reference each other.
+
+  Algorithm
+  ---------
+  1. For every category with 2+ notes, iterate its pages and accumulate a
+     per-page "how many categories do we share with each other page" map
+     via .Scratch.SetInMap (O(1) per bump).
+  2. For every page P, walk its neighbor map and emit an edge to each
+     neighbor with shared-count >= 2. Direction is canonical (lexicographic
+     by permalink) so Graph.ts draws exactly one edge per pair.
+
+  Output matches the shape consumed by ContentNetworkGraph.ts:
+    { pages: { <permalink>: {permalink,title,section} },
+      graph: { <permalink>: {in: [permalinks], out: [permalinks]} } }
+*/}}
+{{- $pages := where site.RegularPages "Section" "in" (slice "posts" "notes") -}}
+
+{{/* pageDict: node metadata */}}
+{{- $pageDict := dict -}}
+{{- range $pages -}}
+  {{- $pageDict = merge $pageDict (dict .RelPermalink (dict
+      "permalink" .RelPermalink
+      "title" (.Title | plainify | htmlUnescape | chomp | title)
+      "section" .Section
+  )) -}}
+{{- end -}}
+
+{{/* Reset neighbor scratch for every page */}}
+{{- range $p := $pages -}}
+  {{- $p.Scratch.Set "_nbr" (dict) -}}
+{{- end -}}
+
+{{/* Accumulate shared-category counts. For each category with 2+ pages,
+     every (a,b) ordered pair bumps a.neighbors[b] by 1. */}}
+{{- range $slug, $tax := site.Taxonomies.categories -}}
+  {{- $catPages := where $tax.Pages "Section" "in" (slice "posts" "notes") -}}
+  {{- if ge (len $catPages) 2 -}}
+    {{- range $a := $catPages -}}
+      {{- range $b := $catPages -}}
+        {{- if ne $a.RelPermalink $b.RelPermalink -}}
+          {{- $nbr := $a.Scratch.Get "_nbr" -}}
+          {{- $curr := index $nbr $b.RelPermalink | default 0 -}}
+          {{- $a.Scratch.SetInMap "_nbr" $b.RelPermalink (add $curr 1) -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{/* Seed graphDict with empty in/out for every page */}}
+{{- $graphDict := dict -}}
+{{- range $p := $pages -}}
+  {{- $graphDict = merge $graphDict (dict $p.RelPermalink (dict "in" (slice) "out" (slice))) -}}
+{{- end -}}
+
+{{/* For each page, emit up to $topK edges to its most-related neighbors
+     (threshold shared-count >= 2). Each note's graph will show its top-K
+     outgoing plus whatever incoming edges other notes point at it,
+     bounding total on-screen density without orphaning anyone. */}}
+{{- $threshold := 2 -}}
+{{- $topK := 10 -}}
+{{- range $p := $pages -}}
+  {{- $nbr := $p.Scratch.Get "_nbr" -}}
+  {{- $ranked := slice -}}
+  {{- range $np, $cnt := $nbr -}}
+    {{- if ge $cnt $threshold -}}
+      {{- $ranked = $ranked | append (dict "p" $np "s" $cnt) -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $ranked = sort $ranked "s" "desc" -}}
+  {{- range $n := first $topK $ranked -}}
+    {{- $pEntry := index $graphDict $p.RelPermalink -}}
+    {{- $nEntry := index $graphDict $n.p -}}
+    {{- if and $pEntry $nEntry -}}
+      {{- $graphDict = merge $graphDict (dict
+        $p.RelPermalink (dict "in" $pEntry.in "out" ($pEntry.out | append $n.p))
+        $n.p            (dict "in" ($nEntry.in | append $p.RelPermalink) "out" $nEntry.out)
+      ) -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{ jsonify (dict "indent" "  ") (dict "pages" $pageDict "graph" $graphDict) }}

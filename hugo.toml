@@ -1,0 +1,82 @@
+baseURL = "https://ryanorban.com/"
+languageCode = "en-us"
+title = "Ryan Orban"
+copyright = "Ryan Orban"
+enableRobotsTXT = true
+
+[module]
+  [[module.imports]]
+    path = "github.com/michenriksen/hugo-theme-til"
+
+[outputs]
+  home = ["HTML"]
+  section = ["HTML", "RSS", "JSON"]
+  page = ["HTML"]
+
+[menus]
+  [[menus.main]]
+    name = "Work"
+    url = "/#work"
+    weight = 10
+  [[menus.main]]
+    name = "Writing"
+    pageRef = "/posts"
+    weight = 20
+  [[menus.main]]
+    name = "Bookmarks"
+    pageRef = "/notes"
+    weight = 25
+  [[menus.main]]
+    name = "About"
+    pageRef = "/about"
+    weight = 30
+  [[menus.main]]
+    name = "Contact"
+    url = "/#contact"
+    weight = 40
+
+[params]
+  dateFormat = ":date_long"
+  showGraph = true
+
+  [params.author]
+    name = "Ryan Orban"
+    email = "me@ryanorban.com"
+
+  [params.home]
+    showRecentPosts = false
+    showRecentNotes = false
+
+  [params.footer]
+    creativeCommonsLicense = "none"
+    showThemeCredit = true
+
+  [params.plausible]
+    enable = true
+    host = "https://plausible.srv.ryo.wtf"
+    domain = "ryanorban.com"
+
+  [params.robotsTxt]
+    blockAI = true
+
+[markup]
+  [markup.highlight]
+    style = "tokyonight-night"
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+    [markup.goldmark.extensions.passthrough]
+      enable = true
+      [markup.goldmark.extensions.passthrough.delimiters]
+        inline = [['$', '$']]
+        block = [['$$', '$$']]
+  [markup.goldmark.parser]
+    [markup.goldmark.parser.attribute]
+      block = true
+
+# The homepage carries its design direction contract as an HTML comment that must survive
+# the production build (scripts/audit_homepage.py checks for it).
+[minify]
+  [minify.tdewolff]
+    [minify.tdewolff.html]
+      keepComments = true
