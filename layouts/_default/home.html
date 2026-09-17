@@ -1,29 +1,223 @@
 {{ define "main" }}
-  <article class="main">
-    {{- with .Content }}
-      {{ . }}
-    {{ end -}}
+  {{- /* The ledger. The page is a record, not a pitch: reverse-chronological rows of
+         work that actually happened, with the writing and the two current tools as
+         supporting entries in the same rhythm. No synthetic demo, no hero image —
+         the portrait is a byline, and the first screen is the record itself. */ -}}
+
+  <article class="record-page">
+    <section class="record-masthead">
+      <p class="record-where">
+        San Francisco<br />
+        <a href="mailto:me@ryanorban.com">me@ryanorban.com</a><br />
+        <a href="https://github.com/orban">github.com/orban</a><br />
+        <a href="https://www.linkedin.com/in/ryanorban">linkedin.com/in/ryanorban</a>
+      </p>
+      <p class="record-lede">
+        Fifteen years building systems that had to hold up in front of someone:
+        a data science school, a job marketplace’s ranking stack, and a company
+        that didn’t work out, so I gave the remaining money back.
+      </p>
+    </section>
+
+    <section class="record-section" id="record" aria-labelledby="record-heading">
+      <header class="record-rule">
+        <h2 id="record-heading">The record</h2>
+      </header>
+
+      <ol class="record-rows" role="list">
+        <li class="record-row record-row-now">
+          <p class="record-when"><time datetime="2026">2026</time> <span class="record-now">now</span></p>
+          <div class="record-who">
+            <h3>Agent evaluation</h3>
+            <p class="record-role">Independent · open source</p>
+          </div>
+          <div class="record-what">
+            <p>An agent that passes once has not passed.</p>
+          </div>
+        </li>
+
+        <li class="record-row">
+          <p class="record-when"><time datetime="2023">2023–25</time></p>
+          <div class="record-who">
+            <h3>Cadea</h3>
+            <p class="record-role">Founder</p>
+          </div>
+          <div class="record-what">
+            <p>
+              Secure workspace chatbots: RBAC-aware retrieval and agentic pipelines over
+              regulated data. The prototypes worked. The buyers were about two years out.
+              I returned the remaining capital and wrote up what I’d learned about
+              red-teaming, data governance, and evals instead of raising again.
+            </p>
+          </div>
+        </li>
+
+        <li class="record-row">
+          <p class="record-when"><time datetime="2021">2021–23</time></p>
+          <div class="record-who">
+            <h3>Tribe AI</h3>
+            <p class="record-role">CTO</p>
+          </div>
+          <div class="record-what">
+            <p>
+              Product and infrastructure for a network of 150+ senior ML practitioners.
+              Made scoping and delivery repeatable instead of re-invented per engagement.
+              Ran tech lead duty on client work: LLM prototyping, recommenders, data
+              platforms.
+            </p>
+          </div>
+        </li>
+
+        <li class="record-row">
+          <p class="record-when"><time datetime="2019">2019–21</time></p>
+          <div class="record-who">
+            <h3>Placement.com</h3>
+            <p class="record-role">Head of Data Science</p>
+          </div>
+          <div class="record-what">
+            <p>
+              Ranking, matching, and funnel analytics for a job marketplace: Elasticsearch
+              with Learning to Rank, BERT embeddings, Bayesian A/B tests. Every one of
+              them graded on a single outcome — whether the person got hired.
+            </p>
+          </div>
+        </li>
+
+        <li class="record-row">
+          <p class="record-when"><time datetime="2017">2017–19</time></p>
+          <div class="record-who">
+            <h3>Away</h3>
+            <p class="record-role">Sabbatical</p>
+          </div>
+          <div class="record-what">
+            <p>Two years overland through North, Central, and South America.</p>
+          </div>
+        </li>
+
+        <li class="record-row">
+          <p class="record-when"><time datetime="2014">2014–17</time></p>
+          <div class="record-who">
+            <h3>Zipfian → Galvanize</h3>
+            <p class="record-role">Founder, then CTO</p>
+          </div>
+          <div class="record-what">
+            <p>
+              Bootstrapped one of the first immersive data science programs in the US:
+              ten people, $1M+ of revenue in year one, 98% placement, graduates into
+              Tesla, Facebook, and Google. Galvanize acquired it, and I stayed on as CTO
+              to run engineering, curriculum, and platform across campuses.
+            </p>
+          </div>
+        </li>
+
+        <li class="record-row">
+          <p class="record-when"><time datetime="2011">2011–14</time></p>
+          <div class="record-who">
+            <h3>Nutanix</h3>
+            <p class="record-role">Sr. Systems Engineer</p>
+          </div>
+          <div class="record-what">
+            <p>
+              Distributed systems first, then the field. Designed and deployed $100M+ of
+              virtualization clusters for Army, Air Force, and intelligence customers —
+              rooms where “it usually works” is not an answer anyone accepts.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    {{- /* partials/record/data.html owns the projects and the pinned/non-pinned split.
+           baseof.html reads the same partial for the nav, so the nav's Writing item
+           and the Writing section below can never disagree about whether there is
+           anything left to show. */ -}}
+    {{- $record := partialCached "record/data.html" . -}}
+    {{- $projects := $record.projects -}}
+
+    <section class="record-section" id="work" aria-labelledby="work-heading">
+      <header class="record-rule">
+        <h2 id="work-heading">Building now</h2>
+      </header>
+
+      <ol class="record-rows" role="list">
+        {{- range $projects }}
+          {{- $project := . }}
+          <li class="record-row">
+            <p class="record-when"><span class="record-kind">{{ .kind }}</span></p>
+            <div class="record-who">
+              <h3><a href="{{ .repo }}">{{ .name }}</a></h3>
+              <p class="record-role">{{ .role }}</p>
+            </div>
+            <div class="record-what">
+              <p>{{ .body }}</p>
+              {{- with .metrics }}
+                <dl class="record-metrics">
+                  {{- range . }}
+                    <div><dt>{{ .label }}</dt><dd>{{ .value }}</dd></div>
+                  {{- end }}
+                </dl>
+              {{- end }}
+              <p class="record-project-links">
+                <a href="{{ .repo }}">Source</a>
+                {{- with .post }}
+                  <a href="{{ .RelPermalink }}">{{ $project.postLabel }}</a>
+                {{- end }}
+              </p>
+            </div>
+          </li>
+        {{- end }}
+      </ol>
+    </section>
+
+    {{- /* Writing carries only what Building now hasn't already spoken for. When every
+           published essay is pinned the section is omitted whole — no heading over an
+           empty list, no empty state — and it returns on its own the moment a
+           non-pinned post publishes. The nav item in baseof.html is gated on this same
+           value, so the two cannot fall out of step. */ -}}
+    {{- with $record.writing }}
+      <section class="record-section" id="writing" aria-labelledby="writing-heading">
+        <header class="record-rule">
+          <h2 id="writing-heading">Writing</h2>
+        </header>
+
+        <ol class="record-writing-list" role="list">
+          {{- range first 4 . }}
+            <li class="record-row">
+              <p class="record-when">
+                <time datetime="{{ .Date | time.Format "2006-01-02" }}">{{ .Date | time.Format "Jan 2006" }}</time>
+              </p>
+              <div class="record-entry">
+                <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+                <p>{{ .Description }}</p>
+              </div>
+            </li>
+          {{- end }}
+        </ol>
+        <p class="record-more"><a href="/posts/">All writing</a></p>
+      </section>
+    {{- end }}
+
+    <section class="record-section record-contact" id="contact" aria-labelledby="contact-heading">
+      <header class="record-rule">
+        <h2 id="contact-heading">What I’m looking for</h2>
+      </header>
+      <div class="record-row record-contact-row">
+        <p class="record-when"><span class="record-kind">Email</span></p>
+        <div class="record-contact-body">
+          <p>
+            A team with a system that matters and a measurement problem they can’t keep
+            ignoring: agent evaluation, observability, memory, and the infrastructure
+            that makes any of it legible. Or an argument about any of the above.
+          </p>
+          <p class="record-contact-note">
+            The most useful first message is the thing you currently can’t measure.
+          </p>
+          <p class="record-contact-links">
+            <a class="record-contact-email" href="mailto:me@ryanorban.com">me@ryanorban.com</a>
+            <a href="/about/">Full background</a>
+          </p>
+        </div>
+      </div>
+    </section>
   </article>
-
-  {{- if default true site.Params.home.showRecentPosts }}
-    {{- $posts := where site.RegularPages "Section" "posts" -}}
-    {{- with $posts.Limit (int (default 3 site.Params.home.recentPostsLimit)) }}
-      <section>
-        <h2>Recent posts</h2>
-
-        {{ partial "posts/list.html" . }}
-      </section>
-    {{ end -}}
-  {{ end -}}
-
-  {{- if default true site.Params.home.showRecentNotes }}
-    {{- $notes := where site.RegularPages "Section" "notes" -}}
-    {{- with $notes.Limit (int (default 5 site.Params.home.recentNotesLimit)) }}
-      <section>
-        <h2>Recent notes</h2>
-
-        {{ partial "notes/list.html" . }}
-      </section>
-    {{ end -}}
-  {{ end -}}
 {{ end }}

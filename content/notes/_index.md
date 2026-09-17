@@ -1,4 +1,4 @@
 ---
-title: "Notes"
-description: "Quick tips, insights, and discoveries."
+title: "Bookmarks"
+description: "A public archive of saved links with automatically generated source summaries."
 ---

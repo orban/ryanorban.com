@@ -1,0 +1,86 @@
+<!doctype html>
+<html
+  lang="{{ or site.Language.LanguageCode }}"
+  dir="{{ or site.Language.LanguageDirection `ltr` }}"
+>
+  <head>
+    {{ partial "head.html" . }}
+  </head>
+  {{- if .IsHome }}
+    <body class="working-record-site">
+      {{ `<!--
+        Direction contract (the ledger, 2026-09-16).
+        THESIS: The page is a record, not a pitch. Real, dated, named work carries the first screen; the thesis about agent reliability is demoted to evidence you can click, and the synthetic demo is gone because a fabricated figure is a weak opening claim.
+        OWN-WORLD: paper #f6f4ef, near-black ink, one oxide accent used only for the now-marker and links; Geist carries every sentence, Instrument Serif appears at two small sizes only, JetBrains Mono only on dates and figures; hairline rules, no shadows, no display type.
+        STORY: a reader meets a person in one byline line, reads one unvarnished sentence, and is immediately inside seven rows of what he actually shipped; the current tools and the writing follow in the same rhythm.
+        FIRST VIEWPORT: byline portrait at 56px beside the name, one lede sentence, then the ledger itself — the newest four rows are above the fold.
+        FORM: a well-set CV that sounds like a person wrote it; nothing on the page is sized to impress.
+        FINISH: every figure on this page is either corroborated by /about/ or extracted from the essay it links to; scripts/audit_homepage.py is the enforcement.
+      -->` | safeHTML }}
+      <a class="record-skip" href="#maincontent">Skip to main content</a>
+      <header class="record-site-header">
+        {{- /* The name is the running head and the document's only h1. The portrait
+               rides with it at byline size — a face on the masthead, not a hero. */ -}}
+        <div class="record-byline">
+          <img
+            class="record-portrait"
+            src="/images/ryan-orban.jpg"
+            width="800"
+            height="800"
+            alt="Ryan Orban"
+            fetchpriority="high"
+          />
+          <h1 class="record-site-name">Ryan Orban</h1>
+        </div>
+        {{- /* Writing is conditional: home.html omits that section entirely when every
+               published post is already pinned by a Building now project, so the nav
+               item is gated on the same partial rather than a second copy of the rule.
+               One definition, so the link can never point at a section that isn't
+               there. */ -}}
+        <nav class="record-nav" aria-label="Primary navigation">
+          <a href="#record">Record</a>
+          <a href="#work">Work</a>
+          {{- with (partialCached "record/data.html" .).writing }}
+            <a href="#writing">Writing</a>
+          {{- end }}
+          <a href="#contact">Contact</a>
+        </nav>
+      </header>
+      <main class="record-main" id="maincontent">
+        {{ block "main" . }}{{ end }}
+      </main>
+      <footer class="record-site-footer">
+        <p>Ryan Orban · San Francisco</p>
+        <p><a href="/about/">About</a> · <a href="/notes/">Bookmarks</a> · <a href="https://github.com/orban">GitHub</a> · <a href="https://www.linkedin.com/in/ryanorban">LinkedIn</a></p>
+      </footer>
+    </body>
+  {{- else }}
+    <body>
+      <div class="container mx-auto flex max-w-prose flex-col space-y-10 p-4 md:p-6">
+        <header class="flex flex-row items-center justify-between">
+          {{ partial "header.html" . }}
+        </header>
+        <main class="prose prose-slate relative md:prose-lg prose-h1:text-[2em]" id="maincontent">
+          {{ block "main" . }}{{ end }}
+        </main>
+        <footer class="mt-20 border-t border-neutral-100 pt-2 text-xs">
+          {{ partial "footer.html" . }}
+        </footer>
+      </div>
+      {{ if .Store.Get "hasMermaid" }}
+        <script
+          src="https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js"
+          integrity="sha256-G8ouPAnw4zzMbnAenHnVz6h9XpKbNdOkrqTh7AadyHs="
+          crossorigin="anonymous"
+        ></script>
+        <script type="text/javascript">
+          mermaid.initialize({
+            startOnLoad: true,
+            theme: 'neutral',
+            fontFamily: "'LatoLatinWeb', sans-serif"
+          });
+        </script>
+      {{ end }}
+    </body>
+  {{- end }}
+</html>

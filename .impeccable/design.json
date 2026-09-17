@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-05T03:37:06Z",
+  "title": "Design System: Ryan Orban — Homepage",
+  "extensions": {
+    "colorMeta": {
+      "paper-ground": { "role": "neutral", "displayName": "Paper Ground", "canonical": "oklch(95.3% 0.013 86.8)", "tonalRamp": ["#0d0b07", "#272520", "#44423c", "#64615a", "#85827b", "#a8a59d", "#ccc9c0", "#f2eee5"] },
+      "paper-figure": { "role": "neutral", "displayName": "Paper Figure", "canonical": "oklch(97.9% 0.008 91.5)", "tonalRamp": ["#0c0b08", "#262522", "#43423e", "#62615d", "#84827e", "#a7a5a0", "#cbc9c3", "#f0eee8"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "oklch(25.3% 0.012 145.2)", "tonalRamp": ["#080c08", "#222722", "#3e443e", "#5e635d", "#7f847f", "#a1a7a1", "#c5cbc5", "#ebf0eb"] },
+      "ink-mid": { "role": "neutral", "displayName": "Ink Mid", "canonical": "oklch(43.9% 0.018 142.1)", "tonalRamp": ["#070d07", "#212720", "#3d443c", "#5c645b", "#7d857c", "#a0a89f", "#c4ccc3", "#e9f1e8"] },
+      "ink-muted": { "role": "neutral", "displayName": "Ink Muted", "canonical": "oklch(50.4% 0.017 142.2)", "tonalRamp": ["#080d07", "#212720", "#3d443c", "#5c645b", "#7d857c", "#a0a89f", "#c4ccc3", "#e9f1e8"] },
+      "accent-green": { "role": "primary", "displayName": "Cleared Green", "canonical": "oklch(50.7% 0.082 154.7)", "tonalRamp": ["#001300", "#002f13", "#174e2f", "#376f4c", "#5a916d", "#7fb490", "#a4d8b5", "#cbfdda"] },
+      "accent-green-dark": { "role": "primary", "displayName": "Cleared Green Dark", "canonical": "oklch(42.6% 0.070 154.4)", "tonalRamp": ["#001201", "#002e16", "#1f4d31", "#406d4f", "#628e71", "#86b193", "#abd5b8", "#d1fbde"] },
+      "accent-green-soft": { "role": "accent", "displayName": "Selection Green", "canonical": "oklch(68.9% 0.080 142.5)", "tonalRamp": ["#001100", "#0d2d0c", "#2a4c27", "#486c44", "#678f63", "#88b284", "#add6a9", "#d3fccf"] },
+      "line": { "role": "neutral", "displayName": "Line", "canonical": "oklch(87.3% 0.018 92.7)", "tonalRamp": ["#0d0b05", "#27251d", "#454239", "#646157", "#868277", "#a9a599", "#cdc9bc", "#f2eee2"] },
+      "line-dark": { "role": "neutral", "displayName": "Line Dark", "canonical": "oklch(77.2% 0.021 94.6)", "tonalRamp": ["#0d0b04", "#28251b", "#454237", "#656155", "#868275", "#a9a597", "#cdc9ba", "#f3efe0"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The h1 name, once per page." },
+      "lede": { "displayName": "Lede", "purpose": "The single-sentence claim beside the portrait." },
+      "headline": { "displayName": "Headline", "purpose": "Section headings: record, work, writing, contact." },
+      "title": { "displayName": "Title", "purpose": "Project names inside the work section." },
+      "subhead": { "displayName": "Subhead", "purpose": "The one sans-serif heading weight: record-row and writing-list h3s." },
+      "body": { "displayName": "Body", "purpose": "Paragraph copy throughout." },
+      "label": { "displayName": "Label", "purpose": "Rail labels, nav, timestamps, metrics keys, footer — anything that measures or marks." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "trial-draw", "value": "240ms cubic-bezier(0.16, 1, 0.3, 1), staggered 9ms per cell", "purpose": "The one authored motion on the page: trial-figure cells draw in left to right on load. Replaced by an instant final state under prefers-reduced-motion." },
+      { "name": "state-transition", "value": "160ms ease-out", "purpose": "The bordered email tag's background/color invert on hover and focus." }
+    ],
+    "breakpoints": [
+      { "name": "tablet", "value": "1000px" },
+      { "name": "phone", "value": "680px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Trial Figure",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "The seeded 100-run figure: head line, cell grid, dl read-out, caption. Passes are outlined and unfilled; fails are solid ink.",
+      "html": "<figure class=\"ds-trials\"><p class=\"ds-trials-head\"><span>One task · 100 runs</span><span>Bar 90%</span></p><p class=\"ds-trials-grid\" aria-hidden=\"true\"><span class=\"ds-cell is-pass\"></span><span class=\"ds-cell is-pass\"></span><span class=\"ds-cell is-fail\"></span><span class=\"ds-cell is-pass\"></span></p><dl class=\"ds-trials-read\"><div><dt>Run 1 only</dt><dd class=\"ds-trials-naive\">Pass, ship it</dd></div><div><dt>All 100 runs</dt><dd>91% pass · 95% CI 84–95%</dd></div><div><dt>Against the bar</dt><dd class=\"ds-trials-verdict\">Cleared: the interval starts at 84%</dd></div></dl><figcaption class=\"ds-trials-foot\"><span>91/100 pass · 9 fail · synthetic and seeded, not a real system.</span></figcaption></figure>",
+      "css": ".ds-trials { display: flex; flex-direction: column; margin: 0; padding: 1.1rem 1.25rem 1rem; border: 1px solid #b9b5a6; background: #faf8f2; font-family: 'Geist Sans', system-ui, sans-serif; } .ds-trials-head { display: flex; justify-content: space-between; gap: 1rem; margin: 0; color: #1f241f; font-family: 'JetBrains Mono', monospace; font-size: 0.67rem; font-weight: 500; letter-spacing: 0.075em; text-transform: uppercase; } .ds-trials-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 0.3rem; margin: 1rem 0 0; padding: 0; line-height: 0; } .ds-cell { display: block; aspect-ratio: 1; border: 1px solid transparent; } .ds-cell.is-pass { background: #faf8f2; border-color: #b9b5a6; } .ds-cell.is-fail { background: #1f241f; border-color: #1f241f; } .ds-trials-read { display: grid; gap: 0.55rem; margin: 1.15rem 0 0; padding-top: 0.9rem; border-top: 1px solid #d9d5c8; } .ds-trials-read div { display: grid; grid-template-columns: 7.5rem minmax(0,1fr); gap: 0.75rem; align-items: baseline; } .ds-trials-read dt { margin: 0; color: #5f675e; font-family: 'JetBrains Mono', monospace; font-size: 0.67rem; letter-spacing: 0.075em; text-transform: uppercase; } .ds-trials-read dd { margin: 0; font-size: 0.86rem; line-height: 1.4; } .ds-trials-naive { color: #5f675e; text-decoration: line-through; } .ds-trials-verdict { font-weight: 600; } .ds-trials-foot { margin: 1rem 0 0; color: #5f675e; font-size: 0.76rem; line-height: 1.45; }"
+    },
+    {
+      "name": "Timeline Strip",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "Career timeline: each entry carries its own accent-green top-border tick.",
+      "html": "<ol class=\"ds-timeline\"><li><span>Nutanix</span> <time>2011–14</time></li><li><span>Cadea</span> <time>2023–25</time></li><li class=\"ds-timeline-link-item\"><a class=\"ds-timeline-link\" href=\"#record\">The full record →</a></li></ol>",
+      "css": ".ds-timeline { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.5rem 1.75rem; padding: 0 0 0.9rem; margin: 0; border-top: 1px solid #b9b5a6; border-bottom: 1px solid #d9d5c8; list-style: none; font-family: 'JetBrains Mono', monospace; } .ds-timeline li { display: flex; gap: 0.5rem; align-items: baseline; padding-top: 0.85rem; border-top: 2px solid #3b7350; margin-top: -1px; font-size: 0.67rem; letter-spacing: 0.075em; text-transform: uppercase; color: #5f675e; } .ds-timeline li span { color: #1f241f; } .ds-timeline-link-item { margin-left: auto; border-top: 0; } .ds-timeline-link { color: #2c5a3d; font-weight: 500; text-decoration: none; }"
+    },
+    {
+      "name": "Rail-Label Section Header",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "The recurring fixed-label / flexible-content grid, used for every section heading.",
+      "html": "<header class=\"ds-section-header\"><p class=\"ds-label\">The record</p><h2 class=\"ds-headline\">Things I've helped make real.</h2></header>",
+      "css": ".ds-section-header { display: grid; grid-template-columns: 9rem minmax(0,1fr); gap: 2rem; align-items: baseline; } .ds-label { margin: 0; color: #5f675e; font-family: 'JetBrains Mono', monospace; font-size: 0.67rem; font-weight: 500; letter-spacing: 0.075em; text-transform: uppercase; } .ds-headline { max-width: 20ch; margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(2.5rem, 5vw, 4.35rem); font-weight: 400; letter-spacing: -0.025em; line-height: 0.98; }"
+    },
+    {
+      "name": "Record Row",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "A rail-labelled list row (record track, writing list): dense 6.5rem label column, heading, paragraph.",
+      "html": "<li class=\"ds-row\"><p class=\"ds-row-label\"><span>Founded</span><time>2023–25</time></p><div><h3>Cadea</h3><p>Secure workspace chatbots with RBAC-aware retrieval and agentic pipelines for regulated data.</p></div></li>",
+      "css": ".ds-row { display: grid; grid-template-columns: 6.5rem minmax(0,1fr); gap: 1.5rem; padding: 1.5rem 0; border-bottom: 1px solid #d9d5c8; list-style: none; } .ds-row-label { display: flex; flex-direction: column; gap: 0.2rem; margin: 0; padding-top: 0.25rem; color: #5f675e; font-family: 'JetBrains Mono', monospace; font-size: 0.67rem; font-weight: 500; letter-spacing: 0.075em; text-transform: uppercase; } .ds-row-label span { color: #3b7350; } .ds-row h3 { margin: 0; font-family: 'Geist Sans', system-ui, sans-serif; font-size: 1.15rem; font-weight: 600; letter-spacing: -0.02em; } .ds-row p { max-width: 49rem; margin: 0.35rem 0 0; color: #4d554c; font-size: 0.96rem; line-height: 1.65; }"
+    },
+    {
+      "name": "Facts List",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "A dl-based metrics read-out sharing the rail-label grid with a hairline top border.",
+      "html": "<dl class=\"ds-metrics\"><div><dt>Runs analyzed</dt><dd>12,854</dd></div><div><dt>Preference pairs</dt><dd>11,006</dd></div></dl>",
+      "css": ".ds-metrics { display: grid; margin: 1.4rem 0 0; padding: 0; border-top: 1px solid #b9b5a6; } .ds-metrics div { display: grid; grid-template-columns: 9rem minmax(0,1fr); gap: 1rem; align-items: baseline; padding: 0.55rem 0; border-bottom: 1px solid #d9d5c8; font-variant-numeric: tabular-nums; } .ds-metrics dt { margin: 0; color: #5f675e; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; } .ds-metrics dd { margin: 0; font-size: 0.9rem; line-height: 1.4; color: #1f241f; }"
+    },
+    {
+      "name": "Bordered Email Tag",
+      "kind": "button",
+      "refersTo": "contact-email",
+      "description": "The only fill-inverting interactive element in the system.",
+      "html": "<a class=\"ds-email\" href=\"mailto:me@ryanorban.com\">me@ryanorban.com</a>",
+      "css": ".ds-email { display: inline-block; padding: 0.55rem 0.85rem; border: 1px solid #1f241f; color: #1f241f; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; font-weight: 500; letter-spacing: 0.02em; text-decoration: none; transition: background-color 160ms ease-out, color 160ms ease-out; } .ds-email:hover, .ds-email:focus-visible { background: #1f241f; color: #f3efe6; outline: 2px solid #2c5a3d; outline-offset: 3px; }"
+    },
+    {
+      "name": "Nav Link",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Primary navigation: mono, uppercase, quiet by default.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#record\">Record</a><a href=\"#work\">Work</a><a href=\"#writing\">Writing</a><a href=\"#contact\">Contact</a></nav>",
+      "css": ".ds-nav { display: flex; gap: 1.5rem; } .ds-nav a { color: #4d554c; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.04em; text-decoration: none; text-transform: uppercase; } .ds-nav a:hover, .ds-nav a:focus-visible { color: #2c5a3d; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Cleared Bar",
+    "overview": "This is a portrait-led record page for a technical executive deciding, in seconds, whether to hand someone ownership of a consequential system. The direction is confirmed as the category standard played straight: the craft level of brycesandlund.com, harshakaranth.com, coopershea.com, and madhuribhavana.com, with no smuggled quirk. What earns it that standing isn't the type system alone — a warm paper ground, one muted green accent, a serif/sans/mono three-family split — but the single device that carries the product's actual claim: a seeded, labelled 100-run trial figure sitting beside the portrait in the first viewport, showing that one pass and a hundred passes are different kinds of evidence. Everything else in the system is restraint in service of that one figure reading clearly.\n\nThe system is flat and rectilinear by rule: zero shadows, zero gradients, zero border-radius, enforced by scripts/audit_homepage.py. Depth comes only from a two-weight hairline vocabulary and a paper/ground contrast, never from elevation effects. Motion is likewise rationed to exactly one authored moment — the trial cells drawing in on load — rather than distributed across hovers and transitions as decoration.",
+    "keyCharacteristics": [
+      "Warm paper ground with a single muted green accent; no second hue anywhere, including in the trial figure's fail state.",
+      "Three type families, three fixed roles: serif asserts, sans explains, mono measures and labels.",
+      "One recurring layout idea — a fixed-width mono rail label beside flexible content — reused across section headers, record rows, the writing list, metrics, and contact.",
+      "Flat, hairline-bordered, square-cornered; depth by paper contrast, never by shadow.",
+      "One authored motion (the trial cells drawing in); every other transition is a plain, fast state change."
+    ],
+    "rules": [
+      { "name": "The One Hue Rule", "body": "Exactly one accent hue exists, and it never gains a sibling. The trial figure's fail cells are ink-filled, not a second color — a system that needs two hues to say pass/fail hasn't earned the accent yet.", "section": "colors" },
+      { "name": "The Two-Weight Hairline Rule", "body": "Every rule on the page is 1px solid, in one of exactly two colors: line for soft/internal dividers, line-dark for structural ones. No third weight, no shadows standing in for a third.", "section": "colors" },
+      { "name": "The Three-Family Rule", "body": "Exactly three families, exactly one role each: serif for anything that asserts (names, headlines, the lede), sans for anything that explains (body, sub-heads), mono for anything that labels or measures (rail labels, timestamps, metrics, nav). Never let a family cross into another's role.", "section": "typography" },
+      { "name": "The Rail-Label Rule", "body": "One layout idea repeats everywhere: a fixed-width mono label column beside a flexible content column — 9rem in section headers, the writing list, metrics, and the contact block; 6.5rem in record rows; 7.5rem in the trial figure's read-out. Any new record-style listing reuses this grid rather than inventing a new one.", "section": "layout" },
+      { "name": "The No-Shadow Rule", "body": "No box-shadow anywhere; the audit enforces it. A surface reads as elevated only by moving to paper-figure inside a hairline frame, never by shadow.", "section": "elevation" },
+      { "name": "The Zero-Radius Rule", "body": "border-radius is never set; every frame, tag, and card is a hard rectangle.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do keep exactly one accent hue (green); express any other state — failure, muted, disabled — through the ink/paper/line neutrals, never a second color.",
+      "Do reuse the rail-label grid (9rem label / flexible content, 6.5rem dense variant) for any new record-style listing; it's the system's one recurring layout idea.",
+      "Do reserve Instrument Serif for anything that asserts and JetBrains Mono for anything that labels or measures; never run body prose in mono or a headline in sans.",
+      "Do keep hairlines to exactly two weights (line, line-dark) and reuse them structurally rather than adding a third.",
+      "Do move a rail label or mono byline to after its heading on narrow viewports, never before it — the confirmed phone-width reflow order for section headers, record rows, and the writing list.",
+      "Do self-host every font; PRODUCT.md commits the homepage to zero third-party font requests."
+    ],
+    "donts": [
+      "Don't add a box-shadow, gradient, or border-radius; the audit script rejects all three.",
+      "Don't treat the trial figure's exact seed, run count, or pass/fail split as a system value — the template computes it live at build time; a future surface earns its own seed rather than copying this one's numbers.",
+      "Don't invent a second accent color to express a state the ink/paper neutrals can already carry — see the trial figure's ink-filled fail cells.",
+      "Don't carry a homepage-only device onto interior pages without re-running this pass. About, Writing, and Bookmarks still run on static/css/custom.css and are explicitly out of scope for this system; extend it deliberately rather than assuming it already applies."
+    ]
+  }
+}
