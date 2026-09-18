@@ -1,0 +1,15 @@
+{{- /* A labelled list of linked pages inside page/meta.html. Shadows the theme's, which
+       truncated each title to one line with Tailwind's `truncate` and hung the page's
+       categories off the right edge of every row.
+
+       Titles wrap here instead. These lists are three to five items on a page that has
+       room, and a backlink whose title is cut off mid-word is not a useful backlink. */ -}}
+{{- $label := .label -}}
+<div class="record-meta-list">
+  {{- with $label }}<h3>{{ . }}</h3>{{ end }}
+  <ul>
+    {{- range .pages }}
+      <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+    {{- end }}
+  </ul>
+</div>

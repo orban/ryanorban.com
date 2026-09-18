@@ -1,3 +1,13 @@
+{{- /* The footer block on a note or an essay: subjects, tags, the content graph, and the
+       backlinks. Shadows the theme's partial, which was the same data in Tailwind utility
+       markup with lucide icons beside every heading.
+
+       Same data, record grammar: hairline-separated sections, small mono headings, plain
+       link lists. The icons are gone — at this size they were decoration, and the
+       headings already say what each list is.
+
+       data/categories.yaml carries display-name overrides for the category slugs.
+       Without them the taxonomy renders "Ai-Agents" and "Nlp". */ -}}
 {{- $noop := partialCached "functions/linkable-pages" . -}}
 {{- $incomingPosts := slice -}}
 {{- $outgoingPosts := slice -}}
@@ -15,136 +25,55 @@
 {{- $relatedNotes := where (.Site.RegularPages.Related .) "Section" "notes" | first 5 -}}
 {{- $postsCount := add ( len $incomingPosts ) ( len $outgoingPosts ) ( len $relatedPosts ) -}}
 {{- $notesCount := add ( len $incomingNotes ) ( len $outgoingNotes ) ( len $relatedNotes ) -}}
-{{- $displayOverrides := site.Data.categories.display -}}
-<aside class="not-prose flex flex-col space-y-8 border-t pt-6">
+{{- $display := site.Data.categories.display -}}
+<div class="record-article-meta">
   {{- with .GetTerms "categories" }}
-    <section class="flex flex-col space-y-4">
-      <h2 class="flex flex-row items-center space-x-2 text-lg font-semibold">
-        {{ partial "svg/shapes" }}
-        <span>Categories</span>
-      </h2>
-
-      <ul class="ml-6 flex flex-row flex-wrap items-center space-x-2">
+    <section class="record-meta-section">
+      <h2>Subjects</h2>
+      <ul class="record-meta-tags">
         {{- range . }}
-          {{- $slug := .Name | urlize -}}
-          {{- $label := index $displayOverrides $slug | default ($slug | humanize | title) -}}
-          <li>
-            <a href="{{ .RelPermalink }}" class="taxonomy category">{{ $label }}</a>
-          </li>
+          {{- $slug := .LinkTitle | urlize }}
+          <li><a href="{{ .RelPermalink }}">{{ index $display $slug | default ($slug | humanize | title) }}</a></li>
         {{- end }}
       </ul>
     </section>
   {{- end }}
 
   {{- with .GetTerms "tags" }}
-    <section class="flex flex-col space-y-4">
-      <h2 class="flex flex-row items-center space-x-2 text-lg font-semibold">
-        {{ partial "svg/tags" }}
-        <span>Tags</span>
-      </h2>
-
-      <ul class="not-prose ml-6 flex flex-row flex-wrap items-center space-x-2">
+    <section class="record-meta-section">
+      <h2>Tags</h2>
+      <ul class="record-meta-tags">
         {{- range . }}
-          <li>
-            <a href="{{ .RelPermalink }}" class="taxonomy tag">{{ .Name }}</a>
-          </li>
+          <li><a href="{{ .RelPermalink }}">{{ .Name }}</a></li>
         {{- end }}
       </ul>
     </section>
   {{- end }}
 
-  {{- if default true site.Params.showGraph }}
-    <section class="flex flex-col space-y-4" aria-hidden="true">
-      <h2 class="flex flex-row items-center space-x-2 text-lg font-semibold">
-        {{ partial "svg/chart-network" }}
-        <span>Graph</span>
-      </h2>
-
-      {{ partial "graph" ( dict "page" . "class" "h-64 ml-6" ) }}
-    </section>
-  {{- end }}
-
   {{- if gt $postsCount 0 }}
-    <section class="flex flex-col space-y-4">
-      <h2 class="flex flex-row items-center space-x-2 text-lg font-semibold">
-        {{ partial "svg/newspaper" }}
-        <span>Posts</span>
-      </h2>
-
-      {{- with $incomingPosts }}
-        <section class="flex flex-col space-y-1">
-          <h3 class="flex flex-row items-center space-x-2 text-sm font-semibold">
-            {{ partial "svg/arrow-down-to-dot" }}
-            <span>Incoming</span>
-          </h3>
-
-          {{ partial "page/list" ( dict "pages" . "class" "ml-6" ) }}
-        </section>
-      {{- end }}
-
-      {{- with $outgoingPosts }}
-        <section class="flex flex-col space-y-1">
-          <h3 class="flex flex-row items-center space-x-2 text-sm font-semibold">
-            {{ partial "svg/arrow-up-from-dot" }}
-            <span>Outgoing</span>
-          </h3>
-
-          {{ partial "page/list" ( dict "pages" . "class" "ml-6" ) }}
-        </section>
-      {{- end }}
-
-      {{- with $relatedPosts }}
-        <section class="flex flex-col space-y-1">
-          <h3 class="flex flex-row items-center space-x-2 text-sm font-semibold">
-            {{ partial "svg/approximate-equals" }}
-            <span>Related</span>
-          </h3>
-
-          {{ partial "page/list" ( dict "pages" . "class" "ml-6" ) }}
-        </section>
-      {{- end }}
+    <section class="record-meta-section">
+      <h2>Essays</h2>
+      {{- with $incomingPosts }}{{ partial "page/list" (dict "pages" . "label" "Links here") }}{{ end }}
+      {{- with $outgoingPosts }}{{ partial "page/list" (dict "pages" . "label" "Linked from this page") }}{{ end }}
+      {{- with $relatedPosts }}{{ partial "page/list" (dict "pages" . "label" "Related") }}{{ end }}
     </section>
   {{- end }}
 
   {{- if gt $notesCount 0 }}
-    <section class="flex flex-col space-y-4">
-      <h2 class="flex flex-row items-center space-x-2 text-lg font-semibold">
-        {{ partial "svg/notebook-text" }}
-        <span>Notes</span>
-      </h2>
-
-      {{- with $incomingNotes }}
-        <section class="flex flex-col space-y-1">
-          <h3 class="flex flex-row items-center space-x-2 text-sm font-semibold">
-            {{ partial "svg/arrow-down-to-dot" }}
-            <span>Incoming</span>
-          </h3>
-
-          {{ partial "page/list" ( dict "pages" . "class" "ml-6" ) }}
-        </section>
-      {{- end }}
-
-      {{- with $outgoingNotes }}
-        <section class="flex flex-col space-y-1">
-          <h3 class="flex flex-row items-center space-x-2 text-sm font-semibold">
-            {{ partial "svg/arrow-up-from-dot" }}
-            <span>Outgoing</span>
-          </h3>
-
-          {{ partial "page/list" ( dict "pages" . "class" "ml-6" ) }}
-        </section>
-      {{- end }}
-
-      {{- with $relatedNotes }}
-        <section class="flex flex-col space-y-1">
-          <h3 class="flex flex-row items-center space-x-2 text-sm font-semibold">
-            {{ partial "svg/approximate-equals" }}
-            <span>Related</span>
-          </h3>
-
-          {{ partial "page/list" ( dict "pages" . "class" "ml-6" ) }}
-        </section>
-      {{- end }}
+    <section class="record-meta-section">
+      <h2>Bookmarks</h2>
+      {{- with $incomingNotes }}{{ partial "page/list" (dict "pages" . "label" "Links here") }}{{ end }}
+      {{- with $outgoingNotes }}{{ partial "page/list" (dict "pages" . "label" "Linked from this page") }}{{ end }}
+      {{- with $relatedNotes }}{{ partial "page/list" (dict "pages" . "label" "Related") }}{{ end }}
     </section>
   {{- end }}
-</aside>
+
+  {{- if default true site.Params.showGraph }}
+    {{- /* aria-hidden because the graph duplicates the link lists above it for anyone
+           who cannot see it, and vis-network renders into a canvas regardless. */ -}}
+    <section class="record-meta-section record-meta-graph" aria-hidden="true">
+      <h2>Graph</h2>
+      {{ partial "graph" ( dict "page" . "class" "h-64" ) }}
+    </section>
+  {{- end }}
+</div>

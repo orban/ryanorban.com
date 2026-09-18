@@ -1,0 +1,26 @@
+{{ define "main" }}
+  {{- /* Any single page that is not an essay, a note, or /about/ — today that is
+         /advising/ and /office-hours/. Shadows the theme's _default/single.html, which
+         wrapped the body in a Tailwind prose article with its own <h1> and date line.
+
+         No date on the header: these are standing offers, not dated entries, and a
+         "Published 2026-03-02" under /advising/ reads as staleness rather than
+         provenance. Essays get posts/single.html, which does show one. */ -}}
+
+  <article class="record-article">
+    {{- /* No spine entry: .record-article-title is placed in column 2 explicitly, so the
+           date cell can be left out entirely rather than filled with a spacer. */ -}}
+    <header class="record-article-header">
+      <div class="record-article-title">
+        <h1>{{ .Title }}</h1>
+        {{- with .Description }}
+          <p class="record-article-lede">{{ . }}</p>
+        {{- end }}
+      </div>
+    </header>
+
+    <div class="record-prose">
+      {{ .Content }}
+    </div>
+  </article>
+{{ end }}

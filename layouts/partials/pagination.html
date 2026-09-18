@@ -1,0 +1,12 @@
+{{- /* Shadows the theme's Tailwind paginator. Only /posts/ paginates today and it has
+       one page, so this renders nowhere — it exists so the first time it does render it
+       is not the last piece of the old design on the site. */ -}}
+{{- with .Paginator }}
+  {{- if gt .TotalPages 1 }}
+    <nav class="record-pagination" aria-label="Pagination">
+      {{- with .Prev }}<a href="{{ .URL }}" rel="prev">Newer</a>{{ else }}<span>Newer</span>{{ end }}
+      <span class="record-pagination-count">{{ .PageNumber }} / {{ .TotalPages }}</span>
+      {{- with .Next }}<a href="{{ .URL }}" rel="next">Older</a>{{ else }}<span>Older</span>{{ end }}
+    </nav>
+  {{- end }}
+{{- end }}

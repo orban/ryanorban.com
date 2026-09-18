@@ -1,0 +1,18 @@
+{{- /* How this page's title works in the Working Record shell.
+
+       Every page is a record page now — the theme's Tailwind shell and custom.css are
+       gone, so there is no longer an `.on` key to check and no second branch for it to
+       select. This partial survives for the one distinction that is still real:
+
+         .ownsTitle — the page body supplies its own <h1>, so the running head in
+                      baseof.html must not be one.
+
+       The homepage and /about/ are about the person, so "Ryan Orban" in the masthead is
+       their <h1> and everything below is an h2. Every other page leads with its own
+       subject — an essay title, a note title, "Bookmarks", a category name — so there
+       the running head demotes to a <p>. Two <h1>s on one page is the failure this
+       exists to prevent, and nothing in the build catches it off the homepage.
+
+       /about/ is identified by `layout: "record"`, which is also what selects
+       _default/record.html for it. */ -}}
+{{- return (dict "ownsTitle" (not (or .IsHome (eq .Layout "record")))) -}}

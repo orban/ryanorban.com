@@ -1,0 +1,37 @@
+{{ define "main" }}
+  {{- /* A bookmark. ~2,520 of these, and unlike an essay they are not Ryan's writing —
+         they are automatically generated summaries of someone else's page. The header
+         says so, and params.sourceUrl gives the original top billing rather than burying
+         it under the summary, because the original is the thing a reader actually wants.
+
+         Subjects, backlinks and the graph come from page/meta, shared with an essay. */ -}}
+
+  <article class="record-article">
+    <header class="record-article-header">
+      <p class="record-when">
+        {{- with .Date }}<time datetime="{{ .Format "2006-01-02" }}">{{ .Format "2006-01-02" }}</time>{{ end -}}
+        <br /><span class="record-kind">Bookmark</span>
+      </p>
+      <div class="record-article-title">
+        <h1>{{ .Title }}</h1>
+        {{- with .Description }}
+          <p class="record-article-lede">{{ . }}</p>
+        {{- end }}
+        {{- with .Params.sourceUrl }}
+          <p class="record-note-source">
+            <a href="{{ . }}" rel="noopener">Read the original</a>
+            <span class="record-note-host">{{ replaceRE `^https?://(www\.)?([^/]+).*$` "$2" . }}</span>
+          </p>
+        {{- end }}
+      </div>
+    </header>
+
+    <div class="record-prose">
+      {{ .Content }}
+    </div>
+
+    {{ partial "page/meta" . }}
+
+    <p class="record-more"><a href="/notes/">All bookmarks</a></p>
+  </article>
+{{ end }}

@@ -1,0 +1,61 @@
+{{ define "main" }}
+  {{- /* The writing index. Shadows the theme's layouts/posts/list.html, which paginated
+         .post-card rows inside a Tailwind list and titled the page from .Title — with no
+         content/posts/_index.md, Hugo derived that as "Posts" while the nav said
+         "Writing". The section page now exists and carries the title.
+
+         The row markup is the homepage's Writing section verbatim: .record-writing-list
+         of .record-row, entry in columns 2-3.
+
+         .Paginate is load-bearing even at two posts. The theme's template called it,
+         which made Hugo emit /posts/page/1/ as an alias to /posts/, and that URL is in
+         scripts/baselines/public-urls.txt — a plain `range` here drops it and
+         validate_site.py fails on the lost output. It also means the page can never
+         silently truncate. The paginator UI only appears above 20 posts and is still the
+         theme's Tailwind-classed partial; restyle it when it first renders. */ -}}
+
+  {{- $posts := where site.RegularPages "Section" "posts" -}}
+  {{- $pager := .Paginate ($posts.ByDate.Reverse) 20 -}}
+
+  {{- /* The header is posts/single.html's, not .record-masthead's. The masthead grid
+         puts its prose in column 3, which is right for the homepage lede but would set
+         this h1 a column to the right of the essay titles underneath it.
+         .record-article-header is 6.5rem + rest, so the title, the rows and an essay's
+         own title all start on the same vertical. */ -}}
+  <article class="record-article">
+    <header class="record-article-header">
+      <p class="record-when">
+        {{- with .OutputFormats.Get "rss" }}
+          <a href="{{ .RelPermalink }}">RSS</a><br />
+        {{- end }}
+        {{ len $posts }} {{ cond (eq (len $posts) 1) "essay" "essays" }}
+      </p>
+      <div class="record-article-title">
+        <h1>{{ .Title }}</h1>
+        {{- with .Description }}
+          <p class="record-article-lede">{{ . }}</p>
+        {{- end }}
+      </div>
+    </header>
+
+    {{- with $pager.Pages }}
+      <ol class="record-writing-list" role="list">
+        {{- range . }}
+          <li class="record-row">
+            <p class="record-when">
+              <time datetime="{{ .Date | time.Format "2006-01-02" }}">{{ .Date | time.Format "Jan 2006" }}</time>
+            </p>
+            <div class="record-entry">
+              <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+              <p>{{ .Description }}</p>
+            </div>
+          </li>
+        {{- end }}
+      </ol>
+    {{- end }}
+
+    {{- if gt $pager.TotalPages 1 }}
+      {{ partial "pagination.html" . }}
+    {{- end }}
+  </article>
+{{ end }}
