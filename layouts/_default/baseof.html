@@ -12,7 +12,7 @@
          without a second copy of the list. */ -}}
   {{- $record := partial "record/shell.html" . -}}
   {{- $anchor := cond .IsHome "" "/" -}}
-  {{- if $record }}
+  {{- if $record.on }}
     <body class="working-record-site">
       {{ if .IsHome }}{{ `<!--
         Direction contract (the ledger, 2026-09-16).
@@ -25,10 +25,12 @@
       -->` | safeHTML }}{{ end }}
       <a class="record-skip" href="#maincontent">Skip to main content</a>
       <header class="record-site-header">
-        {{- /* The name is the running head and the document's only h1 — on /about/ too,
-               where the subject of the page is the person, and the sections below carry
-               the h2s. Off the homepage it doubles as the way back. The portrait rides
-               with it at byline size — a face on the masthead, not a hero. */ -}}
+        {{- /* The name is the running head. It is also the h1 on the pages whose subject
+               is the person — the homepage and /about/, where the sections below carry
+               the h2s. On an essay the title takes the h1 and this demotes to a <p>,
+               which is what $record.ownsTitle decides. Off the homepage it doubles as
+               the way back. The portrait rides with it at byline size — a face on the
+               masthead, not a hero. */ -}}
         <div class="record-byline">
           <img
             class="record-portrait"
@@ -38,9 +40,16 @@
             alt="Ryan Orban"
             fetchpriority="high"
           />
-          <h1 class="record-site-name">
-            {{- if .IsHome }}Ryan Orban{{ else }}<a href="/">Ryan Orban</a>{{ end -}}
-          </h1>
+          {{- /* Both branches spelled out rather than interpolating the tag name:
+                 html/template escapes `<{{ $tag }}` into `&lt;p`, which ships a literal
+                 "<p class=..." as visible text in the masthead. */ -}}
+          {{- if $record.ownsTitle }}
+            <p class="record-site-name"><a href="/">Ryan Orban</a></p>
+          {{- else if .IsHome }}
+            <h1 class="record-site-name">Ryan Orban</h1>
+          {{- else }}
+            <h1 class="record-site-name"><a href="/">Ryan Orban</a></h1>
+          {{- end }}
         </div>
         {{- /* Writing is conditional: home.html omits that section entirely when every
                published post is already pinned by a Building now project, so the nav
@@ -57,8 +66,17 @@
             <a href="{{ $anchor }}#writing">Writing</a>
           {{- end }}
           <a href="{{ $anchor }}#contact">Contact</a>
+          {{- /* Off the homepage, one item says where you are. For /about/ that is the
+                 page itself; for an essay it is the section, because a nav item set to a
+                 full essay title is unreadable and "up to the index" is the more useful
+                 link anyway. aria-current only when it really is this page. */ -}}
           {{- if not .IsHome }}
-            <a href="{{ .RelPermalink }}" aria-current="page">{{ .Title }}</a>
+            {{- $here := cond $record.ownsTitle
+              (dict "url" "/posts/" "label" "Writing")
+              (dict "url" .RelPermalink "label" .Title) }}
+            <a href="{{ $here.url }}"
+              {{- if eq .RelPermalink $here.url }} aria-current="page"{{ end -}}
+            >{{ $here.label }}</a>
           {{- end }}
         </nav>
       </header>

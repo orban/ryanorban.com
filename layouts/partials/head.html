@@ -36,7 +36,7 @@
        on the theme's CDN fonts and custom.css. partials/record/shell.html owns the
        distinction, because loading one page's fonts with the other page's stylesheet
        renders in fallback type. */ -}}
-{{- $record := partial "record/shell.html" . -}}
+{{- $record := (partial "record/shell.html" .).on -}}
 {{- if $record }}
 <link rel="preload" href="/fonts/instrument-serif-normal.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="/fonts/geist-variable.woff2" as="font" type="font/woff2" crossorigin />

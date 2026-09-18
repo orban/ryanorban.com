@@ -1,0 +1,46 @@
+{{ define "main" }}
+  {{- /* An essay in the record shell. The theme's _default/single.html puts the body in
+         a Tailwind `prose prose-slate md:prose-lg` article; baseof.html's record branch
+         emits none of those classes, so .record-prose in home.css supplies the whole
+         typography instead. That is why it needs no !important: there is nothing to
+         override, which is the same reason custom.css is full of it.
+
+         What still comes from the theme, and must keep working: Chroma's .highlight /
+         .codeblock markup from _markup/render-codeblock.html, the heading anchors from
+         _markup/render-heading.html, the inline SVG figures and /embeds/ iframes
+         authored in the posts, and KaTeX when a post sets `math: true`. Those carry
+         Tailwind utility classes and the Tailwind build is loaded site-wide by
+         head/css, so they render here unchanged — .record-prose does not restyle them.
+
+         No feature-image branch: the posts are single files, not page bundles, so
+         .Resources is always empty. Add one here if a post ever becomes a bundle. */ -}}
+
+  <article class="record-article">
+    <header class="record-article-header">
+      <p class="record-when">
+        {{- with .Date }}
+          <time datetime="{{ .Format "2006-01-02" }}">{{ .Format "2006-01-02" }}</time>
+        {{- end -}}
+      </p>
+      <div class="record-article-title">
+        <h1>{{ .Title }}</h1>
+        {{- with .Description }}
+          <p class="record-article-lede">{{ . }}</p>
+        {{- end }}
+      </div>
+    </header>
+
+    <div class="record-prose">
+      {{ .Content }}
+    </div>
+
+    {{- /* Backlinks, related pages and the content graph. Tailwind-classed, so it is
+           laid out by the theme's build rather than by home.css; .record-article-meta
+           only replaces the border and the heading colour so it sits on paper. */ -}}
+    <div class="record-article-meta">
+      {{ partial "page/meta" . }}
+    </div>
+
+    <p class="record-more"><a href="/posts/">All writing</a></p>
+  </article>
+{{ end }}

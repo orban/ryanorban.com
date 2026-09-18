@@ -37,7 +37,8 @@ content/
 ├── about.md               # Full background and experience
 ├── advising.md            # Advisory services page
 ├── office-hours.md        # Calendly booking page
-├── posts/                 # Blog posts (full articles)
+├── posts/                 # Essays (full articles)
+│   ├── _index.md          # Section title only ("Writing")
 │   └── stop-testing-agents-like-deterministic-code.md
 └── notes/                 # TIL-style short notes
     └── _index.md
@@ -45,14 +46,16 @@ content/
 
 ### Layout Overrides
 
-Everything in `layouts/` shadows the theme module. There are eighteen files, in four groups.
+Everything in `layouts/` shadows the theme module. There are twenty files, in four groups.
 
-**"Working Record" — a separate design, on the homepage and `/about/`:**
+**"Working Record" — a separate design, on the homepage, `/about/`, `/posts/` and the essays:**
 
-- `layouts/partials/record/shell.html` — a returning partial: true when the page renders
-  in the record shell. A page opts in with `layout: "record"` in its front matter; the
-  homepage is in by definition. `baseof.html` and `head.html` both read it, because they
-  have to agree — the record body with `custom.css` inlined renders as unstyled prose.
+- `layouts/partials/record/shell.html` — a returning partial, and the only definition of
+  which pages are record pages. Returns `.on` (uses the record shell) and `.ownsTitle`
+  (the body supplies its own `<h1>`, so the running head demotes to a `<p>`). Three ways
+  in: the homepage by kind, `layout: "record"` in front matter, and the `posts` section.
+  `baseof.html` and `head.html` both read it, because they have to agree — a record body
+  with `custom.css` inlined renders as unstyled prose.
 - `layouts/_default/baseof.html` — forks the theme's shell. For a record page it emits the
   `working-record-site` body, skip link, record header/nav, and record footer; nav anchors
   are in-page on the homepage and root-relative elsewhere. The `else` branch is a copy of
@@ -62,6 +65,12 @@ Everything in `layouts/` shadows the theme module. There are eighteen files, in 
 - `layouts/_default/record.html` — the template `layout: "record"` selects. Thin on
   purpose: it emits `.Content` and nothing else, so a record page authors its own rows.
   `/about/` is the only page using it.
+- `layouts/posts/single.html` — an essay. Title, date on the spine, then `.Content` in a
+  `.record-prose` container. Keeps `partial "page/meta"` for backlinks and the graph.
+- `layouts/posts/list.html` — `/posts/`. Reuses `posts/single.html`'s header and the
+  homepage's `.record-writing-list` rows. **Keep the `.Paginate` call**: it is what makes
+  Hugo emit the `/posts/page/1/` alias, and that URL is in the pre-migration baseline, so
+  a plain `range` fails `validate_site.py`.
 
 **Hugo 0.158+ compatibility fixes:**
 
@@ -98,13 +107,19 @@ Everything in `layouts/` shadows the theme module. There are eighteen files, in 
 `layouts/partials/head.html` inlines exactly one of two stylesheets, never both, and
 `partials/record/shell.html` is what decides which:
 
-- `static/css/home.css` — record pages: the homepage and `/about/`. Scoped to
-  `.working-record-site` / `.record-*`. Hard constraints, enforced by the audit: no
-  `!important`, no `:has()`, no gradients, no box shadows, no broad global overrides.
-  The audit only builds the homepage, so a rule that exists solely for `/about/` is
-  unenforced — keep it in the same grammar anyway.
-- `static/css/custom.css` — every non-record page (posts, ~2,500 notes, the offer pages).
-  Uses `!important` heavily against the theme's Tailwind build.
+- `static/css/home.css` — record pages: the homepage, `/about/`, `/posts/` and the
+  essays. Scoped to `.working-record-site` / `.record-*`. Hard constraints, enforced by
+  the audit: no `!important`, no `:has()`, no gradients, no box shadows, no broad global
+  overrides. The audit only builds the homepage, so a rule that exists solely for another
+  record page is unenforced — keep it in the same grammar anyway. The check is a plain
+  substring match on this file, so even a comment that spells `!` + `important` fails it.
+- `static/css/custom.css` — every non-record page (`/notes/` and its ~2,500 notes, the
+  offer pages, `404.html`). Uses `!important` heavily against the theme's Tailwind build.
+
+`.record-prose` needs no `!important` where `custom.css` does, and the reason is worth
+knowing: `baseof.html`'s record branch emits no Tailwind `prose` classes, so there is
+nothing to out-specify. Migrating a page into the record shell therefore *removes* CSS
+weight rather than adding a third layer.
 
 A class only used by one of the two designs must not live in the other file — dead
 `.home-*` rules were previously inlined into every note page, and the `.about-*` rules
@@ -163,7 +178,9 @@ they did, and a robots.txt passed pre-deploy then failed post-deploy.
   of literal `.record-*` row markup rather than prose. Its figures are what
   `audit_homepage.py`'s `ABOUT_CLAIMS` corroborates the homepage against, so `$1M`,
   `150+`, `$100M+` and `91%` have to appear in both this file and `home.html`.
-- Blog posts go in `content/posts/` with frontmatter: `title`, `date`, `description`
+- Blog posts go in `content/posts/` with frontmatter: `title`, `date`, `description`.
+  `content/posts/_index.md` exists only to title the section "Writing" — without it Hugo
+  derived "Posts" from the directory while the nav said "Writing".
 - Add `math: true` to frontmatter for pages that use LaTeX (`$...$` inline, `$$...$$` block)
 - Notes go in `content/notes/` with frontmatter: `title`, `date`, `categories`
 - Static assets (images, CNAME) live in `static/`

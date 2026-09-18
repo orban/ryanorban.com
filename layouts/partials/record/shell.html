@@ -1,4 +1,8 @@
-{{- /* True when this page renders inside the Working Record shell.
+{{- /* Which pages render in the Working Record shell, and how their title works.
+
+       Returns a dict:
+         .on         — this page uses the record shell
+         .ownsTitle  — the page body supplies its own <h1>, so the running head must not
 
        Read by baseof.html, which decides the body class, header and footer, and by
        head.html, which decides the stylesheet and the font files. The two have to
@@ -6,7 +10,22 @@
        theme's Tailwind overrides and none of the .record-* rules, so it renders as
        unstyled prose inside a record header. One definition, in one place.
 
-       A page opts in with `layout: "record"` in its front matter, which also selects
-       layouts/_default/record.html as its template. The homepage is in by definition;
-       it has no front-matter layout because home.html is picked by kind. */ -}}
-{{- return (or .IsHome (eq .Layout "record")) -}}
+       Three ways in, and they are deliberately different mechanisms rather than one
+       generic flag, because each answers a different question:
+
+       - the homepage, by kind. home.html is selected for it and nothing else.
+       - `layout: "record"` in front matter, which also selects _default/record.html.
+         /about/ uses this: a hand-authored body of .record-* rows.
+       - the posts section, by section, covering /posts/ and every essay under it.
+         These are markdown prose, so they go through posts/single.html and
+         posts/list.html and get .record-prose rather than authoring rows.
+
+       ownsTitle is the posts section only. The homepage and /about/ lead with the
+       person, so "Ryan Orban" in the header is their <h1>; an essay leads with the
+       essay, so there the header demotes to a <p> and the title takes the <h1>. Two
+       <h1>s on one page is the failure this exists to prevent. */ -}}
+{{- $posts := eq .Section "posts" -}}
+{{- return (dict
+  "on" (or .IsHome (eq .Layout "record") $posts)
+  "ownsTitle" $posts
+) -}}
