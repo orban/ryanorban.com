@@ -1,0 +1,57 @@
+{{- /* /llms.txt — the agent-facing index, per llmstxt.org.
+
+       Every line below is derived. The blockquote is content/_index.md's description,
+       which is already the canonical og:description, and the sections come from
+       partials/record/data.html and site.RegularPages. Nothing here restates the
+       homepage lede or the record rows: those live as literal copy in home.html, and a
+       hand-written second copy in this file would drift the moment either changed.
+
+       Essays link to their markdown companion rather than the HTML, which is the pairing
+       the spec describes. /notes/ is listed but deliberately not enumerated -- it is
+       thousands of summaries of other people's writing, and naming it as an archive is
+       more useful to an agent than a wall of links. */ -}}
+{{- $record := partialCached "record/data.html" . -}}
+{{- $posts := where site.RegularPages "Section" "posts" -}}
+{{- $notes := where site.RegularPages "Section" "notes" -}}
+# {{ site.Title }}
+
+> {{ .Description }}
+
+Contact: {{ site.Params.author.email }}. Full role history: {{ absURL "/about/" }}
+Essays are available as clean markdown at the same URL with `index.md` appended.
+{{ with $posts }}
+## Writing
+{{ range .ByDate.Reverse }}
+- [{{ .Title }}]({{ .Permalink }}index.md): {{ .Description }}
+{{- end }}
+{{ end }}
+{{- with $record.projects }}
+## Building now
+{{ range . }}
+{{- /* Several project bodies end in a colon because home.html follows them with a
+       metrics table. Fold those figures into the sentence here, or the colon dangles. */}}
+- [{{ .name }}]({{ .repo }}): {{ .body }}{{ with .metrics }}{{ range $i, $m := . }}{{ if $i }},{{ end }} {{ $m.value }} {{ lower $m.label }}{{ end }}.{{ end }}
+{{- end }}
+{{ end }}
+{{- with $record.side }}
+## Other projects
+{{ range . }}
+- [{{ .name }}]({{ if hasPrefix .url "http" }}{{ .url }}{{ else }}{{ absURL .url }}{{ end }}): {{ .body }}
+{{- end }}
+{{ end }}
+{{- /* site.GetPage returns nothing for a page that is not built, so an unpublished or
+       renamed offer page drops out of this list rather than emitting a dead link. */ -}}
+{{- $offers := slice -}}
+{{- range slice "/advising" "/office-hours" -}}
+  {{- with site.GetPage . }}{{ $offers = $offers | append . }}{{ end -}}
+{{- end }}
+{{- with $offers }}
+## Working together
+{{ range . }}
+- [{{ .Title }}]({{ .Permalink }}index.md): {{ .Description }}
+{{- end }}
+{{ end }}
+## Background
+
+- [About]({{ absURL "/about/" }}): roles, dates, and what each one was measured on
+- [Bookmarks]({{ absURL "/notes/" }}): an archive of {{ len $notes }} saved links with automatically generated summaries of the source. These are other people's writing, not Ryan's, and are excluded from the markdown companions above
