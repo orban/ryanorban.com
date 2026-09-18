@@ -1,11 +1,13 @@
-# Build, validate, and (only on explicit dispatch) deploy ryanorban.com.
+# Build, validate, and deploy ryanorban.com.
 #
 # Rules:
-# - Pushes to master and pull requests BUILD and VALIDATE the full artifact but never deploy.
-# - Production deployment happens only through `workflow_dispatch` on `master`, guarded by the
-#   reviewer-protected `github-pages` environment.
+# - Pull requests BUILD and VALIDATE the full artifact but never deploy.
+# - Pushes to master deploy after validation passes, through the `github-pages` environment.
+# - `workflow_dispatch` on `master` with `deploy: true` redeploys without a new commit.
 # - The validator runs after Hugo and before the artifact is uploaded. A green Hugo build is not
 #   a green release.
+# - A skipped deploy job still reports the run as "success". Check the job, not the run, when
+#   confirming that something reached production.
 name: Build, validate, and deploy Hugo site
 
 on:
@@ -120,12 +122,16 @@ jobs:
           path: ./public
 
   deploy:
-    # Migration period: production deployment only through workflow_dispatch on master with the
-    # `deploy` input set. Pushes and pull requests build and validate but never deploy.
+    # Pushes to master deploy once the build job's validation passes. Manual workflow_dispatch with
+    # `deploy: true` still works for redeploying master without a new commit. Pull requests never
+    # deploy. The dispatch-only gate this replaces was added in 4eb98d3 to hold production while the
+    # homepage redesign was in flight; the redesign landed in #10.
     if: >-
-      github.event_name == 'workflow_dispatch'
-      && github.ref == 'refs/heads/master'
-      && inputs.deploy == true
+      github.ref == 'refs/heads/master'
+      && (
+        github.event_name == 'push'
+        || (github.event_name == 'workflow_dispatch' && inputs.deploy == true)
+      )
     concurrency:
       group: "pages"
       cancel-in-progress: false
