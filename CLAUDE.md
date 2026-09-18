@@ -78,7 +78,7 @@ Everything in `layouts/` shadows the theme module. There are twelve files, in th
 - `static/css/home.css` — homepage only. Scoped to `.working-record-site` / `.record-*`.
   Hard constraints, enforced by the audit: no `!important`, no `:has()`, no gradients,
   no box shadows, no broad global overrides.
-- `static/css/custom.css` — every non-home page (`/about/`, posts, ~900 notes). Uses
+- `static/css/custom.css` — every non-home page (`/about/`, posts, ~2,500 notes). Uses
   `!important` heavily against the theme's Tailwind build.
 
 A class only used by one of the two pages must not live in the other file — dead `.home-*`
