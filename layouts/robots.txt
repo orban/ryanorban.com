@@ -29,6 +29,16 @@
 #
 # yes = permitted, no = not permitted, absent = no preference. These are stated
 # preferences and carry no technical force; the Disallow rules below are what bind.
+#
+# Agent index: /llms.txt (llmstxt.org). robots.txt has no directive for it, so this
+# comment is the only pointer -- it is not in <head> or the sitemap either.
+#
+# The signal is repeated in every group that is allowed to crawl. Under RFC 9309 a
+# crawler evaluates only its single most-specific matching group, so a signal declared
+# once under User-agent: * would never reach GPTBot or OAI-SearchBot, which have groups
+# of their own. Cloudflare's managed file declares it once, but every specific group it
+# writes is a Disallow: / where the signal is moot. Ours are allow groups. The spec is
+# silent on inheritance; repeating costs nothing and removes the ambiguity.
 
 User-agent: *
 Content-Signal: search=yes, ai-input=yes, ai-train=yes
@@ -41,6 +51,7 @@ User-agent: ChatGPT-User
 User-agent: PerplexityBot
 User-agent: Claude-Web
 User-agent: Meta-ExternalFetcher
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Disallow: /notes/
 
 # Training corpora. Removed from the denial baseline by explicit decision on
@@ -56,12 +67,14 @@ User-agent: Bytespider
 User-agent: cohere-ai
 User-agent: AI2Bot
 User-agent: Ai2Bot-Dolma
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Disallow: /notes/
 
 # Not AI crawlers, and never deliberately blocked: Applebot is Siri and Spotlight
 # search, facebookexternalhit renders the og:image card on a shared link.
 User-agent: Applebot
 User-agent: facebookexternalhit
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
 # Bulk scrapers, dataset collectors, and agents whose purpose is not established.
