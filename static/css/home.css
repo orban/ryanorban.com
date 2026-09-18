@@ -435,16 +435,9 @@ body.working-record-site {
   text-wrap: pretty;
 }
 
-/* The ask, in the masthead. Sits in the lede's column so it reads as part of the
-   byline rather than a stray row under the contact block. */
-.record-ask {
-  grid-column: 3;
-  margin: 0;
-  max-width: 48ch;
+.record-contact-note {
   padding-left: 0.875rem;
   border-left: 2px solid var(--record-accent);
-  color: var(--record-mid);
-  text-wrap: pretty;
 }
 
 .record-contact-links {
@@ -528,7 +521,6 @@ body.working-record-site {
   }
 
   .record-where,
-  .record-ask,
   .record-writing-list .record-entry {
     grid-column: 1;
   }

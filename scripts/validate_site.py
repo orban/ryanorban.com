@@ -872,6 +872,36 @@ def check_static_html(public: Path, manifest: dict | None, allowlist: set[str], 
         report.ok("no static HTML escaped policy checks; EventScout HTML is noindexed")
 
 
+def retrieval_exempt_agents(robots_text: str) -> set[str]:
+    """Agents allowed to leave robots-denied-agents.txt without a baseline edit.
+
+    An agent qualifies only if data/crawlers.toml moves it to publication-path access at
+    the stage robots.txt declares AND its role is automatic answer retrieval. Training
+    crawlers never qualify; reopening those is a baseline edit by explicit decision.
+
+    Shared with validate_live.py on purpose. This rule used to be implemented twice --
+    once here and once against the edge -- and the copies drifted: the matrix exemption
+    was added here only, so the pre-deploy check passed and the post-deploy check failed
+    on the same robots.txt.
+    """
+    matrix = Path(__file__).resolve().parent.parent / "data" / "crawlers.toml"
+    exempt: set[str] = set()
+    if not matrix.is_file():
+        return exempt
+    import tomllib
+
+    with matrix.open("rb") as fh:
+        m = tomllib.load(fh)
+    stage_line = re.search(r"^# crawler-policy-stage: (\S+)", robots_text, re.M)
+    stage = stage_line.group(1) if stage_line else "baseline"
+    for entry in m.get("agents") or []:
+        pol = entry.get("policy") or {}
+        want = pol.get(stage) or pol.get("default")
+        if want == "publication-paths" and str(entry.get("role", "")).startswith("automatic answer retrieval"):
+            exempt.add(entry.get("agent"))
+    return exempt
+
+
 def check_robots(public: Path, baselines: Path, report: Report, manifest: dict | None) -> None:
     robots = public / "robots.txt"
     if not robots.is_file():
@@ -882,22 +912,7 @@ def check_robots(public: Path, baselines: Path, report: Report, manifest: dict |
     if not groups:
         report.fail("robots.txt has no groups")
         return
-    matrix = Path(__file__).resolve().parent.parent / "data" / "crawlers.toml"
-    # Agents the matrix moves to publication-path access at the active stage may legitimately
-    # leave the baseline denial list; everything else must stay denied.
-    retrieval_exempt: set[str] = set()
-    if matrix.is_file():
-        import tomllib
-
-        with matrix.open("rb") as fh:
-            m = tomllib.load(fh)
-        stage_line = re.search(r"^# crawler-policy-stage: (\S+)", text, re.M)
-        stage = stage_line.group(1) if stage_line else "baseline"
-        for entry in m.get("agents") or []:
-            pol = (entry.get("policy") or {})
-            want = pol.get(stage) or pol.get("default")
-            if want == "publication-paths" and str(entry.get("role", "")).startswith("automatic answer retrieval"):
-                retrieval_exempt.add(entry.get("agent"))
+    retrieval_exempt = retrieval_exempt_agents(text)
     denied_baseline = baselines / "robots-denied-agents.txt"
     if denied_baseline.is_file():
         reopened = []
@@ -921,6 +936,7 @@ def check_robots(public: Path, baselines: Path, report: Report, manifest: dict |
     if "Sitemap:" not in text:
         report.fail("robots.txt lacks a Sitemap line")
 
+    matrix = Path(__file__).resolve().parent.parent / "data" / "crawlers.toml"
     if matrix.is_file():
         check_robots_matrix(text, groups, matrix, report)
 

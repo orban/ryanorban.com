@@ -29,6 +29,7 @@ from validate_site import (  # noqa: E402
     Report,
     parse_robots,
     read_lines,
+    retrieval_exempt_agents,
     robots_path_allowed,
     robots_rules_for,
 )
@@ -128,15 +129,25 @@ def main() -> int:
         baselines = args.url_manifest.parent if args.url_manifest else Path("scripts/baselines")
         denied = baselines / "robots-denied-agents.txt"
         if denied.is_file():
+            # Same rule as the pre-deploy check, from the same helper. Implementing it
+            # twice is what let the two disagree: the matrix exemption reached
+            # validate_site.py only, so a robots.txt could pass before deploy and fail
+            # after it.
+            exempt = retrieval_exempt_agents(text)
             reopened = []
             for agent in read_lines(denied):
+                if agent in exempt:
+                    continue
                 rules = robots_rules_for(groups, agent)
                 if rules is None or robots_path_allowed(rules, "/"):
                     reopened.append(agent)
             if reopened:
                 report.fail(f"edge robots.txt reopened denied agent(s): {reopened}")
             else:
-                report.ok("edge robots.txt preserves baseline denials")
+                report.ok(
+                    "edge robots.txt preserves baseline denials"
+                    + (f" (retrieval crawlers reopened per matrix: {sorted(exempt)})" if exempt else "")
+                )
         for agent in ("Googlebot", "Bingbot", "*"):
             rules = robots_rules_for(groups, agent)
             if rules is not None and not robots_path_allowed(rules, "/notes/"):
