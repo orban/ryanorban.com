@@ -45,7 +45,7 @@ content/
 
 ### Layout Overrides
 
-Everything in `layouts/` shadows the theme module. There are twelve files, in three groups.
+Everything in `layouts/` shadows the theme module. There are sixteen files, in four groups.
 
 **Homepage ("Working Record") — a separate design that only runs on `.IsHome`:**
 
@@ -70,6 +70,20 @@ Everything in `layouts/` shadows the theme module. There are twelve files, in th
 - `layouts/_default/graph.json.json` — graph data feed
 - `layouts/_default/_markup/render-image.html`, `layouts/partials/page/meta.html`,
   `layouts/partials/posts/list.html`
+- `layouts/partials/record/data.html` — single source of truth for the homepage's
+  Building now projects, the Other projects entries, and which essays they pin.
+  `baseof.html` reads the same partial for the nav, so nav and sections cannot disagree.
+
+**Agent-facing surfaces (see Crawler Policy):**
+
+- `layouts/robots.txt` — shadows the theme's, which emitted a blanket `Disallow: /` for
+  ~40 AI agents. Owns the Content-Signal declaration and the per-agent groups, and must
+  agree with `data/crawlers.toml`. The `# crawler-policy-stage:` marker has to stay on
+  output line 1 or both validator checks fail.
+- `layouts/index.llms.txt` — `/llms.txt`, the agent index. Fully derived; deliberately
+  restates no homepage copy.
+- `layouts/_default/single.markdown.md` — the `index.md` companion beside each page's
+  HTML. Only `/posts/` and the offer pages reach it; `/notes/` and `/about/` opt out.
 
 ### Stylesheets
 
@@ -100,6 +114,33 @@ or `content/_index.md`.
 
 `hugo.toml` — all site configuration including menus, params, markup settings, and Goldmark passthrough for LaTeX delimiters.
 
+### Crawler Policy
+
+The declared posture is `search=yes, ai-input=yes, ai-train=yes`: answer engines and
+training crawlers may read the publication surface, and the `/notes/` archive is withheld
+from both. Answer-engine citation is a primary arrival path (`PRODUCT.md`), so blocking
+retrieval crawlers is not a safe default here — the theme's `blockAI` flag used to, which
+is why `layouts/robots.txt` shadows it.
+
+Three files have to agree, and two validators enforce it:
+
+- `data/crawlers.toml` — the provider matrix. Per-agent policy (`allow`, `deny`,
+  `publication-paths`) per stage, plus `publicationPaths` and `rawPaths`.
+- `layouts/robots.txt` — must match the matrix at the stage its `# crawler-policy-stage:`
+  marker names, on output line 1.
+- `scripts/baselines/robots-denied-agents.txt` — agents denied at the 2026-08-18 baseline.
+  Remove a line only with an explicit decision, and record it in the header; the
+  2026-09-18 entry is the worked example.
+
+An agent may leave the baseline without a baseline edit only via the role exemption in
+`retrieval_exempt_agents()` (`scripts/validate_site.py`), which requires a role beginning
+"automatic answer retrieval" and publication-path access at the active stage. Training
+crawlers never qualify.
+
+`validate_site.py` checks the built artifact; `validate_live.py` checks the Cloudflare
+edge after deploy and imports the same helper. Implement that rule twice and they drift —
+they did, and a robots.txt passed pre-deploy then failed post-deploy.
+
 ## Content Conventions
 
 - `content/_index.md` is frontmatter only (`title`, `description`, `images`). `images` is what
@@ -115,8 +156,12 @@ or `content/_index.md`.
 Push to `master` triggers `.github/workflows/hugo.yml` which:
 1. Installs Hugo extended + Go + Node
 2. Runs `npm install` (for vis-network)
-3. Runs `hugo --minify`
-4. Deploys to GitHub Pages
+3. Runs `hugo --minify`, then `scripts/validate_site.py` on the artifact
+4. Deploys to GitHub Pages, then runs `scripts/validate_live.py` against the edge
+
+A **skipped** `deploy` job still reports the whole run as `success`. Check the job, not
+the run, when confirming something reached production — a dispatch-only gate on that job
+once held the redesign off production for two days while `master` looked green.
 
 ## Pitfalls
 
