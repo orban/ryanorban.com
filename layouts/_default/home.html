@@ -171,6 +171,40 @@
       </ol>
     </section>
 
+    {{- /* Other projects. Same row rhythm as the record and Building now, so the page
+           stays one ledger rather than sprouting a gallery. Gated on the data so the
+           nav item in baseof.html and this section cannot disagree. */ -}}
+    {{- with $record.side }}
+      <section class="record-section" id="projects" aria-labelledby="projects-heading">
+        <header class="record-rule">
+          <h2 id="projects-heading">Other projects</h2>
+        </header>
+
+        <ol class="record-rows" role="list">
+          {{- range . }}
+            <li class="record-row">
+              <p class="record-when"><span class="record-kind">{{ .kind }}</span></p>
+              <div class="record-who">
+                <h3><a href="{{ .url }}">{{ .name }}</a></h3>
+              </div>
+              <div class="record-what">
+                <p>{{ .body }}</p>
+                {{- /* The <h3> link is ink-coloured with no underline, so on its own it
+                       reads as plain text. Every row gets an accent link here too, or
+                       four of five entries would look unclickable. */ -}}
+                <p class="record-project-links">
+                  <a href="{{ .url }}">{{ .linkLabel }}</a>
+                  {{- with .repo }}
+                    <a href="{{ . }}">Source</a>
+                  {{- end }}
+                </p>
+              </div>
+            </li>
+          {{- end }}
+        </ol>
+      </section>
+    {{- end }}
+
     {{- /* Writing carries only what Building now hasn't already spoken for. When every
            published essay is pinned the section is omitted whole — no heading over an
            empty list, no empty state — and it returns on its own the moment a

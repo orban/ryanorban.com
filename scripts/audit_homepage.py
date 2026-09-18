@@ -52,6 +52,7 @@ THIRD_PARTY_FONT_HOSTS = ("fonts.googleapis.com", "fonts.gstatic.com", "cdn.jsde
 REQUIRED_LISTS = (
     "record-rows",  # The record
     "record-rows",  # Building now
+    "record-rows",  # Other projects
 )
 OPTIONAL_LISTS = ("record-writing-list",)  # Writing, only when an unpinned post exists
 

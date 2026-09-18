@@ -40,6 +40,9 @@
         <nav class="record-nav" aria-label="Primary navigation">
           <a href="#record">Record</a>
           <a href="#work">Work</a>
+          {{- with (partialCached "record/data.html" .).side }}
+            <a href="#projects">Projects</a>
+          {{- end }}
           {{- with (partialCached "record/data.html" .).writing }}
             <a href="#writing">Writing</a>
           {{- end }}
