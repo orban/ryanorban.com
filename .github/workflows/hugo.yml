@@ -120,12 +120,16 @@ jobs:
           path: ./public
 
   deploy:
-    # Migration period: production deployment only through workflow_dispatch on master with the
-    # `deploy` input set. Pushes and pull requests build and validate but never deploy.
+    # Pushes to master deploy once the build job's validation passes. Manual workflow_dispatch with
+    # `deploy: true` still works for redeploying master without a new commit. Pull requests never
+    # deploy. The dispatch-only gate this replaces was added in 4eb98d3 to hold production while the
+    # homepage redesign was in flight; the redesign landed in #10.
     if: >-
-      github.event_name == 'workflow_dispatch'
-      && github.ref == 'refs/heads/master'
-      && inputs.deploy == true
+      github.ref == 'refs/heads/master'
+      && (
+        github.event_name == 'push'
+        || (github.event_name == 'workflow_dispatch' && inputs.deploy == true)
+      )
     concurrency:
       group: "pages"
       cancel-in-progress: false
