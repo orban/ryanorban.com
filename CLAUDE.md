@@ -45,20 +45,28 @@ content/
 
 ### Layout Overrides
 
-Everything in `layouts/` shadows the theme module. There are sixteen files, in four groups.
+Everything in `layouts/` shadows the theme module. There are eighteen files, in four groups.
 
-**Homepage ("Working Record") — a separate design that only runs on `.IsHome`:**
+**"Working Record" — a separate design, on the homepage and `/about/`:**
 
-- `layouts/_default/baseof.html` — forks the theme's shell. On `.IsHome` it emits the
-  `working-record-site` body, skip link, record header/nav, and record footer. The `else`
-  branch is a copy of the theme's non-home body and must stay in sync with it (see Pitfalls).
+- `layouts/partials/record/shell.html` — a returning partial: true when the page renders
+  in the record shell. A page opts in with `layout: "record"` in its front matter; the
+  homepage is in by definition. `baseof.html` and `head.html` both read it, because they
+  have to agree — the record body with `custom.css` inlined renders as unstyled prose.
+- `layouts/_default/baseof.html` — forks the theme's shell. For a record page it emits the
+  `working-record-site` body, skip link, record header/nav, and record footer; nav anchors
+  are in-page on the homepage and root-relative elsewhere. The `else` branch is a copy of
+  the theme's non-record body and must stay in sync with it (see Pitfalls).
 - `layouts/_default/home.html` — the entire homepage. All homepage copy lives here, not in
   `content/_index.md`, which is frontmatter only.
+- `layouts/_default/record.html` — the template `layout: "record"` selects. Thin on
+  purpose: it emits `.Content` and nothing else, so a record page authors its own rows.
+  `/about/` is the only page using it.
 
 **Hugo 0.158+ compatibility fixes:**
 
 - `layouts/partials/head.html` — fixes deprecated `site.Author` → `site.Params.author.name`;
-  also owns the font preload and the home/non-home inline CSS branch
+  also owns the font preload and the record/non-record inline CSS branch
 - `layouts/partials/head/math.html` — adds `$...$` inline math delimiter, removes broken SRI hashes
 - `layouts/partials/svg/Link.html` — fixes missing dict context error
 - `layouts/404.html` — fixes `site.Author.email` → `site.Params.author.email`
@@ -87,16 +95,20 @@ Everything in `layouts/` shadows the theme module. There are sixteen files, in f
 
 ### Stylesheets
 
-`layouts/partials/head.html` inlines exactly one of two stylesheets, never both:
+`layouts/partials/head.html` inlines exactly one of two stylesheets, never both, and
+`partials/record/shell.html` is what decides which:
 
-- `static/css/home.css` — homepage only. Scoped to `.working-record-site` / `.record-*`.
-  Hard constraints, enforced by the audit: no `!important`, no `:has()`, no gradients,
-  no box shadows, no broad global overrides.
-- `static/css/custom.css` — every non-home page (`/about/`, posts, ~2,500 notes). Uses
-  `!important` heavily against the theme's Tailwind build.
+- `static/css/home.css` — record pages: the homepage and `/about/`. Scoped to
+  `.working-record-site` / `.record-*`. Hard constraints, enforced by the audit: no
+  `!important`, no `:has()`, no gradients, no box shadows, no broad global overrides.
+  The audit only builds the homepage, so a rule that exists solely for `/about/` is
+  unenforced — keep it in the same grammar anyway.
+- `static/css/custom.css` — every non-record page (posts, ~2,500 notes, the offer pages).
+  Uses `!important` heavily against the theme's Tailwind build.
 
-A class only used by one of the two pages must not live in the other file — dead `.home-*`
-rules were previously inlined into every note page.
+A class only used by one of the two designs must not live in the other file — dead
+`.home-*` rules were previously inlined into every note page, and the `.about-*` rules
+were inlined into all ~2,500 of them to style a single page.
 
 ### Homepage Audit
 
@@ -108,7 +120,8 @@ Builds the site into a temp directory and asserts the homepage contract: figures
 essay they link to, internal links resolve, `/notes/` has a human navigation path, list
 semantics, lazy loading, social metadata, heading/aria structure, CSS invariants, and colour
 contrast. Run it after any change to `home.html`, `baseof.html`, `home.css`, `hugo.toml`,
-or `content/_index.md`.
+`content/_index.md`, or `content/about.md` — the last one because the figure claims are
+checked against it, not because the audit renders it.
 
 ### Config
 
@@ -146,6 +159,10 @@ they did, and a robots.txt passed pre-deploy then failed post-deploy.
 - `content/_index.md` is frontmatter only (`title`, `description`, `images`). `images` is what
   produces `og:image` and the `summary_large_image` Twitter card. Homepage copy is in
   `layouts/_default/home.html`.
+- `content/about.md` is a record page: `layout: "record"`, `outputs: ["HTML"]`, and a body
+  of literal `.record-*` row markup rather than prose. Its figures are what
+  `audit_homepage.py`'s `ABOUT_CLAIMS` corroborates the homepage against, so `$1M`,
+  `150+`, `$100M+` and `91%` have to appear in both this file and `home.html`.
 - Blog posts go in `content/posts/` with frontmatter: `title`, `date`, `description`
 - Add `math: true` to frontmatter for pages that use LaTeX (`$...$` inline, `$$...$$` block)
 - Notes go in `content/notes/` with frontmatter: `title`, `date`, `categories`
@@ -166,10 +183,10 @@ once held the redesign off production for two days while `master` looked green.
 ## Pitfalls
 
 - **`layouts/_default/baseof.html` permanently shadows the theme's.** A fork is necessary
-  because the homepage needs a different body, but it means a `hugo mod get -u` that changes
-  the theme's `baseof.html` will silently never reach any page, and nothing will fail. When
-  updating the theme, diff the module's `layouts/_default/baseof.html` against the non-home
-  branch of the local one and port any changes by hand.
+  because the record pages need a different body, but it means a `hugo mod get -u` that
+  changes the theme's `baseof.html` will silently never reach any page, and nothing will
+  fail. When updating the theme, diff the module's `layouts/_default/baseof.html` against
+  the non-record branch of the local one and port any changes by hand.
 - The TIL theme (v0.6.0) has bugs with Hugo 0.158+ around `site.Author` and SVG partial context — the layout overrides fix these
 - KaTeX SRI integrity hashes from jsdelivr can be incorrect — the math partial omits them intentionally
 - The `vis-network` npm package must be installed for the graph feature to work

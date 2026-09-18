@@ -1,0 +1,8 @@
+{{ define "main" }}
+  {{- /* Selected by `layout: "record"` in front matter. Deliberately thin: the theme's
+         _default/single.html wraps content in a Tailwind prose article with its own
+         <h1> and date line, which is the design this exists to get away from. A record
+         page authors its own rows, because the row is the unit of the design — see
+         content/about.md, and static/css/home.css for the classes it may use. */ -}}
+  {{ .Content }}
+{{ end }}

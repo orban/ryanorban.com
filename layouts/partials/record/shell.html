@@ -1,0 +1,12 @@
+{{- /* True when this page renders inside the Working Record shell.
+
+       Read by baseof.html, which decides the body class, header and footer, and by
+       head.html, which decides the stylesheet and the font files. The two have to
+       agree: a page in the record shell that gets custom.css inlined inherits the
+       theme's Tailwind overrides and none of the .record-* rules, so it renders as
+       unstyled prose inside a record header. One definition, in one place.
+
+       A page opts in with `layout: "record"` in its front matter, which also selects
+       layouts/_default/record.html as its template. The homepage is in by definition;
+       it has no front-matter layout because home.html is picked by kind. */ -}}
+{{- return (or .IsHome (eq .Layout "record")) -}}

@@ -1,6 +1,9 @@
-/* Homepage stylesheet. Inlined only on the homepage by layouts/partials/head.html.
-   Scoped to .working-record-site / .record-*. scripts/audit_homepage.py enforces the
-   invariants: no specificity overrides, no parent selectors, no gradients, no shadows.
+/* The Working Record stylesheet. Inlined by layouts/partials/head.html on the pages
+   partials/record/shell.html marks as record pages — the homepage and /about/ — and on
+   no others. Scoped to .working-record-site / .record-*. scripts/audit_homepage.py
+   enforces the invariants: no specificity overrides, no parent selectors, no gradients,
+   no shadows. The audit only builds the homepage, so a rule that exists solely for
+   /about/ is unenforced; keep it in the same grammar anyway.
 
    The page is a ledger. One column, one spine, hairline rules between entries. Type
    does the hierarchy: Geist carries every sentence, Instrument Serif appears only at
@@ -178,6 +181,12 @@ body.working-record-site {
   text-decoration: none;
 }
 
+/* Off the homepage the running head is a link back to the record. It stays a running
+   head rather than becoming a link: no underline, no accent on hover. */
+.record-site-name a {
+  text-decoration: none;
+}
+
 .record-nav {
   display: flex;
   flex-wrap: wrap;
@@ -332,6 +341,13 @@ body.working-record-site {
 
 .record-entry h3 + p {
   margin-top: 0.1875rem;
+}
+
+/* A row whose prose runs to a second paragraph — the Zipfian row on /about/, where the
+   acquisition is a separate beat. .record-project-links is also a <p>, and its own
+   two-class selector outranks this one, so the homepage's link rows keep their spacing. */
+.record-what p + p {
+  margin-top: 0.625rem;
 }
 
 .record-row-now .record-who h3 {

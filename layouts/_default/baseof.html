@@ -6,9 +6,15 @@
   <head>
     {{ partial "head.html" . }}
   </head>
-  {{- if .IsHome }}
+  {{- /* partials/record/shell.html decides which pages get the record shell; head.html
+         reads the same partial to pick the stylesheet. The nav is in-page anchors on the
+         homepage and root-relative ones everywhere else, so one set of links serves both
+         without a second copy of the list. */ -}}
+  {{- $record := partial "record/shell.html" . -}}
+  {{- $anchor := cond .IsHome "" "/" -}}
+  {{- if $record }}
     <body class="working-record-site">
-      {{ `<!--
+      {{ if .IsHome }}{{ `<!--
         Direction contract (the ledger, 2026-09-16).
         THESIS: The page is a record, not a pitch. Real, dated, named work carries the first screen; the thesis about agent reliability is demoted to evidence you can click, and the synthetic demo is gone because a fabricated figure is a weak opening claim.
         OWN-WORLD: paper #f6f4ef, near-black ink, one oxide accent used only for the now-marker and links; Geist carries every sentence, Instrument Serif appears at two small sizes only, JetBrains Mono only on dates and figures; hairline rules, no shadows, no display type.
@@ -16,11 +22,13 @@
         FIRST VIEWPORT: byline portrait at 56px beside the name, one lede sentence, then the ledger itself — the newest four rows are above the fold.
         FORM: a well-set CV that sounds like a person wrote it; nothing on the page is sized to impress.
         FINISH: every figure on this page is either corroborated by /about/ or extracted from the essay it links to; scripts/audit_homepage.py is the enforcement.
-      -->` | safeHTML }}
+      -->` | safeHTML }}{{ end }}
       <a class="record-skip" href="#maincontent">Skip to main content</a>
       <header class="record-site-header">
-        {{- /* The name is the running head and the document's only h1. The portrait
-               rides with it at byline size — a face on the masthead, not a hero. */ -}}
+        {{- /* The name is the running head and the document's only h1 — on /about/ too,
+               where the subject of the page is the person, and the sections below carry
+               the h2s. Off the homepage it doubles as the way back. The portrait rides
+               with it at byline size — a face on the masthead, not a hero. */ -}}
         <div class="record-byline">
           <img
             class="record-portrait"
@@ -30,7 +38,9 @@
             alt="Ryan Orban"
             fetchpriority="high"
           />
-          <h1 class="record-site-name">Ryan Orban</h1>
+          <h1 class="record-site-name">
+            {{- if .IsHome }}Ryan Orban{{ else }}<a href="/">Ryan Orban</a>{{ end -}}
+          </h1>
         </div>
         {{- /* Writing is conditional: home.html omits that section entirely when every
                published post is already pinned by a Building now project, so the nav
@@ -38,15 +48,18 @@
                One definition, so the link can never point at a section that isn't
                there. */ -}}
         <nav class="record-nav" aria-label="Primary navigation">
-          <a href="#record">Record</a>
-          <a href="#work">Work</a>
+          <a href="{{ $anchor }}#record">Record</a>
+          <a href="{{ $anchor }}#work">Work</a>
           {{- with (partialCached "record/data.html" .).side }}
-            <a href="#projects">Projects</a>
+            <a href="{{ $anchor }}#projects">Projects</a>
           {{- end }}
           {{- with (partialCached "record/data.html" .).writing }}
-            <a href="#writing">Writing</a>
+            <a href="{{ $anchor }}#writing">Writing</a>
           {{- end }}
-          <a href="#contact">Contact</a>
+          <a href="{{ $anchor }}#contact">Contact</a>
+          {{- if not .IsHome }}
+            <a href="{{ .RelPermalink }}" aria-current="page">{{ .Title }}</a>
+          {{- end }}
         </nav>
       </header>
       <main class="record-main" id="maincontent">
