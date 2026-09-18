@@ -1,0 +1,62 @@
+{{- /* One subject: /categories/python/, /tags/<term>/. ~2,871 pages.
+
+       data/categories.yaml supplies the display name; without it the heading renders the
+       raw slug title-cased, which is where "Ai-Agents" and "Nlp" came from. */ -}}
+{{- $display := site.Data.categories.display -}}
+{{- $slug := .Title | urlize -}}
+{{- $label := index $display $slug | default (.Title | humanize | title) -}}
+{{- $posts := where .RegularPages "Section" "posts" -}}
+{{- $notes := where .RegularPages "Section" "notes" -}}
+{{- $n := len .RegularPages -}}
+
+<article class="record-article">
+  <header class="record-article-header">
+    <p class="record-when">
+      <span class="record-kind">Subject</span><br />
+      {{ $n }} {{ cond (eq $n 1) "entry" "entries" }}
+    </p>
+    <div class="record-article-title">
+      <h1>{{ $label }}</h1>
+    </div>
+  </header>
+
+  {{- with $posts }}
+    <section class="record-section" aria-label="Essays on {{ $label }}">
+      <header class="record-rule"><h2>Essays</h2></header>
+      <ol class="record-writing-list" role="list">
+        {{- range .ByDate.Reverse }}
+          <li class="record-row">
+            <p class="record-when">
+              <time datetime="{{ .Date | time.Format "2006-01-02" }}">{{ .Date | time.Format "Jan 2006" }}</time>
+            </p>
+            <div class="record-entry">
+              <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+              {{- with .Description }}<p>{{ . }}</p>{{ end }}
+            </div>
+          </li>
+        {{- end }}
+      </ol>
+    </section>
+  {{- end }}
+
+  {{- with $notes }}
+    <section class="record-section" aria-label="Bookmarks on {{ $label }}">
+      <header class="record-rule"><h2>Bookmarks</h2></header>
+      <ol class="record-writing-list" role="list">
+        {{- range .ByDate.Reverse }}
+          <li class="record-row">
+            <p class="record-when">
+              <time datetime="{{ .Date | time.Format "2006-01-02" }}">{{ .Date | time.Format "Jan 2006" }}</time>
+            </p>
+            <div class="record-entry">
+              <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+              {{- with .Description }}<p>{{ . }}</p>{{ end }}
+            </div>
+          </li>
+        {{- end }}
+      </ol>
+    </section>
+  {{- end }}
+
+  <p class="record-more"><a href="/notes/">All bookmarks</a></p>
+</article>

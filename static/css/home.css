@@ -495,6 +495,12 @@ body.working-record-site {
   padding-bottom: 1.75rem;
 }
 
+/* Placed explicitly so a page with nothing to put on the spine — /advising/, a category
+   listing — can omit the date cell rather than emit an empty one as a spacer. */
+.record-article-title {
+  grid-column: 2;
+}
+
 .record-article-title h1 {
   margin: 0;
   font-family: var(--record-serif);
@@ -512,6 +518,12 @@ body.working-record-site {
   line-height: 1.55;
   color: var(--record-mid);
   text-wrap: pretty;
+}
+
+/* A lede that points somewhere needs to look like it does. Everywhere else in the record
+   a link inherits ink, which against the muted lede colour is almost invisible. */
+.record-article-lede a {
+  color: var(--record-accent);
 }
 
 .record-prose {
@@ -654,15 +666,460 @@ body.working-record-site {
   border: 1px solid var(--record-line);
 }
 
-.record-article-meta {
-  margin: 2.5rem 0 0 8rem;
-  max-width: 42rem;
+/* A bookmark puts the original above the summary: the summary is generated, the link is
+   the thing the reader came for. */
+.record-note-source {
+  margin: 0.75rem 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
   font-size: 0.875rem;
+}
+
+.record-note-source a {
+  color: var(--record-accent);
+  font-weight: 550;
+}
+
+.record-note-host {
+  font-family: var(--record-mono);
+  font-size: 0.75rem;
   color: var(--record-muted);
 }
 
-.record-article-meta a {
+/* --- page meta ---------------------------------------------------------- */
+/* Subjects, tags, backlinks and the graph, under a note or an essay. */
+
+.record-article-meta {
+  margin: 2.5rem 0 0 8rem;
+  max-width: 42rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--record-line-dark);
+  font-size: 0.875rem;
+  color: var(--record-mid);
+}
+
+.record-meta-section + .record-meta-section {
+  margin-top: 1.5rem;
+}
+
+.record-meta-section h2 {
+  margin: 0 0 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 550;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--record-muted);
+}
+
+.record-meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.record-meta-tags a,
+.note-card-tags a {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--record-line-dark);
+  font-family: var(--record-mono);
+  font-size: 0.6875rem;
+  color: var(--record-muted);
+  text-decoration: none;
+}
+
+.record-meta-tags a:hover,
+.note-card-tags a:hover {
+  border-color: var(--record-accent);
+  color: var(--record-accent-dark);
+}
+
+.record-meta-list + .record-meta-list {
+  margin-top: 0.875rem;
+}
+
+.record-meta-list h3 {
+  margin: 0 0 0.25rem;
+  font-family: var(--record-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--record-muted);
+}
+
+.record-meta-list ul {
+  margin: 0;
+  padding: 0 0 0 0.875rem;
+  list-style: none;
+}
+
+.record-meta-list li {
+  margin-bottom: 0.2rem;
+}
+
+.record-meta-list a {
   color: var(--record-accent);
+}
+
+.record-meta-graph,
+.record-graph-full {
+  margin-top: 1.5rem;
+}
+
+.record-graph-full {
+  margin-left: 8rem;
+  max-width: 42rem;
+}
+
+/* --- subjects ----------------------------------------------------------- */
+/* /categories/ and /tags/: every term, most-used first. */
+
+.record-term-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  columns: 3;
+  column-gap: 2.5rem;
+  font-size: 0.875rem;
+}
+
+.record-term-list li {
+  break-inside: avoid;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--record-line);
+}
+
+.record-term-count {
+  font-family: var(--record-mono);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--record-muted);
+}
+
+/* --- pagination --------------------------------------------------------- */
+
+.record-pagination {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin: 2rem 0 0 8rem;
+  padding-top: 1.125rem;
+  border-top: 1px solid var(--record-line);
+  font-size: 0.8125rem;
+}
+
+.record-pagination a {
+  color: var(--record-accent);
+}
+
+.record-pagination span {
+  color: var(--record-muted);
+}
+
+.record-pagination-count {
+  font-family: var(--record-mono);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- the bookmark index ------------------------------------------------- */
+/* /notes/. The template and its filtering script are unchanged; this is the same
+   structure in record tokens. The one thing that had to go was the masthead: the title
+   was set as a hero in italic serif with a coloured full stop, which the direction
+   contract rules out by name. It uses .record-article-header now, like every other
+   page. */
+
+.notes-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-left: 8rem;
+  padding: 0.875rem 0;
+  background: var(--record-bg);
+  border-bottom: 1px solid var(--record-line);
+}
+
+.notes-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.notes-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--record-paper);
+  border: 1px solid var(--record-line-dark);
+}
+
+.notes-search:focus-within {
+  border-color: var(--record-accent);
+}
+
+.notes-search-icon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--record-muted);
+}
+
+.notes-search-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--record-ink);
+  font-family: var(--record-sans);
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.notes-search-input::placeholder {
+  color: var(--record-muted);
+}
+
+.notes-search-kbd {
+  flex: none;
+  padding: 0.05em 0.4em;
+  border: 1px solid var(--record-line-dark);
+  font-family: var(--record-mono);
+  font-size: 0.6875rem;
+  color: var(--record-muted);
+}
+
+.notes-counter {
+  flex: none;
+  font-family: var(--record-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--record-muted);
+}
+
+.notes-counter-sep {
+  opacity: 0.6;
+}
+
+.notes-chips,
+.notes-chips-overflow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notes-chips-overflow[hidden] {
+  display: none;
+}
+
+.notes-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.15rem 0.5rem;
+  background: transparent;
+  border: 1px solid var(--record-line-dark);
+  border-radius: 0;
+  font-family: var(--record-mono);
+  font-size: 0.6875rem;
+  color: var(--record-mid);
+  cursor: pointer;
+}
+
+.notes-chip:hover {
+  border-color: var(--record-accent);
+  color: var(--record-accent-dark);
+}
+
+.notes-chip[aria-pressed='true'] {
+  background: var(--record-accent);
+  border-color: var(--record-accent);
+  color: var(--record-paper);
+}
+
+.notes-chip[aria-pressed='true']::before {
+  content: '×';
+  margin-right: 0.1em;
+}
+
+.notes-chip-count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.6;
+}
+
+.notes-chip-more {
+  border-style: dashed;
+  color: var(--record-muted);
+}
+
+.notes-empty {
+  margin-left: 8rem;
+  padding: 2.5rem 0;
+}
+
+.notes-empty[hidden] {
+  display: none;
+}
+
+.notes-empty-line {
+  margin: 0 0 0.875rem;
+  font-family: var(--record-serif);
+  font-size: 1.375rem;
+  color: var(--record-mid);
+}
+
+.notes-empty-clear {
+  padding: 0.3rem 0.7rem;
+  background: transparent;
+  border: 1px solid var(--record-line-dark);
+  font-family: var(--record-mono);
+  font-size: 0.75rem;
+  color: var(--record-mid);
+  cursor: pointer;
+}
+
+.notes-empty-clear:hover {
+  border-color: var(--record-accent);
+  color: var(--record-accent-dark);
+}
+
+.notes-year-group {
+  padding-top: 2.25rem;
+}
+
+.notes-year-group[hidden] {
+  display: none;
+}
+
+/* The same rule as a .record-rule section heading, with the count on the right. The year
+   used to be set at clamp(3.2rem, 6vw, 4.6rem). */
+.notes-year-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding-bottom: 1.125rem;
+}
+
+.notes-year-num {
+  flex: none;
+  font-family: var(--record-serif);
+  font-size: 1.375rem;
+  line-height: 1.2;
+  color: var(--record-ink);
+}
+
+.notes-year-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--record-line-dark);
+}
+
+.notes-year-count {
+  flex: none;
+  font-family: var(--record-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--record-muted);
+}
+
+.note-card {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: 0.25rem 1.5rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--record-line);
+}
+
+.notes-year-body > .note-card:first-child {
+  border-top: 0;
+  padding-top: 0.25rem;
+}
+
+.note-card[hidden] {
+  display: none;
+}
+
+.note-card-thumb-link {
+  grid-column: 1;
+  display: block;
+  line-height: 0;
+  text-decoration: none;
+}
+
+.note-card-thumb {
+  width: 100%;
+  border: 1px solid var(--record-line);
+  filter: grayscale(100%);
+}
+
+.note-card:hover .note-card-thumb {
+  filter: none;
+}
+
+/* Column 2 whether or not the card has a thumbnail, so titles line up down the page. */
+.note-card-body {
+  grid-column: 2;
+}
+
+.note-card-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.note-card-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 550;
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+}
+
+.note-card-date {
+  flex: none;
+  font-family: var(--record-mono);
+  font-size: 0.6875rem;
+  color: var(--record-muted);
+}
+
+.note-card-desc {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--record-mid);
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+.note-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
 }
 
 /* --- footer ------------------------------------------------------------ */
@@ -713,8 +1170,21 @@ body.working-record-site {
   }
 
   .record-prose,
-  .record-article-meta {
+  .record-article-meta,
+  .record-graph-full,
+  .record-pagination,
+  .notes-toolbar,
+  .notes-empty {
     margin-left: 6.75rem;
+  }
+
+  .note-card {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: 0.25rem 1.25rem;
+  }
+
+  .record-term-list {
+    columns: 2;
   }
 }
 
@@ -780,13 +1250,47 @@ body.working-record-site {
     padding-bottom: 1.25rem;
   }
 
+  .record-article-title {
+    grid-column: 1;
+  }
+
   .record-prose,
-  .record-article-meta {
+  .record-article-meta,
+  .record-graph-full,
+  .record-pagination,
+  .notes-toolbar,
+  .notes-empty {
     margin-left: 0;
   }
 
   .record-prose {
     font-size: 1rem;
+  }
+
+  .note-card {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+
+  .note-card-thumb-link,
+  .note-card-body {
+    grid-column: 1;
+  }
+
+  .note-card-thumb {
+    max-width: 10rem;
+  }
+
+  .note-card-date {
+    display: none;
+  }
+
+  .record-term-list {
+    columns: 1;
+  }
+
+  .notes-toolbar-row {
+    flex-wrap: wrap;
   }
 
   .record-article-title h1 {

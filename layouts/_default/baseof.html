@@ -6,115 +6,112 @@
   <head>
     {{ partial "head.html" . }}
   </head>
-  {{- /* partials/record/shell.html decides which pages get the record shell; head.html
-         reads the same partial to pick the stylesheet. The nav is in-page anchors on the
-         homepage and root-relative ones everywhere else, so one set of links serves both
-         without a second copy of the list. */ -}}
+  {{- /* One shell for every page. This used to fork: the Working Record body on .IsHome
+         and a copy of the theme's Tailwind body everywhere else, which meant two designs,
+         two stylesheets and a standing instruction to hand-port theme changes into the
+         fork. The theme branch is gone, so the only thing to keep in sync now is nothing.
+
+         The nav is in-page anchors on the homepage and root-relative ones everywhere
+         else, so one list of links serves every page. */ -}}
   {{- $record := partial "record/shell.html" . -}}
   {{- $anchor := cond .IsHome "" "/" -}}
-  {{- if $record.on }}
-    <body class="working-record-site">
-      {{ if .IsHome }}{{ `<!--
-        Direction contract (the ledger, 2026-09-16).
-        THESIS: The page is a record, not a pitch. Real, dated, named work carries the first screen; the thesis about agent reliability is demoted to evidence you can click, and the synthetic demo is gone because a fabricated figure is a weak opening claim.
-        OWN-WORLD: paper #f6f4ef, near-black ink, one oxide accent used only for the now-marker and links; Geist carries every sentence, Instrument Serif appears at two small sizes only, JetBrains Mono only on dates and figures; hairline rules, no shadows, no display type.
-        STORY: a reader meets a person in one byline line, reads one unvarnished sentence, and is immediately inside seven rows of what he actually shipped; the current tools and the writing follow in the same rhythm.
-        FIRST VIEWPORT: byline portrait at 56px beside the name, one lede sentence, then the ledger itself — the newest four rows are above the fold.
-        FORM: a well-set CV that sounds like a person wrote it; nothing on the page is sized to impress.
-        FINISH: every figure on this page is either corroborated by /about/ or extracted from the essay it links to; scripts/audit_homepage.py is the enforcement.
-      -->` | safeHTML }}{{ end }}
-      <a class="record-skip" href="#maincontent">Skip to main content</a>
-      <header class="record-site-header">
-        {{- /* The name is the running head. It is also the h1 on the pages whose subject
-               is the person — the homepage and /about/, where the sections below carry
-               the h2s. On an essay the title takes the h1 and this demotes to a <p>,
-               which is what $record.ownsTitle decides. Off the homepage it doubles as
-               the way back. The portrait rides with it at byline size — a face on the
-               masthead, not a hero. */ -}}
-        <div class="record-byline">
-          <img
-            class="record-portrait"
-            src="/images/ryan-orban.jpg"
-            width="800"
-            height="800"
-            alt="Ryan Orban"
-            fetchpriority="high"
-          />
-          {{- /* Both branches spelled out rather than interpolating the tag name:
-                 html/template escapes `<{{ $tag }}` into `&lt;p`, which ships a literal
-                 "<p class=..." as visible text in the masthead. */ -}}
-          {{- if $record.ownsTitle }}
-            <p class="record-site-name"><a href="/">Ryan Orban</a></p>
-          {{- else if .IsHome }}
-            <h1 class="record-site-name">Ryan Orban</h1>
-          {{- else }}
-            <h1 class="record-site-name"><a href="/">Ryan Orban</a></h1>
-          {{- end }}
-        </div>
-        {{- /* Writing is conditional: home.html omits that section entirely when every
-               published post is already pinned by a Building now project, so the nav
-               item is gated on the same partial rather than a second copy of the rule.
-               One definition, so the link can never point at a section that isn't
-               there. */ -}}
-        <nav class="record-nav" aria-label="Primary navigation">
-          <a href="{{ $anchor }}#record">Record</a>
-          <a href="{{ $anchor }}#work">Work</a>
-          {{- with (partialCached "record/data.html" .).side }}
-            <a href="{{ $anchor }}#projects">Projects</a>
-          {{- end }}
-          {{- with (partialCached "record/data.html" .).writing }}
-            <a href="{{ $anchor }}#writing">Writing</a>
-          {{- end }}
-          <a href="{{ $anchor }}#contact">Contact</a>
-          {{- /* Off the homepage, one item says where you are. For /about/ that is the
-                 page itself; for an essay it is the section, because a nav item set to a
-                 full essay title is unreadable and "up to the index" is the more useful
-                 link anyway. aria-current only when it really is this page. */ -}}
-          {{- if not .IsHome }}
-            {{- $here := cond $record.ownsTitle
-              (dict "url" "/posts/" "label" "Writing")
-              (dict "url" .RelPermalink "label" .Title) }}
-            <a href="{{ $here.url }}"
-              {{- if eq .RelPermalink $here.url }} aria-current="page"{{ end -}}
-            >{{ $here.label }}</a>
-          {{- end }}
-        </nav>
-      </header>
-      <main class="record-main" id="maincontent">
-        {{ block "main" . }}{{ end }}
-      </main>
-      <footer class="record-site-footer">
-        <p>Ryan Orban · San Francisco</p>
-        <p><a href="/about/">About</a> · <a href="/notes/">Bookmarks</a> · <a href="https://github.com/orban">GitHub</a> · <a href="https://www.linkedin.com/in/ryanorban">LinkedIn</a></p>
-      </footer>
-    </body>
-  {{- else }}
-    <body>
-      <div class="container mx-auto flex max-w-prose flex-col space-y-10 p-4 md:p-6">
-        <header class="flex flex-row items-center justify-between">
-          {{ partial "header.html" . }}
-        </header>
-        <main class="prose prose-slate relative md:prose-lg prose-h1:text-[2em]" id="maincontent">
-          {{ block "main" . }}{{ end }}
-        </main>
-        <footer class="mt-20 border-t border-neutral-100 pt-2 text-xs">
-          {{ partial "footer.html" . }}
-        </footer>
+  <body class="working-record-site">
+    {{ if .IsHome }}{{ `<!--
+      Direction contract (the ledger, 2026-09-16).
+      THESIS: The page is a record, not a pitch. Real, dated, named work carries the first screen; the thesis about agent reliability is demoted to evidence you can click, and the synthetic demo is gone because a fabricated figure is a weak opening claim.
+      OWN-WORLD: paper #f6f4ef, near-black ink, one oxide accent used only for the now-marker and links; Geist carries every sentence, Instrument Serif appears at two small sizes only, JetBrains Mono only on dates and figures; hairline rules, no shadows, no display type.
+      STORY: a reader meets a person in one byline line, reads one unvarnished sentence, and is immediately inside seven rows of what he actually shipped; the current tools and the writing follow in the same rhythm.
+      FIRST VIEWPORT: byline portrait at 56px beside the name, one lede sentence, then the ledger itself — the newest four rows are above the fold.
+      FORM: a well-set CV that sounds like a person wrote it; nothing on the page is sized to impress.
+      FINISH: every figure on this page is either corroborated by /about/ or extracted from the essay it links to; scripts/audit_homepage.py is the enforcement.
+    -->` | safeHTML }}{{ end }}
+    <a class="record-skip" href="#maincontent">Skip to main content</a>
+    <header class="record-site-header">
+      {{- /* The name is the running head. It is also the h1 on the pages whose subject
+             is the person — the homepage and /about/, where the sections below carry
+             the h2s. Everywhere else the page's own title takes the h1 and this demotes
+             to a <p>, which is what $record.ownsTitle decides. Off the homepage it
+             doubles as the way back. The portrait rides with it at byline size — a face
+             on the masthead, not a hero. */ -}}
+      <div class="record-byline">
+        <img
+          class="record-portrait"
+          src="/images/ryan-orban.jpg"
+          width="800"
+          height="800"
+          alt="Ryan Orban"
+          fetchpriority="high"
+        />
+        {{- /* Both branches spelled out rather than interpolating the tag name:
+               html/template escapes `<{{ $tag }}` into `&lt;p`, which ships a literal
+               "<p class=..." as visible text in the masthead. */ -}}
+        {{- if $record.ownsTitle }}
+          <p class="record-site-name"><a href="/">Ryan Orban</a></p>
+        {{- else if .IsHome }}
+          <h1 class="record-site-name">Ryan Orban</h1>
+        {{- else }}
+          <h1 class="record-site-name"><a href="/">Ryan Orban</a></h1>
+        {{- end }}
       </div>
-      {{ if .Store.Get "hasMermaid" }}
-        <script
-          src="https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js"
-          integrity="sha256-G8ouPAnw4zzMbnAenHnVz6h9XpKbNdOkrqTh7AadyHs="
-          crossorigin="anonymous"
-        ></script>
-        <script type="text/javascript">
-          mermaid.initialize({
-            startOnLoad: true,
-            theme: 'neutral',
-            fontFamily: "'LatoLatinWeb', sans-serif"
-          });
-        </script>
-      {{ end }}
-    </body>
-  {{- end }}
+      {{- /* Writing is conditional: home.html omits that section entirely when every
+             published post is already pinned by a Building now project, so the nav
+             item is gated on the same partial rather than a second copy of the rule.
+             One definition, so the link can never point at a section that isn't
+             there. */ -}}
+      <nav class="record-nav" aria-label="Primary navigation">
+        <a href="{{ $anchor }}#record">Record</a>
+        <a href="{{ $anchor }}#work">Work</a>
+        {{- with (partialCached "record/data.html" .).side }}
+          <a href="{{ $anchor }}#projects">Projects</a>
+        {{- end }}
+        {{- with (partialCached "record/data.html" .).writing }}
+          <a href="{{ $anchor }}#writing">Writing</a>
+        {{- end }}
+        <a href="{{ $anchor }}#contact">Contact</a>
+        {{- /* Off the homepage, one item says where you are.
+
+               The label comes from the URL segment, not .Title: /advising/ is titled
+               "How I work with founders", and a nav item set to that — or to a note
+               title, or to a full essay title — is unreadable at 13px in a row of
+               one-word links. Deep pages resolve up to their section instead, which is
+               both short and the more useful link. 404 gets nothing; "where you are" is
+               nowhere. aria-current only when it really is this page. */ -}}
+        {{- if and (not .IsHome) (ne .Kind "404") }}
+          {{- $here := dict "url" .RelPermalink "label" (path.Base .RelPermalink | humanize | title) -}}
+          {{- if eq .Section "posts" }}
+            {{- $here = dict "url" "/posts/" "label" "Writing" -}}
+          {{- else if or (eq .Section "notes") (eq .Kind "term") (eq .Kind "taxonomy") }}
+            {{- $here = dict "url" "/notes/" "label" "Bookmarks" -}}
+          {{- end }}
+          <a href="{{ $here.url }}"
+            {{- if eq .RelPermalink $here.url }} aria-current="page"{{ end -}}
+          >{{ $here.label }}</a>
+        {{- end }}
+      </nav>
+    </header>
+    <main class="record-main" id="maincontent">
+      {{ block "main" . }}{{ end }}
+    </main>
+    <footer class="record-site-footer">
+      <p>Ryan Orban · San Francisco</p>
+      <p><a href="/about/">About</a> · <a href="/notes/">Bookmarks</a> · <a href="https://github.com/orban">GitHub</a> · <a href="https://www.linkedin.com/in/ryanorban">LinkedIn</a></p>
+    </footer>
+    {{- /* Kept from the theme body this replaced. No post uses a mermaid fence today, so
+           the render hook never sets hasMermaid and this never emits; it stays so that
+           writing one does not silently produce an unrendered code block. */}}
+    {{ if .Store.Get "hasMermaid" }}
+      <script
+        src="https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js"
+        integrity="sha256-G8ouPAnw4zzMbnAenHnVz6h9XpKbNdOkrqTh7AadyHs="
+        crossorigin="anonymous"
+      ></script>
+      <script type="text/javascript">
+        mermaid.initialize({
+          startOnLoad: true,
+          theme: 'neutral',
+          fontFamily: "'LatoLatinWeb', sans-serif"
+        });
+      </script>
+    {{ end }}
+  </body>
 </html>

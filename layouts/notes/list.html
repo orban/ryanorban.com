@@ -46,31 +46,30 @@
   {{ $earliest := index $dates 0 }}
   {{ $latest := index $dates (sub (len $dates) 1) }}
 
+  {{- /* The header is the same .record-article-header as an essay and /posts/, so the
+         title, the year rules and every note title share one spine. It replaced a
+         .notes-masthead that set "Bookmarks." at clamp(2.7rem, …) in italic serif with a
+         coloured full stop — a hero, and the one thing the homepage's own direction
+         contract rules out by name. The counts moved into the mono spine, where the rest
+         of the site puts its figures. */ -}}
   <section class="notes-index">
-    <header class="notes-masthead">
-      <h1 class="notes-masthead-title">
-        <span>{{ .Title }}</span>
+    <header class="record-article-header">
+      <p class="record-when">
+        <span data-count-total>{{ $total }}</span> entries<br />
+        {{ $catCount }} subjects<br />
+        {{ $earliest.Format "2006" }}–{{ $latest.Format "2006" }}
         {{- with .OutputFormats.Get "rss" }}
-          <a
-            rel="alternate"
-            type="application/rss+xml"
-            href="{{ .RelPermalink }}"
-            title="Subscribe to the Bookmarks RSS feed"
-            class="notes-masthead-rss"
-            aria-label="RSS feed"
-          >{{ partial "svg/rss.html" }}</a>
+          <br /><a href="{{ .RelPermalink }}" title="Subscribe to the Bookmarks RSS feed">RSS</a>
         {{- end }}
-      </h1>
-      <p class="notes-masthead-meta">
-        <span data-count-total>{{ $total }}</span> entries
-        <span class="notes-masthead-sep">·</span>
-        {{ $earliest.Format "Jan 2006" | upper }} → {{ $latest.Format "Jan 2006" | upper }}
-        <span class="notes-masthead-sep">·</span>
-        {{ $catCount }} subjects
       </p>
-      <p class="notes-masthead-lede">
-        An index of what's caught my attention — tools, papers, essays, rabbit holes.
-      </p>
+      <div class="record-article-title">
+        <h1>{{ .Title }}</h1>
+        <p class="record-article-lede">
+          An index of what's caught my attention — tools, papers, essays, rabbit holes.
+          These are other people's writing, summarised automatically; mine is under
+          <a href="/posts/">Writing</a>.
+        </p>
+      </div>
     </header>
 
     {{ .Content }}

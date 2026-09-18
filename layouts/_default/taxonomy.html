@@ -1,0 +1,20 @@
+{{ define "main" }}
+  {{- /* Both taxonomy kinds land here, and that is deliberate rather than accidental.
+
+         Hugo is documented to try _default/term.html before _default/taxonomy.html for a
+         term page, but on 0.166 it does not: a term.html at either _default/ or
+         layouts/ is ignored and only layouts/<plural>/term.html is picked up. CI pins
+         0.158, so relying on that lookup would mean relying on behaviour that differs
+         between the two Hugos that build this site. Dispatching on .Kind works on both.
+
+         Both pages were broken before this. /categories/ and /tags/ rendered a
+         completely empty <main>, because the theme's template listed .RegularPages and a
+         taxonomy page has none — its children are terms. Term pages had no <h1> at all,
+         only an <h2> reading "Notes on Python", and printed raw slugs, so a page could be
+         headed "Ai-Agents". */ -}}
+  {{- if eq .Kind "term" }}
+    {{ partial "record/term.html" . }}
+  {{- else }}
+    {{ partial "record/terms.html" . }}
+  {{- end }}
+{{ end }}

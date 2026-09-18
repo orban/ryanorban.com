@@ -1,0 +1,24 @@
+{{ define "main" }}
+  {{- /* /graph/ — the whole-site content network. noindex and out of the sitemap;
+         validate_site.py checks both. The graph itself is the theme's vis-network
+         component and keeps its Tailwind sizing class. */ -}}
+
+  <article class="record-article">
+    <header class="record-article-header">
+      <div class="record-article-title">
+        <h1>{{ .Title | humanize | title }}</h1>
+        <p class="record-article-lede">
+          Every page on the site and the links between them.
+        </p>
+      </div>
+    </header>
+
+    {{- with .Content }}
+      <div class="record-prose">{{ . }}</div>
+    {{- end }}
+
+    <div class="record-graph-full">
+      {{ partial "graph" ( dict "scaleNodes" true "class" "h-96" ) }}
+    </div>
+  </article>
+{{ end }}

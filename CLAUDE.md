@@ -46,50 +46,60 @@ content/
 
 ### Layout Overrides
 
-Everything in `layouts/` shadows the theme module. There are twenty files, in four groups.
+Everything in `layouts/` shadows the theme module. There are twenty-eight files. The site
+has one design — the "Working Record" — and one stylesheet; every page renders through
+`baseof.html`'s single body. The theme supplies data plumbing, the Tailwind build behind
+its own markup, and nothing else visual.
 
-**"Working Record" — a separate design, on the homepage, `/about/`, `/posts/` and the essays:**
+**The shell:**
 
-- `layouts/partials/record/shell.html` — a returning partial, and the only definition of
-  which pages are record pages. Returns `.on` (uses the record shell) and `.ownsTitle`
-  (the body supplies its own `<h1>`, so the running head demotes to a `<p>`). Three ways
-  in: the homepage by kind, `layout: "record"` in front matter, and the `posts` section.
-  `baseof.html` and `head.html` both read it, because they have to agree — a record body
-  with `custom.css` inlined renders as unstyled prose.
-- `layouts/_default/baseof.html` — forks the theme's shell. For a record page it emits the
-  `working-record-site` body, skip link, record header/nav, and record footer; nav anchors
-  are in-page on the homepage and root-relative elsewhere. The `else` branch is a copy of
-  the theme's non-record body and must stay in sync with it (see Pitfalls).
+- `layouts/_default/baseof.html` — the only body. Emits the `working-record-site` body,
+  skip link, record header/nav and record footer for every page. Nav anchors are in-page
+  on the homepage and root-relative elsewhere; the "where you are" item takes its label
+  from the URL segment, never `.Title`, and deep pages resolve up to their section.
+- `layouts/partials/record/shell.html` — returns `.ownsTitle`: the page body supplies its
+  own `<h1>`, so the running head must not be one. False only for the homepage and
+  `/about/`, whose subject is the person. Nothing in the build catches two `<h1>`s off
+  the homepage, so this is the guard.
+- `layouts/partials/head.html` — fixes deprecated `site.Author` → `site.Params.author.name`;
+  owns the font preloads and inlines `home.css`.
+
+**Page templates:**
+
 - `layouts/_default/home.html` — the entire homepage. All homepage copy lives here, not in
   `content/_index.md`, which is frontmatter only.
 - `layouts/_default/record.html` — the template `layout: "record"` selects. Thin on
-  purpose: it emits `.Content` and nothing else, so a record page authors its own rows.
-  `/about/` is the only page using it.
-- `layouts/posts/single.html` — an essay. Title, date on the spine, then `.Content` in a
-  `.record-prose` container. Keeps `partial "page/meta"` for backlinks and the graph.
-- `layouts/posts/list.html` — `/posts/`. Reuses `posts/single.html`'s header and the
-  homepage's `.record-writing-list` rows. **Keep the `.Paginate` call**: it is what makes
+  purpose: emits `.Content` and nothing else, so the page authors its own rows. `/about/`
+  is the only page using it.
+- `layouts/_default/single.html` — root pages that are not `/about/`: `/advising/`,
+  `/office-hours/`. Title and `.record-prose`, no date.
+- `layouts/posts/single.html` — an essay. Title, date on the spine, `.record-prose`.
+- `layouts/posts/list.html` — `/posts/`. **Keep the `.Paginate` call**: it is what makes
   Hugo emit the `/posts/page/1/` alias, and that URL is in the pre-migration baseline, so
   a plain `range` fails `validate_site.py`.
+- `layouts/notes/single.html` — a bookmark. Leads with `params.sourceUrl`, because the
+  summary is generated and the original is what the reader wants.
+- `layouts/notes/list.html`, `layouts/partials/notes/list.html` — the bookmark index, its
+  filter chips and its search script.
+- `layouts/_default/taxonomy.html` — **both** taxonomy kinds, dispatching to
+  `partials/record/term.html` and `partials/record/terms.html` on `.Kind`. Hugo 0.166
+  ignores a `term.html` in `_default/` or `layouts/` and only honours
+  `layouts/<plural>/term.html`; CI pins 0.158, so the dispatch avoids depending on a
+  lookup that differs between the two Hugos that build this site.
+- `layouts/_default/graph.html`, `layouts/404.html`.
 
-**Hugo 0.158+ compatibility fixes:**
+**Shared partials:**
 
-- `layouts/partials/head.html` — fixes deprecated `site.Author` → `site.Params.author.name`;
-  also owns the font preload and the record/non-record inline CSS branch
-- `layouts/partials/head/math.html` — adds `$...$` inline math delimiter, removes broken SRI hashes
-- `layouts/partials/svg/Link.html` — fixes missing dict context error
-- `layouts/404.html` — fixes `site.Author.email` → `site.Params.author.email`
-
-**Notes and content presentation:**
-
-- `layouts/notes/list.html`, `layouts/partials/notes/list.html` — notes index with search and
-  category graph
-- `layouts/_default/graph.json.json` — graph data feed
-- `layouts/_default/_markup/render-image.html`, `layouts/partials/page/meta.html`,
-  `layouts/partials/posts/list.html`
 - `layouts/partials/record/data.html` — single source of truth for the homepage's
   Building now projects, the Other projects entries, and which essays they pin.
   `baseof.html` reads the same partial for the nav, so nav and sections cannot disagree.
+- `layouts/partials/page/meta.html`, `layouts/partials/page/list.html` — subjects, tags,
+  backlinks and the graph, under a note or an essay.
+- `layouts/partials/pagination.html` — renders nowhere today; `/posts/` has one page.
+- `layouts/_default/graph.json.json` — the graph data feed.
+- `layouts/partials/head/math.html` — adds `$...$` inline math, removes broken SRI hashes.
+- `layouts/partials/svg/Link.html` — fixes a missing dict context error in the theme.
+- `layouts/_default/_markup/render-image.html`, `layouts/partials/posts/list.html`.
 
 **Agent-facing surfaces (see Crawler Policy):**
 
@@ -104,26 +114,22 @@ Everything in `layouts/` shadows the theme module. There are twenty files, in fo
 
 ### Stylesheets
 
-`layouts/partials/head.html` inlines exactly one of two stylesheets, never both, and
-`partials/record/shell.html` is what decides which:
+`static/css/home.css` is the only stylesheet, inlined by `head.html` on every page. Scoped
+to `.working-record-site` / `.record-*`. Hard constraints, enforced by the audit: no
+`!important`, no `:has()`, no gradients, no box shadows, no broad global overrides.
 
-- `static/css/home.css` — record pages: the homepage, `/about/`, `/posts/` and the
-  essays. Scoped to `.working-record-site` / `.record-*`. Hard constraints, enforced by
-  the audit: no `!important`, no `:has()`, no gradients, no box shadows, no broad global
-  overrides. The audit only builds the homepage, so a rule that exists solely for another
-  record page is unenforced — keep it in the same grammar anyway. The check is a plain
-  substring match on this file, so even a comment that spells `!` + `important` fails it.
-- `static/css/custom.css` — every non-record page (`/notes/` and its ~2,500 notes, the
-  offer pages, `404.html`). Uses `!important` heavily against the theme's Tailwind build.
+It needs no specificity overrides because `baseof.html` emits no Tailwind `prose` classes
+— there is nothing to out-specify. The deleted `custom.css` leaned on `!important`
+constantly for exactly that reason, and it was 1,014 lines inlined into all ~2,500 note
+pages. The override war was a property of the theme shell, not the content.
 
-`.record-prose` needs no `!important` where `custom.css` does, and the reason is worth
-knowing: `baseof.html`'s record branch emits no Tailwind `prose` classes, so there is
-nothing to out-specify. Migrating a page into the record shell therefore *removes* CSS
-weight rather than adding a third layer.
+The theme's Tailwind build is still loaded site-wide by `head/css`, because the theme's
+own markup — code blocks, the graph widget, heading anchors — carries utility classes.
+Do not restyle those from `home.css`; they work as they are.
 
-A class only used by one of the two designs must not live in the other file — dead
-`.home-*` rules were previously inlined into every note page, and the `.about-*` rules
-were inlined into all ~2,500 of them to style a single page.
+The audit only builds the homepage, so a rule that exists solely for another page is
+unenforced. Keep it in the same grammar anyway. The `!important` check is a plain
+substring match on the file, so even a comment that spells it out fails the audit.
 
 ### Homepage Audit
 
@@ -199,11 +205,17 @@ once held the redesign off production for two days while `master` looked green.
 
 ## Pitfalls
 
-- **`layouts/_default/baseof.html` permanently shadows the theme's.** A fork is necessary
-  because the record pages need a different body, but it means a `hugo mod get -u` that
-  changes the theme's `baseof.html` will silently never reach any page, and nothing will
-  fail. When updating the theme, diff the module's `layouts/_default/baseof.html` against
-  the non-record branch of the local one and port any changes by hand.
+- **`layouts/_default/baseof.html` permanently shadows the theme's, and no longer has a
+  branch that resembles it.** A `hugo mod get -u` that changes the theme's shell — its
+  body, header, footer or the Tailwind classes on them — reaches no page here and nothing
+  fails. That is now intentional rather than a hazard to reconcile: the site does not use
+  the theme's design. What a theme update *can* still change under you is the markup the
+  theme generates inside the page — code blocks, heading anchors, the graph widget — so
+  check those render after one.
+- **Hugo's documented template lookup for term pages does not hold on 0.166.** A
+  `term.html` in `layouts/_default/` or `layouts/` is silently ignored; only
+  `layouts/<plural>/term.html` is picked up. `_default/taxonomy.html` dispatches on
+  `.Kind` instead, because CI pins 0.158 and the two must not diverge.
 - The TIL theme (v0.6.0) has bugs with Hugo 0.158+ around `site.Author` and SVG partial context — the layout overrides fix these
 - KaTeX SRI integrity hashes from jsdelivr can be incorrect — the math partial omits them intentionally
 - The `vis-network` npm package must be installed for the graph feature to work

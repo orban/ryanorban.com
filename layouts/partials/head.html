@@ -32,34 +32,21 @@
 {{- range .AlternativeOutputFormats -}}
   <link rel="{{ .Rel }}" type="{{ .MediaType.Type }}" href="{{ .Permalink | safeURL }}" />
 {{- end }}
-{{- /* Record pages self-host their three faces and carry home.css; every other page is
-       on the theme's CDN fonts and custom.css. partials/record/shell.html owns the
-       distinction, because loading one page's fonts with the other page's stylesheet
-       renders in fallback type. */ -}}
-{{- $record := (partial "record/shell.html" .).on -}}
-{{- if $record }}
+{{- /* Every page is a record page, so the three faces are self-hosted everywhere and
+       home.css is the only stylesheet. The alternative used to be custom.css plus Geist
+       from jsdelivr and Instrument Serif from Google Fonts — two render-blocking
+       third-party origins on every note page, for a second design of the same site. */ -}}
 <link rel="preload" href="/fonts/instrument-serif-normal.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="/fonts/geist-variable.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="/fonts/jetbrains-mono-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin />
-{{- else }}
-<link rel="preload" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" />
-{{- end }}
+{{- /* head/css is the theme's Tailwind build. Nothing emits `prose` classes any more,
+       but the utility classes on the theme's own markup — the code blocks, the graph
+       widget, the heading anchors — still resolve through it. */ -}}
 {{ partialCached "head/css" . }}
-{{- if $record }}
-  {{- with resources.FromString "css/home-inline.css" (readFile "static/css/home.css") -}}
-    {{- with . | minify -}}
-      <style>{{ .Content | safeCSS }}</style>
-    {{- end -}}
-  {{- end }}
-{{- else }}
-  {{- with resources.FromString "css/custom-inline.css" (readFile "static/css/custom.css") -}}
-    {{- with . | minify -}}
-      <style>{{ .Content | safeCSS }}</style>
-    {{- end -}}
-  {{- end }}
+{{- with resources.FromString "css/home-inline.css" (readFile "static/css/home.css") -}}
+  {{- with . | minify -}}
+    <style>{{ .Content | safeCSS }}</style>
+  {{- end -}}
 {{- end }}
 {{ partialCached "head/js" . }}
 {{- if or .Params.math site.Params.math }}

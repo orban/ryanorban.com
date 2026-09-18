@@ -1,29 +1,34 @@
 {{ define "main" }}
-  <article>
-    <h1>Page not found</h1>
+  {{- /* Reachable from any URL on the site, so it offers the two things that are always
+         useful — the record and the archive — rather than only a link home. */ -}}
 
-    <p class="lead">It seems you've stumbled upon a page that doesn't exist on this website.</p>
+  <article class="record-article">
+    <header class="record-article-header">
+      <div class="record-article-title">
+        <h1>Page not found</h1>
+        <p class="record-article-lede">
+          There is nothing at this address. It may have moved, or it may never have
+          existed.
+        </p>
+      </div>
+    </header>
 
-    <p class="font-bold">Here are a few things you can do:</p>
-
-    <ul>
-      <li>Return to the <a href="{{ .Site.Home.RelPermalink }}">home page</a>.</li>
-      <li>
-        <a href="https://web.archive.org/web/*/{{ .Permalink | urlize }}"
-          >See if the Internet Archive has a copy</a
-        >
-        if you believe this page once existed.
-      </li>
-      {{- with (where .Pages "Section" "posts" ) }}
-        <li>Check out my <a href="{{ relURL "posts" }}">recent blog posts</a>.</li>
+    <div class="record-prose">
+      <ul>
+        <li>Start from <a href="/">the record</a>.</li>
+        <li>Read <a href="/posts/">the writing</a>, or search
+          <a href="/notes/">the bookmarks</a>.</li>
+        <li>
+          <a href="https://web.archive.org/web/*/{{ .Permalink | urlize }}">Check the
+          Internet Archive</a> if you believe this page once existed.
+        </li>
+      </ul>
+      {{- with site.Params.author.email }}
+        <p>
+          If a link on this site sent you here, I would like to know:
+          <a href="mailto:{{ . }}">{{ . }}</a>.
+        </p>
       {{- end }}
-    </ul>
-
-    {{- with site.Params.author.email }}
-      <p>
-        If you arrived here by following a link on the website, I'd be grateful if you could
-        <a href="mailto:{{ . }}">drop me an email</a> to let me know. Thanks a bunch!
-      </p>
-    {{- end }}
+    </div>
   </article>
 {{ end }}

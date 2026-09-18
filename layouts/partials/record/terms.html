@@ -1,0 +1,42 @@
+{{- /* The list of subjects: /categories/ and /tags/.
+
+       Ordered by count, because the useful question here is what the archive is actually
+       about, not which subject happens to start with "a". /notes/ has the same subjects
+       as filter chips over the entries themselves; this is the plain index of them. */ -}}
+{{- $display := site.Data.categories.display -}}
+{{- $terms := slice -}}
+{{- range .Data.Terms.ByCount }}
+  {{- $slug := .Name | urlize -}}
+  {{- $terms = $terms | append (dict
+    "label" (index $display $slug | default (.Name | humanize | title))
+    "url" (printf "/%s/%s/" $.Data.Plural $slug)
+    "count" .Count) -}}
+{{- end }}
+
+<article class="record-article">
+  <header class="record-article-header">
+    <p class="record-when">
+      {{ len $terms }} {{ cond (eq (len $terms) 1) "subject" "subjects" }}
+    </p>
+    <div class="record-article-title">
+      <h1>{{ .Title | humanize | title }}</h1>
+      <p class="record-article-lede">
+        Every subject in the archive, most-used first. Nearly all of them index
+        <a href="/notes/">bookmarks</a> rather than writing.
+      </p>
+    </div>
+  </header>
+
+  {{- with $terms }}
+    <ul class="record-term-list">
+      {{- range . }}
+        <li>
+          <a href="{{ .url }}">{{ .label }}</a>
+          <span class="record-term-count">{{ .count }}</span>
+        </li>
+      {{- end }}
+    </ul>
+  {{- else }}
+    <div class="record-prose"><p>No subjects yet.</p></div>
+  {{- end }}
+</article>

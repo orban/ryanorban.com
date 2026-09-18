@@ -1,31 +1,18 @@
-{{- /* Which pages render in the Working Record shell, and how their title works.
+{{- /* How this page's title works in the Working Record shell.
 
-       Returns a dict:
-         .on         — this page uses the record shell
-         .ownsTitle  — the page body supplies its own <h1>, so the running head must not
+       Every page is a record page now — the theme's Tailwind shell and custom.css are
+       gone, so there is no longer an `.on` key to check and no second branch for it to
+       select. This partial survives for the one distinction that is still real:
 
-       Read by baseof.html, which decides the body class, header and footer, and by
-       head.html, which decides the stylesheet and the font files. The two have to
-       agree: a page in the record shell that gets custom.css inlined inherits the
-       theme's Tailwind overrides and none of the .record-* rules, so it renders as
-       unstyled prose inside a record header. One definition, in one place.
+         .ownsTitle — the page body supplies its own <h1>, so the running head in
+                      baseof.html must not be one.
 
-       Three ways in, and they are deliberately different mechanisms rather than one
-       generic flag, because each answers a different question:
+       The homepage and /about/ are about the person, so "Ryan Orban" in the masthead is
+       their <h1> and everything below is an h2. Every other page leads with its own
+       subject — an essay title, a note title, "Bookmarks", a category name — so there
+       the running head demotes to a <p>. Two <h1>s on one page is the failure this
+       exists to prevent, and nothing in the build catches it off the homepage.
 
-       - the homepage, by kind. home.html is selected for it and nothing else.
-       - `layout: "record"` in front matter, which also selects _default/record.html.
-         /about/ uses this: a hand-authored body of .record-* rows.
-       - the posts section, by section, covering /posts/ and every essay under it.
-         These are markdown prose, so they go through posts/single.html and
-         posts/list.html and get .record-prose rather than authoring rows.
-
-       ownsTitle is the posts section only. The homepage and /about/ lead with the
-       person, so "Ryan Orban" in the header is their <h1>; an essay leads with the
-       essay, so there the header demotes to a <p> and the title takes the <h1>. Two
-       <h1>s on one page is the failure this exists to prevent. */ -}}
-{{- $posts := eq .Section "posts" -}}
-{{- return (dict
-  "on" (or .IsHome (eq .Layout "record") $posts)
-  "ownsTitle" $posts
-) -}}
+       /about/ is identified by `layout: "record"`, which is also what selects
+       _default/record.html for it. */ -}}
+{{- return (dict "ownsTitle" (not (or .IsHome (eq .Layout "record")))) -}}
