@@ -1,0 +1,93 @@
+{{- /* Shadows the TIL theme's layouts/robots.txt.
+
+       Line 1 of the *output* must be the crawler-policy-stage marker, and
+       scripts/validate_site.py finds it with ^# crawler-policy-stage: (\S+). Keep this
+       comment above it and keep the `-}}` trim: with the comment below the marker, the
+       left trim swallows the newline, the stage parses as "cite-and-train#", and both
+       the matrix check and the retrieval exemption fail.
+
+       The theme emitted a blanket `Disallow: /` for ~40 AI agents whenever
+       params.robotsTxt.blockAI was set. That blocked OAI-SearchBot, PerplexityBot,
+       ChatGPT-User, Claude-Web and Google-Extended — the answer-engine citation
+       channel PRODUCT.md:11 names as a primary arrival path — and blocked the
+       training crawlers too, so no future model could learn who Ryan is.
+
+       The groups below are not free-form: data/crawlers.toml is the provider matrix
+       and scripts/validate_site.py asserts this file agrees with it at the stage
+       named on line 1. Change both together, or the build fails.
+
+       Same pitfall as layouts/_default/baseof.html: this permanently shadows the
+       theme's file, so a `hugo mod get -u` that changes the theme's robots.txt will
+       silently never reach the site and nothing will fail. Diff the module's
+       layouts/robots.txt against this by hand when updating the theme. */ -}}
+# crawler-policy-stage: cite-and-train
+# Content Signals Policy — https://contentsignals.org/
+#
+#   search    building a search index: hyperlinks and short excerpts, not AI summaries
+#   ai-input  real-time use in generative answers — RAG, grounding, answer engines
+#   ai-train  training or fine-tuning a model
+#
+# yes = permitted, no = not permitted, absent = no preference. These are stated
+# preferences and carry no technical force; the Disallow rules below are what bind.
+
+User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
+Allow: /
+
+# Answer retrieval. Reopened through the role exemption in data/crawlers.toml rather
+# than by editing the denial baseline, which still lists all five.
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: PerplexityBot
+User-agent: Claude-Web
+User-agent: Meta-ExternalFetcher
+Disallow: /notes/
+
+# Training corpora. Removed from the denial baseline by explicit decision on
+# 2026-09-18 so future models can learn the positioning. /notes/ is withheld on
+# signal-quality grounds: ~900 automatically generated summaries of other people's
+# writing would make this host look like an aggregator.
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: Bytespider
+User-agent: cohere-ai
+User-agent: AI2Bot
+User-agent: Ai2Bot-Dolma
+Disallow: /notes/
+
+# Not AI crawlers, and never deliberately blocked: Applebot is Siri and Spotlight
+# search, facebookexternalhit renders the og:image card on a shared link.
+User-agent: Applebot
+User-agent: facebookexternalhit
+Allow: /
+
+# Bulk scrapers, dataset collectors, and agents whose purpose is not established.
+User-agent: Amazonbot
+User-agent: Diffbot
+User-agent: FacebookBot
+User-agent: FriendlyCrawler
+User-agent: GoogleOther
+User-agent: GoogleOther-Image
+User-agent: GoogleOther-Video
+User-agent: iaskspider/2.0
+User-agent: ICC-Crawler
+User-agent: ImagesiftBot
+User-agent: img2dataset
+User-agent: ISSCyberRiskCrawler
+User-agent: Kangaroo Bot
+User-agent: Meta-ExternalAgent
+User-agent: omgili
+User-agent: omgilibot
+User-agent: PetalBot
+User-agent: Scrapy
+User-agent: Sidetrade indexer bot
+User-agent: Timpibot
+User-agent: VelenPublicWebCrawler
+User-agent: Webzio-Extended
+User-agent: YouBot
+Disallow: /
+
+Sitemap: {{ absURL "sitemap.xml" }}

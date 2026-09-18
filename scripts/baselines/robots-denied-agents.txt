@@ -1,25 +1,32 @@
 # Agents deliberately denied (Disallow: /) at the 2026-08-18 origin robots.txt baseline.
 # The validator fails if any of these is reopened. Remove a line only with an explicit decision.
-AI2Bot
-Ai2Bot-Dolma
+#
+# 2026-09-18, explicit decision. Eleven agents removed from this list.
+#
+# Nine training crawlers -- GPTBot, ClaudeBot, anthropic-ai, Google-Extended,
+# Applebot-Extended, Bytespider, cohere-ai, AI2Bot, Ai2Bot-Dolma -- because the point of
+# the site is that future models know who Ryan is, and denying them outright made that
+# impossible. They are not simply allowed: data/crawlers.toml grants them the publication
+# surface and withholds /notes/, which is ~900 automatically generated summaries of other
+# people's writing and would dilute the association rather than strengthen it.
+#
+# Two that were never AI crawlers: Applebot, which is Siri and Spotlight search and whose
+# denial contradicted the declared search=yes signal, and facebookexternalhit, which
+# renders the og:image card on shared links. Both were collateral damage of the theme's
+# blanket blockAI list rather than a decision anyone made.
+#
+# The five answer-retrieval agents below (ChatGPT-User, Claude-Web, Meta-ExternalFetcher,
+# OAI-SearchBot, PerplexityBot) stay listed here on purpose: they are reopened through the
+# role exemption in data/crawlers.toml, so this baseline still guards them.
 Amazonbot
-anthropic-ai
-Applebot
-Applebot-Extended
-Bytespider
 ChatGPT-User
 Claude-Web
-ClaudeBot
-cohere-ai
 Diffbot
 FacebookBot
-facebookexternalhit
 FriendlyCrawler
-Google-Extended
 GoogleOther
 GoogleOther-Image
 GoogleOther-Video
-GPTBot
 iaskspider/2.0
 ICC-Crawler
 ImagesiftBot

@@ -56,8 +56,9 @@ enableRobotsTXT = true
     host = "https://plausible.srv.ryo.wtf"
     domain = "ryanorban.com"
 
-  [params.robotsTxt]
-    blockAI = true
+  # No [params.robotsTxt] block: layouts/robots.txt shadows the theme's template and
+  # owns the crawler policy outright, so the theme's blockAI / blockCC flags would be
+  # read by nothing. Change the policy there, not here.
 
 [markup]
   [markup.highlight]
