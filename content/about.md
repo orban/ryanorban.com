@@ -1,6 +1,9 @@
 ---
 title: "About"
 description: "Ryan Orban is a founder, technology executive, and data scientist working at the intersection of AI and enterprise software."
+# HTML only: this page is built from about-role HTML blocks, so RawContent would emit
+# markup rather than the clean markdown a .md companion is supposed to provide.
+outputs: ["HTML"]
 ---
 
 <p class="about-intro">Previously: built and scaled programs that placed talent into Tesla, Facebook, Google; shipped hands-on data/ML products; and ran large-scale deployments in the federal space.</p>

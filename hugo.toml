@@ -8,10 +8,32 @@ enableRobotsTXT = true
   [[module.imports]]
     path = "github.com/michenriksen/hugo-theme-til"
 
+# Agent-facing plain-text surfaces. GitHub Pages serves static files and cannot branch
+# on an Accept header, so content negotiation is impossible here; these are the static
+# equivalent that llmstxt.org actually specifies.
+[mediaTypes]
+  [mediaTypes."text/markdown"]
+    suffixes = ["md"]
+
+[outputFormats]
+  # /llms.txt — the agent-facing index (llmstxt.org). Home only.
+  [outputFormats.llms]
+    mediaType = "text/plain"
+    baseName = "llms"
+    isPlainText = true
+    notAlternative = true
+  # /posts/<slug>/index.md — the essay as clean markdown beside its HTML.
+  # notAlternative keeps it out of <head>, so the audited HTML is untouched; /llms.txt
+  # is what points agents at these, which is the arrangement the spec describes.
+  [outputFormats.markdown]
+    mediaType = "text/markdown"
+    isPlainText = true
+    notAlternative = true
+
 [outputs]
-  home = ["HTML"]
+  home = ["HTML", "llms"]
   section = ["HTML", "RSS", "JSON"]
-  page = ["HTML"]
+  page = ["HTML", "markdown"]
 
 [menus]
   [[menus.main]]
