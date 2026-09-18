@@ -18,7 +18,7 @@ Not the audience for homepage decisions: investors, general readers, casual cons
 
 ## Product Purpose
 
-ryanorban.com is Ryan Orban's personal site: a Hugo site (TIL theme, GitHub Pages behind Cloudflare) with a homepage, About, Writing (`/posts/`), and a public Bookmarks intake archive (`/notes/`, ~1,000 automatically generated source summaries). Success is qualified conversations about roles with end-to-end ownership of consequential technical systems, then correct association between Ryan and his actual expertise, then discovery and citation of original evidence-bearing work.
+ryanorban.com is Ryan Orban's personal site: a Hugo site (TIL theme, GitHub Pages behind Cloudflare) with a homepage, About, Writing (`/posts/`), and a public Bookmarks intake archive (`/notes/`, ~2,500 automatically generated source summaries; 2,520 as of 2026-09-18). Success is qualified conversations about roles with end-to-end ownership of consequential technical systems, then correct association between Ryan and his actual expertise, then discovery and citation of original evidence-bearing work.
 
 ## Positioning
 
