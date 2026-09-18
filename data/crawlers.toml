@@ -1,0 +1,236 @@
+# Provider matrix for robots.txt.
+#
+# scripts/validate_site.py reads this file and asserts that the generated robots.txt
+# agrees with it at whichever stage the "# crawler-policy-stage:" marker in
+# layouts/robots.txt names. Change policy here and in that template together; the
+# validator fails if they disagree.
+#
+# Policies:
+#   allow              full access
+#   deny               Disallow: /
+#   publication-paths  allowed on publicationPaths, disallowed on rawPaths
+#
+# An agent may also leave scripts/baselines/robots-denied-agents.txt without a
+# baseline edit if its role begins "automatic answer retrieval" and it reaches
+# publication-paths at the active stage — that exemption is the mechanism this file
+# exists for. Training crawlers do not qualify and were removed from the baseline by
+# explicit decision on 2026-09-18.
+
+publicationPaths = ["/", "/about/", "/posts/"]
+rawPaths = ["/notes/"]
+
+[stages]
+baseline = "2026-08-18 origin posture: every AI agent denied outright."
+cite-and-train = "2026-09-18: answer engines and training crawlers may read the publication surface. The raw archive stays out of both."
+
+# --- automatic answer retrieval ------------------------------------------------
+# Still listed in the denial baseline; reopened through the role exemption above.
+
+[[agents]]
+agent = "OAI-SearchBot"
+role = "automatic answer retrieval for ChatGPT search"
+policy = { baseline = "deny", cite-and-train = "publication-paths" }
+
+[[agents]]
+agent = "ChatGPT-User"
+role = "automatic answer retrieval, user-triggered fetch"
+policy = { baseline = "deny", cite-and-train = "publication-paths" }
+
+[[agents]]
+agent = "PerplexityBot"
+role = "automatic answer retrieval for Perplexity"
+policy = { baseline = "deny", cite-and-train = "publication-paths" }
+
+[[agents]]
+agent = "Claude-Web"
+role = "automatic answer retrieval, user-triggered fetch"
+policy = { baseline = "deny", cite-and-train = "publication-paths" }
+
+[[agents]]
+agent = "Meta-ExternalFetcher"
+role = "automatic answer retrieval, user-triggered fetch"
+policy = { baseline = "deny", cite-and-train = "publication-paths" }
+
+# --- training corpora ---------------------------------------------------------
+# Removed from the denial baseline on 2026-09-18 so that future models can learn the
+# positioning. Same path split as retrieval: the publication surface, not the archive.
+
+[[agents]]
+agent = "GPTBot"
+role = "model training corpus collection"
+policy = { baseline = "deny", cite-and-train = "publication-paths" }
+
+[[agents]]
+agent = "ClaudeBot"
+role = "model training corpus collection"
+policy = { baseline = "deny", cite-and-train = "publication-paths" }
+
+[[agents]]
+agent = "anthropic-ai"
+role = "model training corpus collection"
+policy = { baseline = "deny", cite-and-train = "publication-paths" }
+
+[[agents]]
+agent = "Google-Extended"
+role = "model training and grounding for Gemini"
+policy = { baseline = "deny", cite-and-train = "publication-paths" }
+
+[[agents]]
+agent = "Applebot-Extended"
+role = "model training corpus collection"
+policy = { baseline = "deny", cite-and-train = "publication-paths" }
+
+[[agents]]
+agent = "Bytespider"
+role = "model training corpus collection"
+policy = { baseline = "deny", cite-and-train = "publication-paths" }
+
+[[agents]]
+agent = "cohere-ai"
+role = "model training corpus collection"
+policy = { baseline = "deny", cite-and-train = "publication-paths" }
+
+[[agents]]
+agent = "AI2Bot"
+role = "model training corpus collection"
+policy = { baseline = "deny", cite-and-train = "publication-paths" }
+
+[[agents]]
+agent = "Ai2Bot-Dolma"
+role = "model training corpus collection"
+policy = { baseline = "deny", cite-and-train = "publication-paths" }
+
+# --- search and link preview --------------------------------------------------
+# Neither is an AI crawler. Both were collateral damage of the blanket block and were
+# removed from the baseline on 2026-09-18: Applebot is Siri and Spotlight search, which
+# the declared search=yes signal contradicts blocking, and facebookexternalhit is what
+# renders the og:image card when a link is shared.
+
+[[agents]]
+agent = "Applebot"
+role = "search index for Siri and Spotlight"
+policy = { baseline = "deny", cite-and-train = "allow" }
+
+[[agents]]
+agent = "facebookexternalhit"
+role = "link preview card generation"
+policy = { baseline = "deny", cite-and-train = "allow" }
+
+# --- denied -------------------------------------------------------------------
+# Bulk scrapers, dataset collectors, and agents whose purpose is not established.
+# These stay in the denial baseline at every stage.
+
+[[agents]]
+agent = "Amazonbot"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "Diffbot"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "FacebookBot"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "FriendlyCrawler"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "GoogleOther"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "GoogleOther-Image"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "GoogleOther-Video"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "iaskspider/2.0"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "ICC-Crawler"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "ImagesiftBot"
+role = "bulk image collection"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "img2dataset"
+role = "bulk image collection"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "ISSCyberRiskCrawler"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "Kangaroo Bot"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "Meta-ExternalAgent"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "omgili"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "omgilibot"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "PetalBot"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "Scrapy"
+role = "scraping library default user agent"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "Sidetrade indexer bot"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "Timpibot"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "VelenPublicWebCrawler"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "Webzio-Extended"
+role = "bulk crawl"
+policy = { default = "deny" }
+
+[[agents]]
+agent = "YouBot"
+role = "bulk crawl"
+policy = { default = "deny" }
