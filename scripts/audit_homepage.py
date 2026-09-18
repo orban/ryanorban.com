@@ -63,7 +63,7 @@ MOIRAI_CONTRACT = {
     "Preference pairs": r"([\d,]+) preference pairs",
 }
 # Claims the homepage shares with the About page, which is their source here.
-ABOUT_CLAIMS = ("$1M", "150+", "$100M+", "98%")
+ABOUT_CLAIMS = ("$1M", "150+", "$100M+", "91%")
 
 BANNED_COPY = re.compile(
     r"(?i)\b(?:"
