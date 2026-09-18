@@ -8,6 +8,7 @@
 
        Returns a dict:
          projects — the Building now entries, in render order
+         side     — the Other projects entries, in render order
          pinned   — RelPermalinks of posts already spoken for by a project
          writing  — published posts that are not pinned, newest first
 
@@ -40,6 +41,56 @@
   )
 -}}
 
+{{- /* Side projects. Deliberately not part of $projects: Building now is the current
+       evaluation work, and folding a 2016 light sculpture into it would misdate both.
+       These carry a live `url` rather than a `repo`, since the thing itself is the
+       artefact — `repo` is optional and only set where source exists.
+
+       imadethisforyou and sf-misery-map are absolute on purpose. They serve from
+       ryanorban.com but are not built by this Hugo site and are not in static/, so a
+       root-relative href would be an internal link that resolves nowhere in the
+       artifact — scripts/audit_homepage.py fails on exactly that. Do not "tidy" them
+       into /imadethisforyou. /sfevents/ does ship in static/, so it stays relative. */ -}}
+
+{{- $side := slice
+  (dict
+    "name" "Sequoia Fabrica — power"
+    "linkLabel" "Live readout"
+    "kind" "Solar"
+    "url" "https://sequoia.garden/power/"
+    "body" "A solar-powered server in San Francisco hosts sequoia.garden and reports on itself: state of charge by coulomb counting off an INA228 shunt, plus voltage, load average, and temperature. I did the solar install, the current-sensing circuit, and the hardened Raspberry Pi it runs on, and built the software stack with Camille Teicheira — after Low-tech Magazine's solar-powered site. Sequoia Fabrica is a volunteer-run community workshop."
+  )
+  (dict
+    "name" "SF events"
+    "linkLabel" "Open the calendar"
+    "kind" "Scraper"
+    "url" "/sfevents/"
+    "repo" "https://github.com/orban/eventscout"
+    "body" "Bay Area event discovery: several sources scraped into one searchable calendar. A static snapshot ships with this site."
+  )
+  (dict
+    "name" "i made this for you"
+    "linkLabel" "Listen"
+    "kind" "Web"
+    "url" "https://ryanorban.com/imadethisforyou"
+    "body" "Strangers name public playlists after feelings. This plays them back anonymously — 725 stations curated down from 13,190 distinct names across 22,000 results, with the overlaps counted where several people independently landed on the same name and the same songs."
+  )
+  (dict
+    "name" "SF Misery Map"
+    "linkLabel" "Open the map"
+    "kind" "Map"
+    "url" "https://ryanorban.com/sf-misery-map"
+    "body" "Every SF 311 complaint, ranked and mapped as though the city's worst-reviewed corners were attractions."
+  )
+  (dict
+    "name" "Enunciation"
+    "linkLabel" "The piece"
+    "kind" "Sculpture"
+    "url" "https://www.taylordeanharrison.com/portfolio-item/enunciation/"
+    "body" "An interactive light sculpture — 14 by 9 by 9 feet of stainless steel, acrylic, and 3,500 LEDs that visitors drive from buttons inside it. Built with Taylor Dean Harrison and Henry Richardson; Burning Man Honoraria grant, 2016."
+  )
+-}}
+
 {{- $pinned := slice -}}
 {{- range $projects -}}
   {{- with .post -}}
@@ -54,4 +105,4 @@
   {{- end -}}
 {{- end -}}
 
-{{- return (dict "projects" $projects "pinned" $pinned "writing" $writing) -}}
+{{- return (dict "projects" $projects "side" $side "pinned" $pinned "writing" $writing) -}}
