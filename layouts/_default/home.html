@@ -131,7 +131,12 @@
            and the Writing section below can never disagree about whether there is
            anything left to show. */ -}}
     {{- $record := partialCached "record/data.html" . -}}
-    {{- $projects := $record.projects -}}
+    {{- /* Gated like Writing below. Building now is empty as of 2026-09-19, and an
+           empty section would leave a "Building now" heading over nothing and drop
+           the homepage to two record-rows lists, which scripts/audit_homepage.py
+           checks. The nav item in baseof.html is gated on the same value. */ -}}
+    {{- with $record.projects }}
+    {{- $projects := . -}}
 
     <section class="record-section" id="work" aria-labelledby="work-heading">
       <header class="record-rule">
@@ -167,6 +172,7 @@
         {{- end }}
       </ol>
     </section>
+    {{- end }}
 
     {{- /* Other projects. Same row rhythm as the record and Building now, so the page
            stays one ledger rather than sprouting a gallery. Gated on the data so the

@@ -15,31 +15,26 @@
        site.GetPage returns nothing for an unbuilt draft, so a project whose essay is
        still a draft simply pins nothing. */ -}}
 
-{{- $projects := slice
-  (dict
-    "name" "Moirai"
-    "kind" "Python"
-    "role" "Evaluation research"
-    "repo" "https://github.com/orban/moirai"
-    "post" (site.GetPage "/posts/what-stochastic-variation-reveals")
-    "postLabel" "What the variation reveals"
-    "body" "Run one agent on one task enough times and it branches. Moirai lines those runs up, finds the branch points, tests which choices actually predicted success, and exports the survivors as preference data. Run against SWE-rebench:"
-    "metrics" (slice
-      (dict "label" "Runs analyzed" "value" "12,854")
-      (dict "label" "Mixed-outcome tasks" "value" "1,096")
-      (dict "label" "Preference pairs" "value" "11,006"))
-  )
-  (dict
-    "name" "Cerberus"
-    "kind" "TypeScript"
-    "role" "Statistical CI"
-    "repo" "https://github.com/orban/cerberus"
-    "post" (site.GetPage "/posts/stop-testing-agents-like-deterministic-code")
-    "postLabel" "The argument for it"
-    "body" "A green test run on a stochastic system is one sample, not a verdict. Cerberus treats every invocation as a Bernoulli trial, runs a sequential probability ratio test to decide when it has seen enough, and reports a Wilson interval against your release bar — as an exit code your CI already understands."
-    "metrics" slice
-  )
--}}
+{{- /* Empty, deliberately, since 2026-09-19.
+
+       Moirai and Cerberus were here. Moirai was archived after the divergence
+       hypothesis it existed to test came back negative under a proper held-out
+       ablation: branch points detected in 93% of tasks, AUROC 0.532, real
+       indistinguishable from shuffled labels. Cerberus went with it.
+
+       The essays stay. They are the output; the tools were the instrument, and an
+       instrument need not outlive the answer it produced.
+
+       Because nothing is pinned now, $writing below picks up both published essays,
+       and home.html's Writing section -- suppressed for as long as every post was
+       spoken for by a project -- renders in this section's place. That is the
+       intended behaviour rather than a hole: the page's present tense becomes the
+       writing.
+
+       If a project goes here again it needs a `metrics` slice whose labels match
+       figures in the essay it pins. scripts/audit_homepage.py checks the homepage
+       against the essay and fails on any figure the essay does not source. */ -}}
+{{- $projects := slice -}}
 
 {{- /* Side projects. Deliberately not part of $projects: Building now is the current
        evaluation work, and folding a 2016 light sculpture into it would misdate both.

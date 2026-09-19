@@ -60,7 +60,9 @@
              there. */ -}}
       <nav class="record-nav" aria-label="Primary navigation">
         <a href="{{ $anchor }}#record">Record</a>
-        <a href="{{ $anchor }}#work">Work</a>
+        {{- with (partialCached "record/data.html" .).projects }}
+          <a href="{{ $anchor }}#work">Work</a>
+        {{- end }}
         {{- with (partialCached "record/data.html" .).side }}
           <a href="{{ $anchor }}#projects">Projects</a>
         {{- end }}

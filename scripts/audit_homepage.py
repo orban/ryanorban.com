@@ -27,10 +27,15 @@ EXPECTED_TITLE = "Ryan Orban"
 EXPECTED_H1 = ["Ryan Orban"]
 REQUIRED_H2 = {
     "The record",
-    "Building now",
     "What I’m looking for",
 }
-REQUIRED_NAV = {"Record", "Work", "Contact"}
+REQUIRED_NAV = {"Record", "Contact"}
+# Building now is gated on partials/record/data.html having projects, and has been
+# empty since 2026-09-19. The audit cannot read that template, so it takes the
+# rendered section as the configuration and then insists the other three signals
+# agree with it: a section without a nav item, or a nav item without a section, is
+# the failure this catches.
+WORK = {"list": "record-rows", "h2": "Building now", "nav": "Work", "id": "work"}
 # Writing is omitted wholesale when every published post is pinned into "Building
 # now". Heading, nav item, anchor and list travel together, so one derived answer
 # to "should Writing exist on this build?" drives all four.
@@ -51,13 +56,15 @@ THIRD_PARTY_FONT_HOSTS = ("fonts.googleapis.com", "fonts.gstatic.com", "cdn.jsde
 # the constant, an exact comparison cannot.
 REQUIRED_LISTS = (
     "record-rows",  # The record
-    "record-rows",  # Building now
     "record-rows",  # Other projects
 )
-OPTIONAL_LISTS = ("record-writing-list",)  # Writing, only when an unpinned post exists
 
 # Every Moirai figure on the homepage is derived from the essay it links to.
 # The homepage label is the key; the essay is the only authority for the value.
+# Label -> the pattern that finds that figure's value in the essay vouching for it.
+# The homepage need not show any of these; the guarantee is the other direction, that
+# nothing appears on the page unless this map can source it. Kept populated while
+# Building now is empty so a returning project inherits the contract.
 MOIRAI_CONTRACT = {
     "Runs analyzed": r"([\d,]+) runs total",
     "Mixed-outcome tasks": r"attempts ([\d,]+) software engineering tasks",
@@ -308,7 +315,11 @@ def main() -> None:
         )
 
     # --- factual contract -------------------------------------------------
-    sourced = extract_sourced_facts(post)
+    # Only meaningful while the homepage carries figures. With Building now empty
+    # there are none, and asserting the essay's figures appear would fail on a page
+    # that makes no claim. Kept armed for the moment a project returns: any figure
+    # the page does show must still match the essay it came from.
+    sourced = extract_sourced_facts(post) if parser.metrics else {}
     for label, value in sourced.items():
         check(
             f"homepage figure matches source: {label}",
@@ -341,11 +352,12 @@ def main() -> None:
     )
     # Figures may only appear where a source of truth vouches for them, so an
     # unsourced metric cannot be added without failing the contract above.
-    check(
-        "no unsourced figures",
-        set(parser.metrics) == set(MOIRAI_CONTRACT),
-        repr(sorted(set(parser.metrics) ^ set(MOIRAI_CONTRACT))),
-    )
+    # Subset, not equality: the page is free to show no figures at all, which it does
+    # now that Building now is empty. What it may never do is show one the essay does
+    # not vouch for. Equality here used to encode "Moirai is on the page" as a
+    # requirement, which is a different claim and not one the audit should make.
+    unsourced = sorted(set(parser.metrics) - set(MOIRAI_CONTRACT))
+    check("no unsourced figures", not unsourced, repr(unsourced))
     # The record's own rows only. "Building now" and the writing list reuse the row
     # class, and the writing count moves with the post data.
     ledger = re.search(r"<ol[^>]*class=[\"']?record-rows.*?</ol>", html, re.DOTALL)
@@ -378,6 +390,7 @@ def main() -> None:
         )
     )
     writing_expected = bool(published - pinned)
+    work_expected = work_section is not None
     seen = sorted(" ".join(classes) for classes, _ in parser.lists)
     check("seo title", normalize_text(parser.title) == EXPECTED_TITLE, parser.title)
     description = parser.meta.get("description", "")
@@ -389,7 +402,11 @@ def main() -> None:
     )
     check("working record body class", "working-record-site" in parser.body_classes)
     check("single exact h1", parser.h1 == EXPECTED_H1, repr(parser.h1))
-    expected_h2 = REQUIRED_H2 | ({WRITING["h2"]} if writing_expected else set())
+    expected_h2 = (
+        REQUIRED_H2
+        | ({WRITING["h2"]} if writing_expected else set())
+        | ({WORK["h2"]} if work_expected else set())
+    )
     check(
         "required sections present",
         expected_h2 <= set(parser.h2),
@@ -407,7 +424,11 @@ def main() -> None:
         repr(sorted(set(parser.aria_refs) - set(parser.ids))),
     )
     check("skip link", "#maincontent" in parser.links)
-    anchors = ["record", "work", "contact"] + ([WRITING["id"]] if writing_expected else [])
+    anchors = (
+        ["record", "contact"]
+        + ([WORK["id"]] if work_expected else [])
+        + ([WRITING["id"]] if writing_expected else [])
+    )
     for anchor in anchors:
         check(f"{anchor} anchor", anchor in parser.ids)
     # Nav, heading, anchor and section appear and disappear together: a nav item
@@ -416,7 +437,11 @@ def main() -> None:
     dangling = sorted(fragment for fragment in fragments if fragment not in parser.ids)
     check("fragment links resolve", not dangling, repr(dangling))
     check("email link", "mailto:me@ryanorban.com" in parser.links)
-    expected_nav = REQUIRED_NAV | ({WRITING["nav"]} if writing_expected else set())
+    expected_nav = (
+        REQUIRED_NAV
+        | ({WRITING["nav"]} if writing_expected else set())
+        | ({WORK["nav"]} if work_expected else set())
+    )
     check(
         "primary navigation",
         expected_nav <= set(parser.nav_items),
@@ -465,7 +490,11 @@ def main() -> None:
     # page needs role="list" to survive Safari/VoiceOver.
     unrolled = [classes for classes, role in parser.lists if role != "list"]
     check("lists keep list semantics", not unrolled, repr(unrolled))
-    expected_lists = sorted(REQUIRED_LISTS + (OPTIONAL_LISTS if writing_expected else ()))
+    expected_lists = sorted(
+        REQUIRED_LISTS
+        + ((WORK["list"],) if work_expected else ())
+        + ((WRITING["list"],) if writing_expected else ())
+    )
     check(
         "all homepage lists were seen",
         seen == expected_lists,
