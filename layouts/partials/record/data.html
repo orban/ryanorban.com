@@ -1,13 +1,13 @@
 {{- /* Single source of truth for the homepage's projects and which essays they pin.
 
-       Both layouts/_default/home.html (which renders Building now and Writing) and
+       Both layouts/_default/home.html (which renders Built and Writing) and
        layouts/_default/baseof.html (which renders the nav) call this, so the nav's
        Writing item and the Writing section are computed from the same data and
        cannot disagree. A second copy of this logic would drift; that is the whole
        reason the pinned set is derived from $projects rather than listed twice.
 
        Returns a dict:
-         projects — the Building now entries, in render order
+         projects — the Built entries, in render order
          side     — the Other projects entries, in render order
          pinned   — RelPermalinks of posts already spoken for by a project
          writing  — published posts that are not pinned, newest first
@@ -23,7 +23,7 @@
     "repo" "https://github.com/orban/moirai"
     "post" (site.GetPage "/posts/what-stochastic-variation-reveals")
     "postLabel" "What the variation reveals"
-    "body" "Run one agent on one task enough times and it branches. Moirai lines those runs up, finds the branch points, tests which choices actually predicted success, and exports the survivors as preference data. Run against SWE-rebench:"
+    "body" "Run one agent on one task enough times and it branches. Moirai lines those runs up with sequence alignment borrowed from bioinformatics, locates the branch points, and tests whether the choices made there predicted success. Run against SWE-rebench:"
     "metrics" (slice
       (dict "label" "Runs analyzed" "value" "12,854")
       (dict "label" "Mixed-outcome tasks" "value" "1,096")
@@ -41,7 +41,7 @@
   )
 -}}
 
-{{- /* Side projects. Deliberately not part of $projects: Building now is the current
+{{- /* Side projects. Deliberately not part of $projects: Built is the current
        evaluation work, and folding a 2016 light sculpture into it would misdate both.
        These carry a live `url` rather than a `repo`, since the thing itself is the
        artefact — `repo` is optional and only set where source exists.

@@ -27,7 +27,7 @@ EXPECTED_TITLE = "Ryan Orban"
 EXPECTED_H1 = ["Ryan Orban"]
 REQUIRED_H2 = {
     "The record",
-    "Building now",
+    "Built",
     "What I’m looking for",
 }
 REQUIRED_NAV = {"Record", "Work", "Contact"}
@@ -51,7 +51,7 @@ THIRD_PARTY_FONT_HOSTS = ("fonts.googleapis.com", "fonts.gstatic.com", "cdn.jsde
 # the constant, an exact comparison cannot.
 REQUIRED_LISTS = (
     "record-rows",  # The record
-    "record-rows",  # Building now
+    "record-rows",  # Built
     "record-rows",  # Other projects
 )
 OPTIONAL_LISTS = ("record-writing-list",)  # Writing, only when an unpinned post exists
@@ -346,7 +346,7 @@ def main() -> None:
         set(parser.metrics) == set(MOIRAI_CONTRACT),
         repr(sorted(set(parser.metrics) ^ set(MOIRAI_CONTRACT))),
     )
-    # The record's own rows only. "Building now" and the writing list reuse the row
+    # The record's own rows only. "Built" and the writing list reuse the row
     # class, and the writing count moves with the post data.
     ledger = re.search(r"<ol[^>]*class=[\"']?record-rows.*?</ol>", html, re.DOTALL)
     rows = re.findall(
@@ -366,7 +366,7 @@ def main() -> None:
 
     # --- document contract ------------------------------------------------
     # "Should Writing exist on this build?" answered once, from the post data
-    # rather than from the markup under test. A published post that "Building now"
+    # rather than from the markup under test. A published post that "Built"
     # has not pinned is a post Writing must list. Every conditional check below
     # compares rendered markup against this expectation, never against itself.
     published = set(re.findall(r"""href=["']?(/posts/[^"'\s>]+/)""", posts_index))

@@ -26,7 +26,7 @@ Essays are available as clean markdown at the same URL with `index.md` appended.
 {{- end }}
 {{ end }}
 {{- with $record.projects }}
-## Building now
+## Built
 {{ range . }}
 {{- /* Several project bodies end in a colon because home.html follows them with a
        metrics table. Fold those figures into the sentence here, or the colon dangles. */}}
