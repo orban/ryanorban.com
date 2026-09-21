@@ -1,10 +1,13 @@
 {{ define "main" }}
-  {{- /* Any single page that is not an essay, a note, or /about/ — today that is
-         /advising/ and /office-hours/. Shadows the theme's _default/single.html, which
-         wrapped the body in a Tailwind prose article with its own <h1> and date line.
+  {{- /* Any single page that is not an essay, a note, or /about/. As of 2026-09-20 no
+         page reaches this template — /advising/ and /office-hours/ were the only two and
+         both were retired. Keep it anyway: it shadows the theme's _default/single.html,
+         which wraps the body in a Tailwind prose article carrying its own <h1>, and that
+         second <h1> is what partials/record/shell.html exists to prevent. Delete this and
+         the next root page added inherits the theme shell silently.
 
-         No date on the header: these are standing offers, not dated entries, and a
-         "Published 2026-03-02" under /advising/ reads as staleness rather than
+         No date on the header: a page that lands here is a standing statement, not a dated
+         entry, and "Published 2026-03-02" above one reads as staleness rather than
          provenance. Essays get posts/single.html, which does show one. */ -}}
 
   <article class="record-article">

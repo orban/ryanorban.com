@@ -1,3 +1,9 @@
 # Pre-migration URLs allowed to render as a Hugo alias (meta refresh) to an equivalent replacement.
 # Format: <source path> <target path>. Add a line only with an explicit approval.
 /posts/page/1/ /posts/
+# 2026-09-20: the advising and office-hours offers were withdrawn. Both pages sold
+# hours -- consults, advisor equity, coaching sessions -- which contradicts what
+# /about/ now says the ask is. Approved by Ryan; the content is deleted and the URLs
+# redirect to the record so inbound links survive.
+/advising/ /
+/office-hours/ /

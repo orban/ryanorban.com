@@ -384,7 +384,13 @@ def check_url_manifest(public: Path, url_manifest: Path, approved_aliases: dict[
         report.ok("every pre-migration URL still has an output file")
 
 
-def check_sitemap(public: Path, manifest: dict | None, baseline_sitemap: Path | None, report: Report) -> set[str]:
+def check_sitemap(
+    public: Path,
+    manifest: dict | None,
+    baseline_sitemap: Path | None,
+    approved_aliases: dict[str, str],
+    report: Report,
+) -> set[str]:
     sitemap = public / "sitemap.xml"
     if not sitemap.is_file():
         report.fail("sitemap.xml missing")
@@ -421,13 +427,32 @@ def check_sitemap(public: Path, manifest: dict | None, baseline_sitemap: Path | 
         baseline = {norm_path(u) for u in read_lines(baseline_sitemap)}
         lost = sorted(baseline - seen)
         # Notes feeds and pagination never belonged in the sitemap; ignore removed posts drafts.
-        if lost:
+        #
+        # A retired page that became an approved alias is *required* to leave the sitemap:
+        # the meta-refresh check above fails any redirect listed here, while
+        # check_url_manifest keeps its output file. Both rules hold only if the baseline
+        # tolerates its absence. Route that through approved-aliases.txt rather than
+        # editing this file: sitemap-urls-2026-08-18.txt is a dated snapshot of what the
+        # site served that day, and rewriting it to accommodate a later decision destroys
+        # the record it exists to be. The exemption is earned, not asserted — the approval
+        # only counts if the build really does serve a redirect at that path.
+        retired, missing = [], []
+        for path in lost:
+            out = output_file_for(public, path) if path in approved_aliases else None
+            if out is not None and out.suffix == ".html" and scrape(out).has_meta_refresh():
+                retired.append(path)
+            else:
+                missing.append(path)
+        if missing:
             report.fail(
-                f"architecture disabled but {len(lost)} baseline sitemap URL(s) disappeared (first 10): "
-                + ", ".join(lost[:10])
+                f"architecture disabled but {len(missing)} baseline sitemap URL(s) disappeared (first 10): "
+                + ", ".join(missing[:10])
             )
         else:
-            report.ok("architecture disabled: sitemap still contains every baseline URL")
+            report.ok(
+                "architecture disabled: sitemap still contains every baseline URL"
+                + (f" (retired to approved aliases: {retired})" if retired else "")
+            )
     return seen
 
 
@@ -1056,7 +1081,9 @@ def main(argv: Iterable[str] | None = None) -> int:
 
     check_build_json(public, args.expected_sha, report)
     check_url_manifest(public, args.url_manifest, approved_aliases, report)
-    sitemap_paths = check_sitemap(public, manifest, baselines / "sitemap-urls-2026-08-18.txt", report)
+    sitemap_paths = check_sitemap(
+        public, manifest, baselines / "sitemap-urls-2026-08-18.txt", approved_aliases, report
+    )
     check_forbidden_outputs(public, enabled, report)
     if manifest:
         check_taxonomies(public, manifest, sitemap_paths, report)
