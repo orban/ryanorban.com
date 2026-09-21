@@ -1,5 +1,5 @@
 ---
 title: "Ryan Orban"
-description: "San Francisco founder and engineering leader. Built a data science school, deployed $100M+ of federal infrastructure, now builds AI agent evaluation tools."
+description: "Fifteen years on one question: how do you know a system works well enough to ship, and prove it to someone who must trust it. First for people, now for models."
 images: ["/images/ryan-orban.jpg"]
 ---
