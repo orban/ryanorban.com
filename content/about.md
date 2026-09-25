@@ -19,7 +19,7 @@ outputs: ["HTML"]
       <a href="https://github.com/orban">github.com/orban</a><br />
       <a href="https://www.linkedin.com/in/ryanorban">linkedin.com/in/ryanorban</a>
     </p>
-    <p class="record-lede">Previously: built and scaled programs that placed talent into Tesla, Facebook, Google; shipped hands-on data/ML products; and ran large-scale deployments in the federal space.</p>
+    <p class="record-lede">Fifteen years on one question: how do you know something works well enough to ship, and how do you prove it to someone who has to trust it? Assessments that made data scientists hireable, vetting that made an independent ML network sellable, evaluation for agents. First for people, now for models.</p>
   </section>
   <section class="record-section" id="roles" aria-labelledby="roles-heading">
     <header class="record-rule">
@@ -27,13 +27,23 @@ outputs: ["HTML"]
     </header>
     <ol class="record-rows" role="list">
       <li class="record-row">
+        <p class="record-when"><time datetime="2025">2025–</time></p>
+        <div class="record-who">
+          <h3>Independent</h3>
+          <p class="record-role">Research</p>
+        </div>
+        <div class="record-what">
+          <p>Borrowed sequence alignment from bioinformatics — Needleman-Wunsch, progressive multi-sequence alignment — to align agent trajectories across 12,854 runs and locate where passing and failing runs diverge, with spectrum-based fault localization from software debugging layered on top. Alongside it, a sequential-testing harness that stops an evaluation as soon as the evidence is decisive, so you pay for the runs you need rather than a fixed number.</p>
+        </div>
+      </li>
+      <li class="record-row">
         <p class="record-when"><time datetime="2023">2023–25</time></p>
         <div class="record-who">
           <h3>Cadea</h3>
           <p class="record-role">Founder</p>
         </div>
         <div class="record-what">
-          <p>Created secure workspace chatbots with RBAC-aware RAG and agentic pipelines for regulated data. Built working prototypes, learned the market was early, returned remaining funds, and distilled playbooks for secure LLM adoption: red-teaming, data governance, and evals.</p>
+          <p>The same question, pointed at models: what has to be true before an LLM can touch regulated data? Built secure workspace chatbots with RBAC-aware RAG and agentic pipelines, and the verification around them — red-teaming, data governance, evals. Judged the market early rather than late, returned the remaining funds, and kept the playbooks.</p>
         </div>
       </li>
       <li class="record-row">
@@ -43,7 +53,7 @@ outputs: ["HTML"]
           <p class="record-role">CTO</p>
         </div>
         <div class="record-what">
-          <p>Led product and infrastructure for a network of 150+ senior ML practitioners. Standardized delivery playbooks, improved scoping-to-delivery cycle time, and served as tech lead for client work across LLM prototyping, recommender systems, and data platforms.</p>
+          <p>A network sells work from people the client never hired, so trust is the entire product. Built the vetting and delivery standards that made 150+ independent senior ML practitioners reliable enough to sell — standardized playbooks, shorter scoping-to-delivery cycles — and served as tech lead for client work across LLM prototyping, recommender systems, and data platforms.</p>
         </div>
       </li>
       <li class="record-row">
@@ -53,7 +63,7 @@ outputs: ["HTML"]
           <p class="record-role">Head of Data Science</p>
         </div>
         <div class="record-what">
-          <p>Owned data products for job-seeker outcomes: ranking, matching, funnel analytics, and experimentation. Improved placement conversion by combining Elasticsearch with Learning To Rank, BERT embeddings, and Bayesian A/B testing.</p>
+          <p>The same judgment, automated: ranking people against roles at scale. Built the matching stack — Elasticsearch with Learning To Rank, BERT embeddings — which improved placement conversion, established with Bayesian A/B testing rather than assumed.</p>
         </div>
       </li>
       <li class="record-row">
@@ -73,8 +83,8 @@ outputs: ["HTML"]
           <p class="record-role">Founder &amp; CEO, then CTO</p>
         </div>
         <div class="record-what">
-          <p>Bootstrapped the first immersive data science program in the US. Built a 10-person team, grew revenue past $1M in year one, placed 91% of graduates at top tech firms including Tesla, Facebook, and Google, and created a curriculum format that many later programs echoed.</p>
-          <p>Galvanize acquired it, and I led the post-acquisition integration: scaled the data science curriculum nationwide, hired and managed instructor teams, stood up enterprise training and assessments, and aligned pedagogy with industry needs.</p>
+          <p>Data science had no credential, so employers had no way to tell who could do the work. Built one and proved it out on the only metric that settles the question — where graduates landed. Bootstrapped the first immersive data science program in the US with a 10-person team and no outside capital, grew revenue past $1M in year one, placed 91% of graduates at top tech firms including Tesla, Facebook, and Google, and created a curriculum format that many later programs echoed.</p>
+          <p>Galvanize acquired it, and I led the post-acquisition integration: stood up enterprise training and assessments, scaled the data science curriculum nationwide, hired and managed instructor teams, and aligned pedagogy with industry needs.</p>
         </div>
       </li>
       <li class="record-row">
@@ -84,7 +94,7 @@ outputs: ["HTML"]
           <p class="record-role">Sr. Systems Engineer</p>
         </div>
         <div class="record-what">
-          <p>Started in distributed systems engineering, then moved into a sales engineering role across Army, Air Force, and intelligence customers. Designed and deployed $100M+ clusters, led large-scale POCs, and translated hard infrastructure constraints into resilient systems.</p>
+          <p>Started in distributed systems engineering, then moved to the customer side across Army, Air Force, and intelligence — buyers who grant no trust by default and have to be shown. The proof was the job: large-scale POCs demonstrating a system would hold before anyone would deploy it. Designed and deployed $100M+ clusters, translating hard infrastructure constraints into resilient systems.</p>
         </div>
       </li>
     </ol>
@@ -96,7 +106,8 @@ outputs: ["HTML"]
     <div class="record-row record-contact-row">
       <p class="record-when"><span class="record-kind">Email</span></p>
       <div class="record-contact-body">
-        <p>Based in San Francisco, California. Interested in conversations about AI infrastructure, evaluation, retrieval, agent runtimes, and enterprise deployment.</p>
+        <p>Based in San Francisco, California. The work is AI infrastructure, evaluation, retrieval, agent runtimes, and enterprise deployment.</p>
+        <p>What I want next is a small number of the right people — low-bullshit, high-velocity, willing to let reality veto a good story. Starting something or joining something matters less than that; the constraint is the people, not the vehicle. If that's how you work, I'd like to know you.</p>
         <p class="record-contact-links">
           <a class="record-contact-email" href="mailto:me@ryanorban.com">me@ryanorban.com</a>
           <a href="https://www.linkedin.com/in/ryanorban">LinkedIn</a>
