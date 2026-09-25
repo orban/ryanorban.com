@@ -13,7 +13,18 @@
          writing  — published posts that are not pinned, newest first
 
        site.GetPage returns nothing for an unbuilt draft, so a project whose essay is
-       still a draft simply pins nothing. */ -}}
+       still a draft simply pins nothing.
+
+       A metric here is a claim, and the claim has to be one its essay still makes.
+       Moirai's "Preference pairs" (11,006) was retired on 2026-09-25 because the essay
+       it derives from now reports that those pairs predict nothing on held-out runs.
+       Removing a metric means removing its MOIRAI_CONTRACT entry in
+       scripts/audit_homepage.py as well: the audit resolves each label against the
+       essay rather than against this file, so the rendered metric and the contract
+       entry appear or vanish together. Note that the contract alone would not have
+       caught this — the literal "11,006 preference pairs" survives in the essay inside
+       a fenced code block, so the figure still agreed with its source long after the
+       source stopped standing behind it. */ -}}
 
 {{- $projects := slice
   (dict
@@ -26,8 +37,7 @@
     "body" "Run one agent on one task enough times and it branches. Moirai lines those runs up with sequence alignment borrowed from bioinformatics, locates the branch points, and tests whether the choices made there predicted success. Run against SWE-rebench:"
     "metrics" (slice
       (dict "label" "Runs analyzed" "value" "12,854")
-      (dict "label" "Mixed-outcome tasks" "value" "1,096")
-      (dict "label" "Preference pairs" "value" "11,006"))
+      (dict "label" "Mixed-outcome tasks" "value" "1,096"))
   )
   (dict
     "name" "Cerberus"

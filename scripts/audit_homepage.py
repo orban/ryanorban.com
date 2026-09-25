@@ -58,10 +58,15 @@ OPTIONAL_LISTS = ("record-writing-list",)  # Writing, only when an unpinned post
 
 # Every Moirai figure on the homepage is derived from the essay it links to.
 # The homepage label is the key; the essay is the only authority for the value.
+# "Preference pairs" was retired here on 2026-09-25 alongside the metric itself in
+# layouts/partials/record/data.html. The literal "11,006 preference pairs" still appears
+# in the essay inside a fenced code block, so this entry would have gone on passing --
+# the contract checks that a rendered figure agrees with its source, not that the claim
+# the figure encodes is one the essay still makes. The essay's September update reports
+# the pairs predict nothing on held-out runs.
 MOIRAI_CONTRACT = {
     "Runs analyzed": r"([\d,]+) runs total",
     "Mixed-outcome tasks": r"attempts ([\d,]+) software engineering tasks",
-    "Preference pairs": r"([\d,]+) preference pairs",
 }
 # Claims the homepage shares with the About page, which is their source here.
 ABOUT_CLAIMS = ("$1M", "150+", "$100M+", "91%")
