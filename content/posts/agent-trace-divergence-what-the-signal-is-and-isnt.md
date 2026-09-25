@@ -19,7 +19,7 @@ One agent, one scaffold, one config. That narrowness is the design rather than a
 
 Most of it doesn't work the way you'd hope, and the parts that do are narrower than I expected.
 
-The finding worth carrying is *why* it fails. Repeated runs of one agent on one task stop agreeing almost immediately: across a task's runs the mean shared prefix is 1.68 steps at coarse granularity and 1.18 at fine. A run set that diverges after one or two steps gives a detector almost nothing to compare, and adding runs does not change that shape, only its volume. I have not packaged this as a metric and the closest thing in the literature is defined over code coverage rather than traces, so treat it as an observation rather than a tool. It is still the property that decides whether any method of this shape can work on your data.
+The obvious escape hatch is that the data was inadequate, so I closed it. Spectrum-based fault localization has a metric for whether a set of runs can localize anything at all, called DDU, and it reads no outcome labels. I ported it to trajectories and ran it over 19,592 runs. Median 0.14, against 0.10 to 0.42 for the real-fault suites in the paper that introduced it. This corpus sits inside the range where the technique demonstrably works, and the runs are individually distinct rather than collapsed on top of each other. They are diagnosable. The signal still isn't there.
 
 When the rebuilt detectors came back flat I went looking for who else had attacked this. Four fields have been working on versions of the problem, three of them for decades: multiple sequence alignment, spectrum-based fault localization, counterfactual off-policy evaluation, and process reward modelling. They don't cite each other, and none of them are indexed under "agent traces." The last section maps what each one gives you.
 
@@ -264,7 +264,19 @@ The result that reframes my failure is Perez, Abreu & van Deursen's [test-suite 
 
 It is worth knowing this is contested ground rather than settled: [FDG](https://arxiv.org/abs/2104.06641) argues that scoring a suite without using the outcomes a test would produce leaves value on the table, and [RLFDC](https://arxiv.org/abs/2501.02216) reports beating DDU on the same benchmarks.
 
-The transfer to my case is my inference and not their result, so take it as one. Repeated runs of one agent on one task diverge in the same few places, so the activity matrix gains rows without gaining distinct row patterns. Coverage grows; distinguishability does not. That is a claim I can test directly rather than argue by analogy, which is what the budget sweep in section 1 does.
+So I ran it on my own data. `moirai diagnosability` builds the activity matrix from traces instead of coverage, with runs as rows and step signatures as components, and computes the three terms. Over 1,737 mixed-outcome tasks with at least four runs each, 19,592 runs in total:
+
+| | step-name alphabet | step+target alphabet |
+|---|---:|---:|
+| Median DDU | 0.141 | 0.145 |
+| Density | 0.358 | 0.501 |
+| Diversity | 0.879 | 1.000 |
+| Uniqueness | 0.438 | 0.331 |
+| Tasks below 0.10 | 25.8% | 23.9% |
+
+I expected this to come back low and explain everything. It didn't. A median of 0.14 is inside the band their Defects4J suites occupied, and diversity, the term I assumed had collapsed, is the strongest of the three: at the finer alphabet every single run has a distinct activity pattern. Whatever is wrong here, it isn't that the runs are too few or too alike.
+
+The weak term is uniqueness, at 0.33 to 0.44. Components keep getting touched together, so a large share of them sit in ambiguity groups where nothing distinguishes one from another. That is a real limit, and it is a limit on telling *components* apart rather than on telling *runs* apart. Two caveats worth carrying: my filter takes every mixed-outcome task with four or more runs and yields 1,737 tasks where the published analysis used 1,096, so the corpora are not identical even though mean runs per task lands at 11.3 against a published median of 11. And DDU was validated as a test-suite generation objective, not as a go/no-go gate, so treat 0.14 as "comparable to suites that localize successfully" and not as a passing grade.
 
 [SBEST](https://arxiv.org/abs/2405.00565) is the precedent for what to do instead: when the failing signal is too scarce for statistics to mean anything, stop doing statistics on it and substitute a structural signal.
 
@@ -312,7 +324,7 @@ So if you're thinking about extracting training signal from multi-run agent trac
 
 And start from the map above rather than from an aligner. The alignment people don't cite the fault-localization people, and neither cite the off-policy-evaluation people, so the useful version of this problem sits spread across fields that don't read each other.
 
-Before any of it, look at whether your run set can support the question you want to ask. Measure how far your runs agree before they split. If that number is one or two steps, the log-mining methods here have nothing to work with, no detector recovers the signal, and sampling harder will not change it. The methods that generate fresh rollouts are exempt, because they manufacture the comparison instead of hunting for it, and sequential stopping is orthogonal since it only estimates a pass rate.
+And before committing compute, measure whether your run set can answer the question at all. `moirai diagnosability` does it over traces without reading a single outcome label. A low score means you have a data problem and none of the log-mining methods here will rescue you. A score in range, which is what I got, means the question was fair and the answer is genuinely no. That second outcome is the more valuable one, and it is the one a negative result cannot give you on its own.
 
 ---
 
@@ -338,6 +350,9 @@ moirai rerank path/to/traces/ --k 3
 
 # Reproduce the structure score routing
 python -m scripts.run_structure_routing path/to/traces/
+
+# Score whether your own runs can support any of this. Reads no outcome labels.
+moirai diagnosability path/to/traces/ --min-runs 4
 ```
 
 The last script is locked with frozen parameters and an assertion on the output, so you can verify the headline number hasn't drifted. The measured value is 59.19% conditional accuracy; the assertion in the script is written against `0.593` with a tolerance of 0.01.
