@@ -3,6 +3,8 @@ title: "What Stochastic Variation Reveals About AI Agents"
 date: 2026-04-04
 description: "Same agent, same task, different outcomes. Here's what the variation tells you about why agents fail — and what to do about it."
 ---
+> **Update, September 2026.** The last section of this post proposed mining preference pairs from divergence points. I tested that on held-out runs and it doesn't hold — see [The preference-pair hypothesis](#the-preference-pair-hypothesis) below, and [the ablation in the moirai README](https://github.com/orban/moirai#what-the-ablation-found). The behavioral features in the middle of the post are a separate measurement and still stand.
+
 This is a sequel to [Stop Testing AI Agents Like Deterministic Code](/posts/stop-testing-agents-like-deterministic-code/). That post argued you should treat agents as stochastic processes (same inputs, probabilistic outputs). This one shows what you find when you do.
 
 The setup: one agent ([OpenHands](https://github.com/All-Hands-AI/OpenHands) running Qwen3-Coder-480B) attempts 1,096 software engineering tasks from [SWE-rebench](https://github.com/nebius/swe-rebench), each 4 to 33 times (median 11). Same code, same prompt, same environment. 12,854 runs total. Every one of these tasks has mixed outcomes — the same agent sometimes succeeds and sometimes doesn't.
@@ -5696,11 +5698,9 @@ On this task, the mechanism is visible: runs that happen to test early get resul
 
 ---
 
-## From observation to training signal
+## The preference-pair hypothesis
 
-Every agent eval produces trajectories. Most of the time, those trajectories get a pass/fail label and get thrown away. But when the same agent passes and fails on the same task, the difference between those trajectories is a training signal — a specific moment where a different choice would have led to a different outcome.
-
-The features are predictive, not causal. But they don't have to be causal to be useful — they just have to point at the right moments.
+Every agent eval produces trajectories. Most get a pass/fail label and get thrown away. When the same agent passes and fails on the same task, the difference between those trajectories looks like a training signal — a specific moment where a different choice led to a different outcome.
 
 At every divergence point, moirai extracts a preference pair: the context both runs shared, the step the pass run took (chosen), and the step the fail run took (rejected). That's the input format for [Direct Preference Optimization](https://arxiv.org/abs/2305.18290).
 
@@ -5709,18 +5709,19 @@ moirai export --format dpo examples/swe_rebench --output pairs.jsonl
 # → 11,006 preference pairs from 1,096 tasks
 ```
 
-Each pair captures a specific moment where stochastic variation determined the outcome. The pass run searched deeper, or tested later, or avoided hedging — and that choice cascaded into success. The fail run did the opposite.
+The extraction works. The pairs don't predict anything.
 
-The behavioral features serve a second purpose: process reward signals. Instead of the sparse pass/fail reward at the end of a trajectory, the features provide dense, step-level signal. An agent with a test centroid of 0.3 at step 20 is on a path that predicts failure — that's a reward shaping signal you can act on before the trajectory finishes.
+**Update, September 2026.** I split each task's runs in half, found divergence points on one half, and used them to score the other. Held-out per-task AUROC came back at 0.507 — a coin flip. That number was unfalsifiable as stated, because the pipeline gates branch points behind Fisher's exact plus Benjamini-Hochberg, and at a median of 11 runs a 2-vs-9 split can't clear significance after correction. 812 of the 1,096 tasks returned no branch points at all, the scorer fell back to a constant, and a constant scorer lands on 0.500 by construction. "No signal" and "no detector" were indistinguishable.
 
-The pipeline is:
-1. Run your agent many times (stochastic variation generates diverse trajectories for free)
-2. `moirai features` identifies which behaviors predict success
-3. `moirai divergences` finds the decision points where outcomes split
-4. `moirai export --format dpo` extracts preference pairs at those points
-5. Fine-tune on the pairs, or build a process reward model from the features
+So I rebuilt the detector three times over, each version adding one change: Ochiai suspiciousness, borrowed from spectrum-based fault localization, in place of Fisher; then prefix-tree matching in place of column alignment; then 165,820 content signatures in place of 13 step names. Ochiai is always defined, so the rebuilt matchers fit a model for 72–96% of tasks where the original fit one for none at all below 15 runs. The decision rule was fixed before I read any output.
 
-We haven't closed the loop yet — the DPO fine-tuning and reward model training are next. But the extraction pipeline is working, the data is there (11,006 pairs with reasoning content on both sides), and the behavioral features provide the process-level signal that outcome-only rewards miss.
+Best AUROC anywhere: **0.532**, against a pre-registered bar of 0.55. Every cell ran a second time with pass/fail labels shuffled within task, and the largest real-minus-shuffled gap across all 28 cells was **+0.052**. Finer signatures made it worse, not better — going from 13 step names to 165,820 content signatures shortens the mean shared prefix across a task's runs from 1.68 steps to 1.18, because resolution buys nothing once runs stop agreeing almost immediately either way.
+
+The detector was the problem, and fixing the detector didn't produce a signal. [The full ablation is in the README](https://github.com/orban/moirai#what-the-ablation-found).
+
+This doesn't reach the behavioral features above. Those are a different statistic — within-task median splits with split-half validation, not off-policy prediction of a held-out outcome — and the ablation doesn't test them. What fails is the narrower claim this section rests on: that you can predict how a run ends from where it diverged.
+
+The features can still do the job the pairs were meant to do. Instead of one sparse reward at the end of a trajectory, they give you dense step-level signal — an agent with a test centroid of 0.3 at step 20 is on a path that predicts failure, and that's visible before the run finishes. That part holds up, and it's the part worth building on.
 
 ---
 
@@ -5733,6 +5734,10 @@ pip install -e .
 python scripts/convert_swe_rebench.py /path/to/downloaded/trajectories examples/swe_rebench
 moirai features examples/swe_rebench --min-runs 4 --output results.json
 moirai export --format dpo examples/swe_rebench --output pairs.jsonl
+
+# The ablation that retired the preference-pair claim
+python scripts/exp_matching_ablation.py examples/swe_rebench \
+    --out scripts/blog_output/matching_ablation.json
 ```
 
 ---
