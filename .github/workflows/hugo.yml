@@ -116,6 +116,22 @@ jobs:
             --url-manifest scripts/baselines/public-urls.txt \
             --expected-sha "$GITHUB_SHA"
 
+      - name: Resolve every citation in the posts
+        # A wrong identifier next to a right-looking paper name is invisible to
+        # every other check here, and paper nicknames collide often enough that
+        # eyeballing does not catch it. Exit 2 means the resolvers were
+        # unreachable rather than a citation being wrong; that warns instead of
+        # holding a deploy hostage to arXiv's uptime. Exit 1 is a real mismatch
+        # and fails the build.
+        run: |
+          status=0
+          python3 scripts/validate_citations.py || status=$?
+          if [ "$status" -eq 2 ]; then
+            echo "::warning::citation resolvers unreachable, citations not verified"
+            exit 0
+          fi
+          exit "$status"
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

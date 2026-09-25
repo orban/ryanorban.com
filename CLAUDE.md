@@ -145,6 +145,28 @@ contrast. Run it after any change to `home.html`, `baseof.html`, `home.css`, `hu
 `content/_index.md`, or `content/about.md` — the last one because the figure claims are
 checked against it, not because the audit renders it.
 
+### Citation Validation
+
+```bash
+python3 scripts/validate_citations.py [--verbose] [path.md ...]
+```
+
+Resolves every arXiv ID and DOI in `content/posts/` against arXiv's export API and
+doi.org, then checks the link text against what came back. A nickname link
+(`[Math-Shepherd](...)`) has to appear in the paper's title or abstract; an
+author-style link (`[Namkoong et al.](...)`) has to name an actual author. An
+identifier that resolves to nothing fails outright.
+
+This exists because paper nicknames collide — two unrelated papers are called
+SWE-Dev, two projects are called DeepSWE — so a plausible identifier beside a
+plausible name is not evidence they are the same work. Nothing else in the build
+can see that error, and it had already shipped twice before this check existed.
+
+Runs in CI after `validate_site.py`. Exit 1 is a bad citation and fails the build;
+exit 2 means the resolvers were unreachable and warns instead, so a deploy never
+depends on arXiv's uptime. A warning there means the citations went unchecked, not
+that they passed.
+
 ### Config
 
 `hugo.toml` — all site configuration including menus, params, markup settings, and Goldmark passthrough for LaTeX delimiters.
