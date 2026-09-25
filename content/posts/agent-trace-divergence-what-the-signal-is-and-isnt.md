@@ -1,7 +1,7 @@
 ---
 title: "What agent trace divergence actually tells you"
 date: 2026-04-08
-description: "A held-out AUROC of 0.507 can mean there's no signal — or that your detector is broken. Telling those apart took three rebuilds, a pre-registered bar, and 28 shuffled-label controls. The methods that would have worked were already in the literature."
+description: "Same agent, same task, different outcomes — is there signal in the variability? I borrowed an alignment algorithm from bioinformatics to find out, then went to the literature and found four fields already working on it. Here's the compressed map."
 math: true
 ---
 
@@ -13,7 +13,9 @@ That's the dream. A self-generating preference signal from the variance you alre
 
 I spent three weeks testing that hypothesis on [SWE-rebench v2](https://huggingface.co/datasets/nebius/SWE-rebench) — 1,096 tasks, 12,854 runs, multiple models, multiple harnesses — and built a tool called [moirai](https://github.com/orban/moirai) to run the experiments end to end.
 
-Most of it doesn't work the way you'd hope. But the parts that do are narrower and sharper than I expected, and the negative results are more useful than the positive ones. Here's what I found — and, at the end, what I should have done instead, which mostly already exists in literatures I wasn't reading.
+Most of it doesn't work the way you'd hope, and the parts that do are narrower than I expected.
+
+When the rebuilt detectors came back flat I went looking for who else had attacked this. Four fields have been working on versions of the problem, three of them for decades: multiple sequence alignment, spectrum-based fault localization, counterfactual off-policy evaluation, and process reward modelling. They don't cite each other, and none of them are indexed under "agent traces." The last section maps what each one gives you.
 
 ---
 
@@ -91,7 +93,7 @@ Split tasks at structure ≥ 0.20:
 
 That's the whole story. In one quarter of the tasks, the signal is strong. In three quarters, it's noise-indistinguishable drift. Aggregating across both hides the fact that you have two regimes, not one.
 
-**A caveat I owe you here.** All three components of the structure score — `branch_gap`, `earlyness`, `stability` — are computed *from* divergence points. The original detector found none for 812 of 1,096 tasks. This section splits the corpus into 269 high-structure and 811 low-structure tasks. Those two numbers are one apart, and I don't think that's a coincidence: "low structure" is, to a first approximation, "the detector fired on nothing." Read this section as a statement about when the detector produces output, not about a latent property of the task. I have not re-run sections 3 through 5 against the rebuilt detectors, so treat the sign of these results as more reliable than their magnitude.
+**One caveat.** All three components of the structure score — `branch_gap`, `earlyness`, `stability` — are computed *from* divergence points. The original detector found none for 812 of 1,096 tasks. This section splits the corpus into 269 high-structure and 811 low-structure tasks. Those two numbers are one apart, and I don't think that's a coincidence: "low structure" is, to a first approximation, "the detector fired on nothing." Read this section as a statement about when the detector produces output, not about a latent property of the task. I have not re-run sections 3 through 5 against the rebuilt detectors, so treat the sign of these results as more reliable than their magnitude.
 
 **Takeaway:** Divergence-based analysis produces output on a minority of tasks with a detectable property: early, reproducible, outcome-correlated branching. For everything else, the runs look like samples from a diffuse distribution over successful paths — or the detector simply had nothing to say, which I can't fully separate from the first case.
 
@@ -165,57 +167,6 @@ That last distinction is the one that matters, and it's the structural reason th
 
 ---
 
-## How this should have been done
-
-Four negative results is a lot of ink spent on one dead approach. The more useful question is what the right version looks like — and most of it already exists, in literatures I wasn't reading.
-
-### The alignment was the wrong shape
-
-Needleman-Wunsch is pairwise and global. It forces a set of runs into a single linear column structure, which is precisely wrong for trajectories that branch and never reconverge. [Partial order alignment](https://doi.org/10.1093/bioinformatics/18.3.452) (Lee, Grasso & Sharlow, *Bioinformatics* 18(3):452–464, 2002) keeps the alignment as a DAG instead of collapsing it into a linear profile, which is what you want for branching histories. Profile HMMs are the softer version of the same move: assign runs to latent branch states probabilistically instead of committing to one discrete column.
-
-Worth saying plainly: I could not find anyone who has applied multiple sequence alignment to LLM agent trajectories. The bioinformatics methods are decades old and this application looks open. That's a gap, not prior art I ignored.
-
-### The detector needed diagnosability, not significance
-
-I reached for Ochiai on instinct once Fisher failed. The instinct was right and the literature is well ahead of it — spectrum-based fault localization has spent twenty years on exactly "which component is implicated when some runs pass and some fail," through Tarantula, Ochiai, DStar and Barinel.
-
-The result that actually explains my failure is Perez, Abreu & van Deursen's [test-suite diagnosability metric](https://doi.org/10.1109/ICSE.2017.66) (ICSE 2017, 654–664). Their finding is that SBFL accuracy is not a function of how many runs you have. It's a function of how *diverse* those runs are in which components they exercise — their DDU metric. A suite with many runs and low diagnostic diversity localizes as badly as one with almost no runs at all.
-
-That reframes the 812-of-1,096 result, and not in my favour. The problem was never just that n=11 is small. It's that repeated runs of one agent on one task diverge in the same few places, so they carry very little diagnostic diversity no matter how many you collect. Running 50 per task would not have fixed it.
-
-[SBEST](https://arxiv.org/abs/2405.00565) is the precedent for what to do instead: when the failing signal is too scarce for statistics to mean anything, stop doing statistics on it and substitute a structural signal.
-
-The instinct is in the air, too. [Who is Introducing the Failure?](https://arxiv.org/abs/2509.13782) applies SBFL-style spectrum analysis to attributing failures in multi-agent systems. It doesn't solve my problem — attributing a failure across *agents within one system* is a different question from predicting an outcome across *independent runs of one agent* — but it's a sign that fault localization is the frame the field is converging on for this family of questions, and I got there late.
-
-### The comparison was confounded
-
-This is the real error, and above I only half-named it.
-
-Comparing the action taken at aligned step *k* across two runs assumes those runs were in equivalent states at step *k*. Nothing in the alignment checks that. [Namkoong et al.](https://arxiv.org/abs/2003.05623) put it directly: off-policy evaluation for sequential decisions routinely assumes no unobserved confounding, that assumption is usually false, and it is usually unstated. Mine was unstated.
-
-The formal tool is [Oberst & Sontag's Gumbel-Max structural causal models](https://arxiv.org/abs/1905.05824), which construct counterfactual trajectories in a POMDP and identify which episodes would genuinely have gone differently. [COMA](https://arxiv.org/abs/1705.08926) is the same idea in multi-agent RL: marginalize one action while holding the others fixed, against a learned counterfactual baseline. My column-wise Fisher test was a crude approximation of that baseline with no state model behind it.
-
-Honest caveat — none of these is a drop-in fix. They need a POMDP or SCM model of agent state that OpenHands logs don't give you. You'd have to build a state abstraction first. That's a real obstacle, not a citation I can hand you.
-
-### The budget question has a real answer
-
-Experiment 5 asked how to spend a fixed number of eval runs across tasks, and found that uniform allocation beat my structure-aware policy at every budget. That's the right conclusion from the wrong frame: I was choosing between two *fixed* allocations decided up front.
-
-The better framing is sequential. [Knowing When to Stop](https://arxiv.org/abs/2608.14425) (Pilditch, August 2026) treats it as Bayesian optimal stopping — a hierarchical model that allocates sampling budget dynamically from current uncertainty and stops per task when the estimate is good enough, rather than committing to a per-task count in advance. That is the correct shape for "how many times should I run this," and it subsumes the uniform-vs-weighted question I was actually asking.
-
-This one postdates the work here by four months, so it isn't a thing I missed. It's where I'd start now.
-
-### What would probably have worked
-
-[Math-Shepherd](https://arxiv.org/abs/2312.08935) is the method I should have used. Rather than asking which of two observed actions was better, it resumes many rollouts from each intermediate state and scores that state by the fraction of completions that succeed. Step-level labels from outcome-only supervision, no human annotation. [OmegaPRM](https://arxiv.org/abs/2406.06592) is the MCTS version, roughly 75× more label-efficient. Both descend from [Let's Verify Step by Step](https://arxiv.org/abs/2305.20050), which established that process supervision beats outcome supervision when you can get it.
-
-[RTMC](https://arxiv.org/abs/2604.11037) is the cheapest version of the idea: aggregate return statistics across rollouts that share a common state to get per-step advantages, with no learned critic at all. That's much closer to something you could run over existing data, provided the runs genuinely share states — which is the assumption my whole approach needed and never checked.
-
-The catch is the part that matters if you're planning this work. Math-Shepherd needs to *resume execution from an intermediate agent state and sample forward*. My 12,854 runs are post-hoc logs, not resumable checkpoints. This isn't a better analysis of the data I had — it's a different data collection design, and a more expensive one.
-
-If I were starting over, that's where the three weeks would go: build for resumable rollouts first, then measure. Not align logs and hope.
-
----
 
 ## What's left that's useful
 
@@ -223,7 +174,7 @@ After all six experiments, here's what survives:
 
 1. **Structure score as a method router.** Useful if you're already running multiple scoring strategies and want to pick per task. +2-6pp over global strategy. Not a standalone product.
 
-2. **Two assumptions worth testing before you build on them.** "Divergence generalizes across tasks" is widely assumed and rarely checked. "Structure score is a variance router" is a mistake I nearly made, and several people I described the work to proposed it independently. Each takes about a day to test and about three weeks to assume wrongly.
+2. **Two assumptions worth testing before you build on them.** "Divergence generalizes across tasks" is widely assumed and rarely checked. "Structure score is a variance router" is a mistake I nearly made, and several people I described the work to proposed it independently. Each costs about a day to test, and considerably more to assume.
 
 3. **Held-out validation, plus a negative control.** The in-sample results looked great and the held-out results killed most of the pipeline, which is the version of this lesson I wrote down first. It isn't enough. My held-out number was 0.507 and it was unfalsifiable, because a broken detector and a genuinely absent signal both produce 0.500. What made the second answer real was the shuffled-label control: run every cell again with outcomes permuted within task, and see whether the gap survives. Held-out data tells you the signal doesn't transfer. A negative control tells you whether you were ever measuring anything.
 
@@ -267,6 +218,58 @@ Any time you're computing an aggregate metric over a heterogeneous dataset, look
 
 ---
 
+## The prior art, compressed
+
+Given many runs of one stochastic agent on one task, some passing and some failing, find the step that made the difference. Several fields have been working on that question under other names. Here is each of them, what it gives you, and where it stops.
+
+### Alignment: partial order, not pairwise
+
+Needleman-Wunsch is pairwise and global. It forces a set of runs into a single linear column structure, which is precisely wrong for trajectories that branch and never reconverge. [Partial order alignment](https://doi.org/10.1093/bioinformatics/18.3.452) (Lee, Grasso & Sharlow, *Bioinformatics* 18(3):452–464, 2002) keeps the alignment as a DAG instead of collapsing it into a linear profile, which is what you want for branching histories. Profile HMMs are the softer version of the same move: assign runs to latent branch states probabilistically instead of committing to one discrete column.
+
+Worth saying plainly: I could not find anyone who has applied multiple sequence alignment to LLM agent trajectories. The bioinformatics methods are twenty-plus years old and well understood, and the agent application looks genuinely open. If you want a paper, that's a paper.
+
+### Detection: diagnosability, not significance
+
+I reached for Ochiai on instinct once Fisher failed. The instinct was right and the literature is well ahead of it — spectrum-based fault localization has spent twenty years on exactly "which component is implicated when some runs pass and some fail," through Tarantula, Ochiai, DStar and Barinel.
+
+The result that actually explains my failure is Perez, Abreu & van Deursen's [test-suite diagnosability metric](https://doi.org/10.1109/ICSE.2017.66) (ICSE 2017, 654–664). Their finding is that SBFL accuracy is not a function of how many runs you have. It's a function of how *diverse* those runs are in which components they exercise — their DDU metric. A suite with many runs and low diagnostic diversity localizes as badly as one with almost no runs at all.
+
+That reframes the 812-of-1,096 result. The problem was never just that n=11 is small. It's that repeated runs of one agent on one task diverge in the same few places, so they carry very little diagnostic diversity no matter how many you collect. Running 50 per task would not have fixed it.
+
+[SBEST](https://arxiv.org/abs/2405.00565) is the precedent for what to do instead: when the failing signal is too scarce for statistics to mean anything, stop doing statistics on it and substitute a structural signal.
+
+The instinct is in the air, too. [Who is Introducing the Failure?](https://arxiv.org/abs/2509.13782) applies SBFL-style spectrum analysis to attributing failures in multi-agent systems. It doesn't solve my problem — attributing a failure across *agents within one system* is a different question from predicting an outcome across *independent runs of one agent* — but it's a sign that fault localization is the frame this family of questions keeps converging on.
+
+### Causality: the prefix-state problem
+
+This is the deepest of the four.
+
+Comparing the action taken at aligned step *k* across two runs assumes those runs were in equivalent states at step *k*. Nothing in the alignment checks that. [Namkoong et al.](https://arxiv.org/abs/2003.05623) put it directly: off-policy evaluation for sequential decisions routinely assumes no unobserved confounding, that assumption is usually false, and it is usually unstated. Mine was unstated.
+
+The formal tool is [Oberst & Sontag's Gumbel-Max structural causal models](https://arxiv.org/abs/1905.05824), which construct counterfactual trajectories in a POMDP and identify which episodes would genuinely have gone differently. [COMA](https://arxiv.org/abs/1705.08926) is the same idea in multi-agent RL: marginalize one action while holding the others fixed, against a learned counterfactual baseline. My column-wise Fisher test was a crude approximation of that baseline with no state model behind it.
+
+Honest caveat — none of these is a drop-in fix. They need a POMDP or SCM model of agent state that OpenHands logs don't give you. You'd have to build a state abstraction first. That's a real obstacle, not a citation I can hand you.
+
+### Budget: sequential, not fixed
+
+Experiment 5 asked how to spend a fixed number of eval runs across tasks, and found that uniform allocation beat my structure-aware policy at every budget. That's the right conclusion from the wrong frame: I was choosing between two *fixed* allocations decided up front.
+
+The better framing is sequential. [Knowing When to Stop](https://arxiv.org/abs/2608.14425) (Pilditch, August 2026) treats it as Bayesian optimal stopping — a hierarchical model that allocates sampling budget dynamically from current uncertainty and stops per task when the estimate is good enough, rather than committing to a per-task count in advance. That is the correct shape for "how many times should I run this," and it subsumes the uniform-vs-weighted question I was actually asking.
+
+This one postdates the work here by four months, so it isn't a thing I missed. It's where I'd start now.
+
+### Credit assignment: roll forward, don't align back
+
+[Math-Shepherd](https://arxiv.org/abs/2312.08935) is the one to reach for. Rather than asking which of two observed actions was better, it resumes many rollouts from each intermediate state and scores that state by the fraction of completions that succeed. Step-level labels from outcome-only supervision, no human annotation. [OmegaPRM](https://arxiv.org/abs/2406.06592) is the MCTS version, roughly 75× more label-efficient. Both descend from [Let's Verify Step by Step](https://arxiv.org/abs/2305.20050), which established that process supervision beats outcome supervision when you can get it.
+
+[RTMC](https://arxiv.org/abs/2604.11037) is the cheapest version of the idea: aggregate return statistics across rollouts that share a common state to get per-step advantages, with no learned critic at all. That's much closer to something you could run over existing data, provided the runs genuinely share states — which is the assumption my whole approach needed and never checked.
+
+The catch is the part that matters if you're planning this work. Math-Shepherd needs to *resume execution from an intermediate agent state and sample forward*. My 12,854 runs are post-hoc logs, not resumable checkpoints. This isn't a better analysis of the data I had — it's a different data collection design, and a more expensive one.
+
+Which puts the real lesson upstream of the analysis: if you want step-level signal, build for resumable rollouts *before* you collect anything. Aligning logs afterwards is trying to recover information the collection design already threw away.
+
+---
+
 ## The point
 
 Agent trace divergence, detected this way, does not predict outcome. Three rebuilt detectors topped out at 0.532 against a pre-registered bar of 0.55, with a largest real-minus-shuffled gap of +0.052 across 28 cells. Behavioral features are a different measurement and recover a modest amount. Routing between scoring strategies by structure buys another two points, on the subset where the detector produces output at all.
@@ -275,7 +278,9 @@ None of that justifies a preference-learning pipeline. SWE-bench teams have conv
 
 The deeper problem wasn't the detector, though rebuilding it three times is how I learned that. Comparing actions at an aligned column across independently sampled runs assumes those runs were in the same state, and nothing in the method establishes that. Every team getting contrastive signal out of agent trajectories holds state fixed and varies the action instead.
 
-So if you're thinking about extracting training signal from multi-run agent traces: run the cheap experiments first, and run a negative control alongside them, because a broken detector and an absent signal return the same number. Then go read the fault-localization and counterfactual-OPE literatures before you write an aligner. I didn't, and it cost me three weeks to rediscover a result those fields would have handed me.
+So if you're thinking about extracting training signal from multi-run agent traces: run the cheap experiments first, and run a negative control alongside them, because a broken detector and an absent signal return the same number.
+
+And start from the map above rather than from an aligner. The alignment people don't cite the fault-localization people, and neither cite the off-policy-evaluation people, so the useful version of this problem sits spread across fields that don't read each other.
 
 ---
 
