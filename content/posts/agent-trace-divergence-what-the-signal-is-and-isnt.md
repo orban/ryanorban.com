@@ -1,7 +1,7 @@
 ---
 title: "What agent trace divergence actually tells you"
 date: 2026-04-08
-description: "I spent three weeks trying to extract training signal from agent trace divergence. Most of the dreams didn't survive contact with held-out data. Here's what's actually there."
+description: "A held-out AUROC of 0.507 can mean there's no signal — or that your detector is broken. Telling those apart took three rebuilds, a pre-registered bar, and 28 shuffled-label controls. The methods that would have worked were already in the literature."
 math: true
 ---
 
@@ -223,7 +223,7 @@ After all six experiments, here's what survives:
 
 1. **Structure score as a method router.** Useful if you're already running multiple scoring strategies and want to pick per task. +2-6pp over global strategy. Not a standalone product.
 
-2. **Negative results that are actually useful.** "Divergence doesn't generalize" is a thing a lot of people assume without checking. "Structure score is a method router, not a variance router" is a mistake I almost made and several people I talked to independently proposed. Documenting them saves someone else three weeks.
+2. **Two assumptions worth testing before you build on them.** "Divergence generalizes across tasks" is widely assumed and rarely checked. "Structure score is a variance router" is a mistake I nearly made, and several people I described the work to proposed it independently. Each takes about a day to test and about three weeks to assume wrongly.
 
 3. **Held-out validation, plus a negative control.** The in-sample results looked great and the held-out results killed most of the pipeline, which is the version of this lesson I wrote down first. It isn't enough. My held-out number was 0.507 and it was unfalsifiable, because a broken detector and a genuinely absent signal both produce 0.500. What made the second answer real was the shuffled-label control: run every cell again with outcomes permuted within task, and see whether the gap survives. Held-out data tells you the signal doesn't transfer. A negative control tells you whether you were ever measuring anything.
 
