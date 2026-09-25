@@ -3,9 +3,15 @@
 <meta charset="utf-8" />
 <meta name="language" content="{{ site.Language.LanguageName | default "en" }}" />
 <meta name="viewport" content="width=device-width" />
+{{- /* The homepage is the one page whose `.Title` says nothing on its own: in a search
+       result "Ryan Orban" competes with every other Ryan Orban. Every other page gets
+       its own title plus the site name, so only home needs the descriptor appended.
+       `audit_homepage.py`'s EXPECTED_TITLE asserts this string; change both together.
+       og:title and the Twitter card still come from `.Title` via the internal
+       templates, so a shared link stays "Ryan Orban". */ -}}
 <title>
   {{- if .IsHome }}
-    {{ .Title }}
+    {{ printf "%s — Agent evaluation and reliability" .Title }}
   {{- else }}
     {{ printf "%s | %s" .Title site.Title }}
   {{- end }}

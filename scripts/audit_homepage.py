@@ -23,7 +23,7 @@ BASEOF_PATH = ROOT / "layouts" / "_default" / "baseof.html"
 CSS_PATH = ROOT / "static" / "css" / "home.css"
 MOIRAI_POST = ROOT / "content" / "posts" / "what-stochastic-variation-reveals.md"
 
-EXPECTED_TITLE = "Ryan Orban"
+EXPECTED_TITLE = "Ryan Orban — Agent evaluation and reliability"
 EXPECTED_H1 = ["Ryan Orban"]
 REQUIRED_H2 = {
     "The record",
