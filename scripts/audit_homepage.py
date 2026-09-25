@@ -27,7 +27,7 @@ EXPECTED_TITLE = "Ryan Orban"
 EXPECTED_H1 = ["Ryan Orban"]
 REQUIRED_H2 = {
     "The record",
-    "Building now",
+    "Built",
     "What I’m looking for",
 }
 REQUIRED_NAV = {"Record", "Work", "Contact"}
@@ -51,17 +51,22 @@ THIRD_PARTY_FONT_HOSTS = ("fonts.googleapis.com", "fonts.gstatic.com", "cdn.jsde
 # the constant, an exact comparison cannot.
 REQUIRED_LISTS = (
     "record-rows",  # The record
-    "record-rows",  # Building now
+    "record-rows",  # Built
     "record-rows",  # Other projects
 )
 OPTIONAL_LISTS = ("record-writing-list",)  # Writing, only when an unpinned post exists
 
 # Every Moirai figure on the homepage is derived from the essay it links to.
 # The homepage label is the key; the essay is the only authority for the value.
+# "Preference pairs" was retired here on 2026-09-25 alongside the metric itself in
+# layouts/partials/record/data.html. The literal "11,006 preference pairs" still appears
+# in the essay inside a fenced code block, so this entry would have gone on passing --
+# the contract checks that a rendered figure agrees with its source, not that the claim
+# the figure encodes is one the essay still makes. The essay's September update reports
+# the pairs predict nothing on held-out runs.
 MOIRAI_CONTRACT = {
     "Runs analyzed": r"([\d,]+) runs total",
     "Mixed-outcome tasks": r"attempts ([\d,]+) software engineering tasks",
-    "Preference pairs": r"([\d,]+) preference pairs",
 }
 # Claims the homepage shares with the About page, which is their source here.
 ABOUT_CLAIMS = ("$1M", "150+", "$100M+", "91%")
@@ -346,7 +351,7 @@ def main() -> None:
         set(parser.metrics) == set(MOIRAI_CONTRACT),
         repr(sorted(set(parser.metrics) ^ set(MOIRAI_CONTRACT))),
     )
-    # The record's own rows only. "Building now" and the writing list reuse the row
+    # The record's own rows only. "Built" and the writing list reuse the row
     # class, and the writing count moves with the post data.
     ledger = re.search(r"<ol[^>]*class=[\"']?record-rows.*?</ol>", html, re.DOTALL)
     rows = re.findall(
@@ -366,7 +371,7 @@ def main() -> None:
 
     # --- document contract ------------------------------------------------
     # "Should Writing exist on this build?" answered once, from the post data
-    # rather than from the markup under test. A published post that "Building now"
+    # rather than from the markup under test. A published post that "Built"
     # has not pinned is a post Writing must list. Every conditional check below
     # compares rendered markup against this expectation, never against itself.
     published = set(re.findall(r"""href=["']?(/posts/[^"'\s>]+/)""", posts_index))
