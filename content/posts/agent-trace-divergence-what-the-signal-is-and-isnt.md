@@ -1,6 +1,6 @@
 ---
 title: "What agent trace divergence actually tells you"
-date: 2026-04-08
+date: 2026-09-20
 description: "Same agent, same task, different outcomes. Is there signal in the variability? I borrowed an alignment algorithm from bioinformatics to find out, then went to the literature and found four fields already working on it. Here's the compressed map."
 math: true
 ---
@@ -13,11 +13,13 @@ That's the dream. A self-generating preference signal from the variance you alre
 
 It is also, as far as I could find, assumed rather than tested. People reason from it, build on it, and propose it in conversation, but I could not find anyone who had run it end to end against held-out data with a control. That gap is the reason for this work.
 
-I tested that hypothesis on [SWE-rebench v2](https://huggingface.co/datasets/nebius/SWE-rebench): 1,096 tasks, 12,854 runs, multiple models, multiple harnesses. To run the experiments end to end I built a tool called [moirai](https://github.com/orban/moirai).
+I tested that hypothesis on [Nebius's SWE-rebench OpenHands trajectories](https://huggingface.co/datasets/nebius/SWE-rebench-openhands-trajectories): 12,854 runs across 1,096 mixed-outcome tasks, every one of them OpenHands v0.54.0 driving Qwen3-Coder-480B.
+
+One agent, one scaffold, one config. That narrowness is the design rather than a limitation. When every run comes from the same setup, a within-task comparison has no architecture differences and no framework artifacts available to explain the outcome, so the only thing varying is the model's own sampling. I learned that the hard way: an earlier round of this work on a cross-agent corpus concluded that no universal behavioural predictors exist, and that conclusion was an artifact of comparing across 133 agent architectures rather than anything about agents. To run the experiments end to end I built a tool called [moirai](https://github.com/orban/moirai).
 
 Most of it doesn't work the way you'd hope, and the parts that do are narrower than I expected.
 
-The finding worth carrying is *why* it fails. Repeated runs of one agent on one task diverge in the same few places, so the run set carries very little diagnostic diversity, and collecting more runs adds almost none. That is a property you can measure before spending compute, and it determines whether any method of this shape can work on your data at all.
+The finding worth carrying is *why* it fails. Repeated runs of one agent on one task stop agreeing almost immediately: across a task's runs the mean shared prefix is 1.68 steps at coarse granularity and 1.18 at fine. A run set that diverges after one or two steps gives a detector almost nothing to compare, and adding runs does not change that shape, only its volume. I have not packaged this as a metric and the closest thing in the literature is defined over code coverage rather than traces, so treat it as an observation rather than a tool. It is still the property that decides whether any method of this shape can work on your data.
 
 When the rebuilt detectors came back flat I went looking for who else had attacked this. Four fields have been working on versions of the problem, three of them for decades: multiple sequence alignment, spectrum-based fault localization, counterfactual off-policy evaluation, and process reward modelling. They don't cite each other, and none of them are indexed under "agent traces." The last section maps what each one gives you.
 
@@ -64,11 +66,11 @@ The obvious objection is that a median of 11 runs per task is simply too few, an
 | Held-out AUROC, Ochiai rebuild | 0.514 | 0.525 | 0.523 | 0.517 | 0.522 | 0.530 |
 | Margin over shuffled labels | +0.052 | +0.032 | +0.017 | +0.031 | +0.020 | +0.015 |
 
-Three things to read off that. The original detector's detection rate is **exactly zero** through 11 runs per task, which turns the constant-scorer diagnosis from an inference into a measurement. The rebuild reaches 96% detection at 15 runs, so past that point there is no detection problem left to solve. And AUROC stays flat across the whole range while the margin over shuffled labels *shrinks*, which is the opposite of how a real signal behaves when you feed it more data. The single best cell across all four methods and all budgets was 0.532.
+Three things to read off that. The original detector's detection rate is **exactly zero** through 11 runs per task, which turns the constant-scorer diagnosis from an inference into a measurement. The rebuild reaches 96% detection at 15 runs, so past that point there is no detection problem left to solve. And AUROC stays flat across the whole range. The margin over shuffled labels is the row shown here, which declines; the other three rebuilt methods wander in both directions, from -0.025 to +0.045, with no trend. Read across all four, the margin is indistinguishable from noise at every budget. The single best cell anywhere was 0.532, and it sits at the largest budget, which is exactly where the thinnest task counts are.
 
 More runs fixed detection completely and did nothing for prediction. That is the answer to "just collect more data," at least across this range, and the trend gives no reason to expect 50 runs per task to read differently.
 
-Task counts thin toward the right of the table, because fewer tasks have 20 runs to draw from. Treat the last two columns as weaker evidence than the first four. The decline in margin is already visible in the well-powered cells.
+Task counts thin toward the right of the table, because fewer tasks have 20 runs to draw from. Treat the last two columns as weaker evidence than the first four.
 
 Behavioral features are a separate measurement, within-task median splits with split-half validation rather than off-policy prediction of a held-out outcome, and the rebuild does not test them. Their 0.556 stands.
 
@@ -111,11 +113,11 @@ Kendall's tau between structure and divergence reranking lift: **+0.402** (p < 0
 Split tasks at structure ≥ 0.20:
 
 - **High-structure** (269 tasks, 25%): divergence scoring gives +12.5% reranking lift
-- **Low-structure** (811 tasks, 75%): divergence scoring gives +0.4% lift
+- **Low-structure** (827 tasks, 75%): divergence scoring gives +0.4% lift
 
 That's the whole story. In one quarter of the tasks, the signal is strong. In three quarters, it's noise-indistinguishable drift. Aggregating across both hides the fact that you have two regimes, not one.
 
-**One caveat.** All three components of the structure score (`branch_gap`, `earlyness`, `stability`) are computed *from* divergence points. The original detector found none for 812 of 1,096 tasks. This section splits the corpus into 269 high-structure and 811 low-structure tasks. Those two numbers are one apart, and I don't think that's a coincidence: "low structure" is, to a first approximation, "the detector fired on nothing." Read this section as a statement about when the detector produces output, not about a latent property of the task. I have not re-run sections 3 through 5 against the rebuilt detectors, so treat the sign of these results as more reliable than their magnitude.
+**One caveat.** All three components of the structure score (`branch_gap`, `earlyness`, `stability`) are computed *from* divergence points. The original detector found none for 812 of 1,096 tasks. This section splits the corpus into 269 high-structure and 827 low-structure tasks, and the original detector found no divergence points at all for 812 of them. Those 812 sit entirely inside the low bucket; no high-structure task has zero divergence points, and only 15 low-structure tasks have any. So "low structure" is, to within 15 tasks out of 827, a restatement of "the detector fired on nothing." Read this section as a statement about when the detector produces output, not about a latent property of the task. I have not re-run sections 3 through 5 against the rebuilt detectors, so treat the sign of these results as more reliable than their magnitude.
 
 **Takeaway:** Divergence-based analysis produces output on a minority of tasks with a detectable property: early, reproducible, outcome-correlated branching. For everything else, the runs look like samples from a diffuse distribution over successful paths, or the detector simply had nothing to say, and I cannot fully separate those two cases.
 
@@ -177,13 +179,13 @@ There are two problems.
 
 **Problem 1: the signal is too weak to justify the infrastructure.** The best detector I could build tops out at 0.532 held-out, under the 0.55 bar, with a largest real-minus-shuffled gap of +0.052. Any preference pair extracted at that level carries enormous label noise. DPO is already fragile to label noise; pairs from this signal would train the model on mostly random distinctions.
 
-**Problem 2: the field already went the other way.** Every public SWE-bench fine-tune I looked at (SWE-Gym, SWE-Fixer, Lingma SWE-GPT, SWE-Smith, [SWE-Dev](https://arxiv.org/abs/2506.07636)) trains with SFT on successful trajectories rather than with preference learning. [SWE-Gym](https://arxiv.org/abs/2412.21139) is the clearest case: rejection-sampling SFT on runs that passed, and mixing in on-policy self-generated trajectories *hurt* their numbers. Successful and failed rollouts aren't exchangeable training signal in aggregate. The problem is the approach, not the choice of divergence step.
+**Problem 2: the field already tried it and went the other way.** Every public SWE-bench fine-tune I looked at (SWE-Gym, SWE-Fixer, Lingma SWE-GPT, SWE-Smith, SWE-Dev) ships SFT on successful trajectories. [SWE-Dev](https://arxiv.org/abs/2506.07636) is the useful case, because they did not simply skip preference learning: they ran it. Their paper reports exploring rejection-sampling fine-tuning alongside KTO and OREO, and finds that "RFT brings the most significant performance improvement, while offline reinforcement learning (RL) methods -- KTO and OREO -- deliver marginal or task-specific gains." A team with more data than me tested the contrastive route on these trajectories and shipped the supervised one. [SWE-Gym](https://arxiv.org/abs/2412.21139) is the clearest case: rejection-sampling SFT on runs that passed, and mixing in on-policy self-generated trajectories *hurt* their numbers. Successful and failed rollouts aren't exchangeable training signal in aggregate. The problem is the approach, not the choice of divergence step.
 
 The one prominent exception goes around the problem rather than through it. Agentica and Together AI's [DeepSWE-Preview](https://www.together.ai/blog/deepswe) trains Qwen3-32B with RL only, using a modified GRPO they call GRPO++, and reaches 42.2% Pass@1 on SWE-bench Verified and 59% with test-time scaling. Online RL never needs a preference pair mined from logs, because it generates its own on-policy signal. That's a different animal from what I was attempting, and it's the direction with momentum behind it.
 
-The two 2026 papers that do use a contrastive objective both avoid the comparison I was making. [SWE-Lego](https://arxiv.org/abs/2601.01426) keeps SFT and adds step-level error masking. It excludes tokens tied to failing tool calls and failing tests from the loss, using per-step *outcome* as a cheap always-available label instead of trying to locate a decisive step statistically. [Agentic-DPO](https://arxiv.org/abs/2607.10601) builds preference pairs *within* a single expert trajectory, contrasting the expert action against sampled plausible wrong actions at the same state, rather than pairing across independently sampled runs.
+Two 2026 papers show what the alternatives look like, and neither makes the comparison I was making. [SWE-Lego](https://arxiv.org/abs/2601.01426) stays SFT-only and adds step-level error masking: it excludes tokens tied to failing tool calls and failing tests from the loss, using per-step *outcome* as a cheap always-available label instead of trying to locate a decisive step statistically. No preference pairs at all. [Agentic-DPO](https://arxiv.org/abs/2607.10601) does use a contrastive objective, but builds its pairs *within* a single expert trajectory, contrasting the expert action against sampled plausible wrong actions at the same state, rather than pairing across independently sampled runs.
 
-That last distinction is the one that matters, and it's the structural reason this doesn't work. Both of those methods hold state fixed and vary the action. I aligned separate runs and compared whatever actions happened to land in the same column, so the pairs are conditioned on observed actions rather than on the latent state of the repository and task. Two runs that diverged at step 7 may have been in quite different states already (files opened, context accumulated, model hidden state), and the extracted pair ignores all of it. You end up training on correlations confounded by invisible prefix state.
+That last distinction is the one that matters, and it's the structural reason this doesn't work. Agentic-DPO holds the state fixed and varies the action, as do the process reward methods further down. I aligned separate runs and compared whatever actions happened to land in the same column, so the pairs are conditioned on observed actions rather than on the latent state of the repository and task. Two runs that diverged at step 7 may have been in quite different states already (files opened, context accumulated, model hidden state), and the extracted pair ignores all of it. You end up training on correlations confounded by invisible prefix state.
 
 **Takeaway:** Don't extract DPO pairs from agent trace divergence on SWE-bench. The signal is too weak, the state-aliasing is severe, and every team with more data than me builds its contrastive pairs at a fixed state rather than across independent runs. SFT on successful trajectories remains the right move.
 
@@ -200,7 +202,7 @@ After all six experiments, here's what survives:
 
 3. **Held-out validation, plus a negative control.** The in-sample results looked great and the held-out results killed most of the pipeline, which is the version of this lesson I wrote down first. It isn't enough. My held-out number was 0.507 and it was unfalsifiable, because a broken detector and a genuinely absent signal both produce 0.500. What made the second answer real was the shuffled-label control: run every cell again with outcomes permuted within task, and see whether the gap survives. Held-out data tells you the signal doesn't transfer. A negative control tells you whether you were ever measuring anything.
 
-4. **moirai itself as a per-task debugging tool.** If you have traces and want to know where your runs diverge and which path worked, it works. On SWE-rebench v2, 77/1096 tasks surface strong claims like "wrote source → 85% success (13 runs) vs ran a command first → 0% success (3 runs)". That's not a product. It's a personal tool.
+4. **moirai itself as a per-task debugging tool.** If you have traces and want to know where your runs diverge and which path worked, it works. On this corpus, 77/1096 tasks surface strong claims like "wrote source → 85% success (13 runs) vs ran a command first → 0% success (3 runs)". That's not a product. It's a personal tool.
 
 ---
 
@@ -248,7 +250,11 @@ Given many runs of one stochastic agent on one task, some passing and some faili
 
 Needleman-Wunsch is pairwise and global. It forces a set of runs into a single linear column structure, which is precisely wrong for trajectories that branch and never reconverge. [Partial order alignment](https://doi.org/10.1093/bioinformatics/18.3.452) (Lee, Grasso & Sharlow, *Bioinformatics* 18(3):452–464, 2002) keeps the alignment as a DAG instead of collapsing it into a linear profile, which is what you want for branching histories. Profile HMMs are the softer version of the same move: assign runs to latent branch states probabilistically instead of committing to one discrete column.
 
-Worth saying plainly: I could not find anyone who has applied multiple sequence alignment to LLM agent trajectories. The bioinformatics methods are twenty-plus years old and well understood, and the agent application looks genuinely open. If you want a paper, that's a paper.
+I owe you my own counterevidence here, because I already tested a version of this. Rung 2 of the rebuild replaced column alignment with a prefix tree for exactly the reason POA exists. My note in the script at the time: "Global alignment aliases states. NW can align step i of run A to step j of run B when their histories differ entirely, so a 'divergence column' pools runs that are in different states. A prefix tree cannot do this: at a node every run shares a byte-identical history." That is the same structural move, a strict one, and it bought nothing. The prefix-tree rungs reached 0.532 and 0.524 against 0.530 for plain alignment.
+
+There is a reason to think POA would not rescue it either. A DAG helps when runs share substantial structure and diverge at identifiable points. On this corpus the mean shared prefix is between one and two steps, so there is almost no agreement for a graph to represent before the runs scatter. Better alignment cannot manufacture structure that the runs do not have.
+
+I could not find anyone who has applied multiple sequence alignment to LLM agent trajectories, and the bioinformatics methods are twenty-plus years old and well understood, so the application does look open. Go in knowing that the obvious first version of it has been tried here and did not work.
 
 ### Detection: diagnosability, not significance
 
@@ -306,7 +312,7 @@ So if you're thinking about extracting training signal from multi-run agent trac
 
 And start from the map above rather than from an aligner. The alignment people don't cite the fault-localization people, and neither cite the off-policy-evaluation people, so the useful version of this problem sits spread across fields that don't read each other.
 
-Before any of it, measure whether your run set can support the question you want to ask. Diagnostic diversity is cheap to compute and every method here depends on it. If your runs all diverge in the same few places, no detector recovers the signal, and sampling harder will not change that.
+Before any of it, look at whether your run set can support the question you want to ask. Measure how far your runs agree before they split. If that number is one or two steps, the log-mining methods here have nothing to work with, no detector recovers the signal, and sampling harder will not change it. The methods that generate fresh rollouts are exempt, because they manufacture the comparison instead of hunting for it, and sequential stopping is orthogonal since it only estimates a pass rate.
 
 ---
 
@@ -314,7 +320,7 @@ Before any of it, measure whether your run set can support the question you want
 
 The code for all six experiments is public:
 
-**[github.com/orban/moirai](https://github.com/orban/moirai)**: Python, ~7k lines, 423 tests.
+**[github.com/orban/moirai](https://github.com/orban/moirai)**: Python, ~10.5k lines, 423 tests.
 
 ```bash
 git clone https://github.com/orban/moirai.git
@@ -334,7 +340,7 @@ moirai rerank path/to/traces/ --k 3
 python -m scripts.run_structure_routing path/to/traces/
 ```
 
-The last script is locked with frozen parameters and an assertion on the output, so you can verify the headline number (`59.2%` conditional accuracy on SWE-rebench v2) hasn't drifted.
+The last script is locked with frozen parameters and an assertion on the output, so you can verify the headline number hasn't drifted. The measured value is 59.19% conditional accuracy; the assertion in the script is written against `0.593` with a tolerance of 0.01.
 
 If you run this on your own multi-run data and find something I missed, I want to hear about it.
 
@@ -344,7 +350,8 @@ If you run this on your own multi-run data and find something I missed, I want t
 
 ### Data
 
-- **Dataset:** [SWE-rebench v2](https://huggingface.co/datasets/nebius/SWE-rebench) from Nebius
+- **Dataset:** [nebius/SWE-rebench-openhands-trajectories](https://huggingface.co/datasets/nebius/SWE-rebench-openhands-trajectories) (CC-BY-4.0)
+- **Agent:** OpenHands v0.54.0 with Qwen3-Coder-480B, single scaffold and config throughout
 - **Scale:** 1,096 tasks with mixed-outcome runs, 12,854 total runs, median 11 runs/task
 - **Filter:** tasks with ≥3 runs and both pass and fail outcomes
 - **Alignment:** Needleman-Wunsch at step-name granularity (e.g., `read(source)`, `edit(test_file)`)
