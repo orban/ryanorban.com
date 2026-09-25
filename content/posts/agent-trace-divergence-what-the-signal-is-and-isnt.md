@@ -52,6 +52,24 @@ So I rebuilt the detector three times, each version changing exactly one thing: 
 
 Every cell ran a second time with pass/fail labels shuffled within task. The largest real-minus-shuffled gap across all 28 cells was **+0.052**. Finer signatures made things worse, not better: going from 13 step names to 165,820 content signatures shortens the mean shared prefix across a task's runs from 1.68 steps to 1.18, because resolution buys you nothing once runs stop agreeing almost immediately either way.
 
+### Would more runs have fixed it?
+
+The obvious objection is that a median of 11 runs per task is simply too few, and the fix is to collect more. That is testable, so I tested it. Every method was re-run at fixed budgets of 4, 6, 8, 11, 15 and 20 runs per task.
+
+| Runs per task | 4 | 6 | 8 | 11 | 15 | 20 |
+|---|---:|---:|---:|---:|---:|---:|
+| Tasks in cell | 486 | 714 | 711 | 575 | 162 | 71 |
+| Detection rate, original | 0.000 | 0.000 | 0.000 | 0.000 | 0.426 | 0.563 |
+| Detection rate, Ochiai rebuild | 0.718 | 0.846 | 0.907 | 0.911 | 0.957 | 0.930 |
+| Held-out AUROC, Ochiai rebuild | 0.514 | 0.525 | 0.523 | 0.517 | 0.522 | 0.530 |
+| Margin over shuffled labels | +0.052 | +0.032 | +0.017 | +0.031 | +0.020 | +0.015 |
+
+Three things to read off that. The original detector's detection rate is **exactly zero** through 11 runs per task, which turns the constant-scorer diagnosis from an inference into a measurement. The rebuild reaches 96% detection at 15 runs, so past that point there is no detection problem left to solve. And AUROC stays flat across the whole range while the margin over shuffled labels *shrinks*, which is the opposite of how a real signal behaves when you feed it more data. The single best cell across all four methods and all budgets was 0.532.
+
+More runs fixed detection completely and did nothing for prediction. That is the answer to "just collect more data," at least across this range, and the trend gives no reason to expect 50 runs per task to read differently.
+
+Task counts thin toward the right of the table, because fewer tasks have 20 runs to draw from. Treat the last two columns as weaker evidence than the first four. The decline in margin is already visible in the well-powered cells.
+
 Behavioral features are a separate measurement, within-task median splits with split-half validation rather than off-policy prediction of a held-out outcome, and the rebuild does not test them. Their 0.556 stands.
 
 **Takeaway:** The detector was the problem. Fixing the detector did not produce a signal. That is a stronger negative result than the one I started with, because this one could have come out the other way.
@@ -236,9 +254,11 @@ Worth saying plainly: I could not find anyone who has applied multiple sequence 
 
 I reached for Ochiai on instinct once Fisher failed. The instinct was right and the literature is well ahead of it. Spectrum-based fault localization has spent twenty years on exactly "which component is implicated when some runs pass and some fail," through Tarantula, Ochiai, DStar and Barinel.
 
-The result that actually explains my failure is Perez, Abreu & van Deursen's [test-suite diagnosability metric](https://doi.org/10.1109/ICSE.2017.66) (ICSE 2017, 654–664). Their finding is that SBFL accuracy does not depend on how many runs you have. It depends on how *diverse* those runs are in which components they exercise, which they capture in a metric called DDU. A suite with many runs and low diagnostic diversity localizes as badly as one with almost no runs at all.
+The result that reframes my failure is Perez, Abreu & van Deursen's [test-suite diagnosability metric](https://doi.org/10.1109/ICSE.2017.66) (ICSE 2017, 654–664). Their argument is that coverage is the wrong thing to optimize for diagnosis. What matters is the structure of the coverage matrix: how densely runs touch components, how many distinct activity patterns appear across runs, and how many components are distinguishable from one another at all. They combine those three into a metric called DDU, computable from the matrix alone with no pass/fail labels. Generating suites to maximize DDU instead of branch coverage cut diagnosis effort by an average of 34% across 186 real faults in Defects4J.
 
-That reframes the 812-of-1,096 result. The problem was never only that n=11 is small. Repeated runs of one agent on one task diverge in the same few places, so they carry very little diagnostic diversity no matter how many you collect. Running 50 per task would not have fixed it.
+It is worth knowing this is contested ground rather than settled: [FDG](https://arxiv.org/abs/2104.06641) argues that scoring a suite without using the outcomes a test would produce leaves value on the table, and [RLFDC](https://arxiv.org/abs/2501.02216) reports beating DDU on the same benchmarks.
+
+The transfer to my case is my inference and not their result, so take it as one. Repeated runs of one agent on one task diverge in the same few places, so the activity matrix gains rows without gaining distinct row patterns. Coverage grows; distinguishability does not. That is a claim I can test directly rather than argue by analogy, which is what the budget sweep in section 1 does.
 
 [SBEST](https://arxiv.org/abs/2405.00565) is the precedent for what to do instead: when the failing signal is too scarce for statistics to mean anything, stop doing statistics on it and substitute a structural signal.
 
