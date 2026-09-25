@@ -11,9 +11,13 @@ You run your agent 30 times on the same task. 18 pass, 12 fail. The traces look 
 
 That's the dream. A self-generating preference signal from the variance you already have. Free DPO pairs. A causal handle on agent behavior. No labeling cost.
 
-I spent three weeks testing that hypothesis on [SWE-rebench v2](https://huggingface.co/datasets/nebius/SWE-rebench): 1,096 tasks, 12,854 runs, multiple models, multiple harnesses. To run the experiments end to end I built a tool called [moirai](https://github.com/orban/moirai).
+It is also, as far as I could find, assumed rather than tested. People reason from it, build on it, and propose it in conversation, but I could not find anyone who had run it end to end against held-out data with a control. That gap is the reason for this work.
+
+I tested that hypothesis on [SWE-rebench v2](https://huggingface.co/datasets/nebius/SWE-rebench): 1,096 tasks, 12,854 runs, multiple models, multiple harnesses. To run the experiments end to end I built a tool called [moirai](https://github.com/orban/moirai).
 
 Most of it doesn't work the way you'd hope, and the parts that do are narrower than I expected.
+
+The finding worth carrying is *why* it fails. Repeated runs of one agent on one task diverge in the same few places, so the run set carries very little diagnostic diversity, and collecting more runs adds almost none. That is a property you can measure before spending compute, and it determines whether any method of this shape can work on your data at all.
 
 When the rebuilt detectors came back flat I went looking for who else had attacked this. Four fields have been working on versions of the problem, three of them for decades: multiple sequence alignment, spectrum-based fault localization, counterfactual off-policy evaluation, and process reward modelling. They don't cite each other, and none of them are indexed under "agent traces." The last section maps what each one gives you.
 
@@ -174,7 +178,7 @@ After all six experiments, here's what survives:
 
 1. **Structure score as a method router.** Useful if you're already running multiple scoring strategies and want to pick per task. +2-6pp over global strategy. Not a standalone product.
 
-2. **Two assumptions worth testing before you build on them.** "Divergence generalizes across tasks" is widely assumed and rarely checked. "Structure score is a variance router" is a mistake I nearly made, and several people I described the work to proposed it independently. Each costs about a day to test, and considerably more to assume.
+2. **Two assumptions worth testing before you build on them.** "Divergence generalizes across tasks" is widely assumed and rarely checked. "Structure score is a variance router" is a mistake I nearly made, and several people I described the work to proposed it independently. Both are cheap to test and expensive to assume.
 
 3. **Held-out validation, plus a negative control.** The in-sample results looked great and the held-out results killed most of the pipeline, which is the version of this lesson I wrote down first. It isn't enough. My held-out number was 0.507 and it was unfalsifiable, because a broken detector and a genuinely absent signal both produce 0.500. What made the second answer real was the shuffled-label control: run every cell again with outcomes permuted within task, and see whether the gap survives. Held-out data tells you the signal doesn't transfer. A negative control tells you whether you were ever measuring anything.
 
@@ -188,11 +192,11 @@ Same section as the [last post](/posts/stop-testing-agents-like-deterministic-co
 
 ### Prove signal before building infrastructure
 
-My original plan was SFT → ORM → DPO with divergence-mined pairs, running on OpenHands eval infrastructure. Three stages of training, plus eval harness work. Six to eight weeks of build before the first result.
+My original plan was SFT → ORM → DPO with divergence-mined pairs, running on OpenHands eval infrastructure. Three stages of training, plus eval harness work, all of it before the first result.
 
-My advisor pushed back: "prove the signal first." I compressed the plan into two validation experiments, held-out prediction and reranking, and ran them in three days. The signal was weak. The entire training pipeline plan evaporated in 72 hours.
+My advisor pushed back: "prove the signal first." I compressed the plan into two validation experiments, held-out prediction and reranking. The signal was weak, and the training pipeline plan went with it.
 
-If I had skipped that step, I would have built the training loop, run it, gotten noisy results, and then spent weeks debugging "training instability" that was actually a signal-strength problem. Held-out validation is cheap. Training loops are not. Run the cheap experiment first.
+If I had skipped that step, I would have built the training loop, run it, gotten noisy results, and then gone debugging "training instability" that was actually a signal-strength problem. Held-out validation is cheap. Training loops are not. Run the cheap experiment first.
 
 ### Family-conditional signals look universal in aggregate
 
@@ -281,6 +285,8 @@ The deeper problem wasn't the detector, though rebuilding it three times is how 
 So if you're thinking about extracting training signal from multi-run agent traces: run the cheap experiments first, and run a negative control alongside them, because a broken detector and an absent signal return the same number.
 
 And start from the map above rather than from an aligner. The alignment people don't cite the fault-localization people, and neither cite the off-policy-evaluation people, so the useful version of this problem sits spread across fields that don't read each other.
+
+Before any of it, measure whether your run set can support the question you want to ask. Diagnostic diversity is cheap to compute and every method here depends on it. If your runs all diverge in the same few places, no detector recovers the signal, and sampling harder will not change that.
 
 ---
 
