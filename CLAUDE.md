@@ -35,8 +35,6 @@ To deploy, commit and push to `master` — GitHub Actions builds and deploys to 
 content/
 ├── _index.md              # Homepage (bio summary + recent posts/notes)
 ├── about.md               # Full background and experience
-├── advising.md            # Advisory services page
-├── office-hours.md        # Calendly booking page
 ├── posts/                 # Essays (full articles)
 │   ├── _index.md          # Section title only ("Writing")
 │   └── stop-testing-agents-like-deterministic-code.md
@@ -71,8 +69,11 @@ its own markup, and nothing else visual.
 - `layouts/_default/record.html` — the template `layout: "record"` selects. Thin on
   purpose: emits `.Content` and nothing else, so the page authors its own rows. `/about/`
   is the only page using it.
-- `layouts/_default/single.html` — root pages that are not `/about/`: `/advising/`,
-  `/office-hours/`. Title and `.record-prose`, no date.
+- `layouts/_default/single.html` — root pages that are not `/about/`. Title and
+  `.record-prose`, no date. **No page reaches it today**: `/advising/` and
+  `/office-hours/` were the only two and were retired on 2026-09-20. It stays as a guard —
+  without it the theme's `_default/single.html` takes over for the next root page added
+  and brings a second `<h1>` with it.
 - `layouts/posts/single.html` — an essay. Title, date on the spine, `.record-prose`.
 - `layouts/posts/list.html` — `/posts/`. **Keep the `.Paginate` call**: it is what makes
   Hugo emit the `/posts/page/1/` alias, and that URL is in the pre-migration baseline, so
@@ -110,7 +111,7 @@ its own markup, and nothing else visual.
 - `layouts/index.llms.txt` — `/llms.txt`, the agent index. Fully derived; deliberately
   restates no homepage copy.
 - `layouts/_default/single.markdown.md` — the `index.md` companion beside each page's
-  HTML. Only `/posts/` and the offer pages reach it; `/notes/` and `/about/` opt out.
+  HTML. Only `/posts/` reaches it; `/notes/` and `/about/` opt out.
 
 ### Stylesheets
 
@@ -174,6 +175,32 @@ crawlers never qualify.
 `validate_site.py` checks the built artifact; `validate_live.py` checks the Cloudflare
 edge after deploy and imports the same helper. Implement that rule twice and they drift —
 they did, and a robots.txt passed pre-deploy then failed post-deploy.
+
+### Retiring a page
+
+Deleting a `content/` file is not enough for anything in
+`scripts/baselines/public-urls.txt`. Three checks fire on it, and they only agree if the
+URL keeps serving something: `check_url_manifest` wants an output file,
+`check_sitemap` fails any sitemap entry that is a meta refresh, and the baseline
+comparison fails any sitemap URL that vanished.
+
+So retire by redirect, not by deletion:
+
+1. Delete the content file.
+2. Add the old path to `aliases` on the page that replaces it (`/advising/` and
+   `/office-hours/` alias to `content/_index.md`). Hugo writes a meta-refresh stub, which
+   keeps the output file and stays out of the sitemap.
+3. Add `<source> <target>` to `scripts/baselines/approved-aliases.txt` with the decision
+   in a comment. That file is the **only** register of a deliberate departure from the
+   baselines — `check_sitemap` reads it to allow the URL out of the sitemap, and it
+   re-verifies that the build really serves a redirect there, so a typo'd line exempts
+   nothing.
+4. If `validate_live.py` names the path explicitly, change the assertion to expect the
+   redirect. Don't delete it: a silent 404 on an indexed URL is what it's there to catch.
+
+Do **not** edit `sitemap-urls-2026-08-18.txt` to make a check pass. It's a dated snapshot
+of what the site served that day; rewriting it to accommodate a later decision destroys
+the record it exists to be.
 
 ## Content Conventions
 

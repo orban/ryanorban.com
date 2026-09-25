@@ -182,8 +182,19 @@ def main() -> int:
     check_page(base, "/graph/", report, expect_noindex=True if args.architecture_enabled else None)
     status, _, _, _ = fetch(f"{base}/graph/index.json")
     report.ok(f"/graph/index.json: HTTP {status}")
+    # Retired 2026-09-20. Both pages sold hours, which contradicts what /about/ now says
+    # the ask is. They keep serving a Hugo alias to the homepage because both are in the
+    # pre-migration manifest and both have inbound links; scripts/baselines/approved-aliases.txt
+    # carries the approval. Assert the redirect is actually served rather than dropping the
+    # check — a silent 404 on an indexed URL is the regression this line exists to catch.
     for path in ("/advising/", "/office-hours/"):
-        check_page(base, path, report, expect_noindex=True if args.architecture_enabled else None)
+        status, _, body, _ = fetch(base + path)
+        if status != 200:
+            report.fail(f"{path}: HTTP {status} (retired, expected a 200 alias stub)")
+        elif not scrape_bytes(body).has_meta_refresh():
+            report.fail(f"{path}: retired, but no longer redirects")
+        else:
+            report.ok(f"{path}: {status}, redirects to the record")
     check_page(base, "/categories/", report, expect_noindex=True if args.architecture_enabled else None)
     check_page(base, "/sfevents/", report, expect_noindex=True if args.architecture_enabled else None)
     status, _, _, _ = fetch(f"{base}/sfevents/api/events.json")

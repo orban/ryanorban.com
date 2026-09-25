@@ -54,7 +54,7 @@
         {{- end }}
       </div>
       {{- /* Writing is conditional: home.html omits that section entirely when every
-             published post is already pinned by a Building now project, so the nav
+             published post is already pinned by a Built project, so the nav
              item is gated on the same partial rather than a second copy of the rule.
              One definition, so the link can never point at a section that isn't
              there. */ -}}
@@ -70,10 +70,10 @@
         <a href="{{ $anchor }}#contact">Contact</a>
         {{- /* Off the homepage, one item says where you are.
 
-               The label comes from the URL segment, not .Title: /advising/ is titled
-               "How I work with founders", and a nav item set to that — or to a note
-               title, or to a full essay title — is unreadable at 13px in a row of
-               one-word links. Deep pages resolve up to their section instead, which is
+               The label comes from the URL segment, not .Title: an essay is titled
+               "Stop Testing AI Agents Like Deterministic Code", and a nav item set to
+               that — or to a note title — is unreadable at 13px in a row of one-word
+               links. Deep pages resolve up to their section instead, which is
                both short and the more useful link. 404 gets nothing; "where you are" is
                nowhere. aria-current only when it really is this page. */ -}}
         {{- if and (not .IsHome) (ne .Kind "404") }}
