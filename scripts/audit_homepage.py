@@ -21,7 +21,7 @@ ABOUT_PATH = ROOT / "content" / "about.md"
 TEMPLATE_PATH = ROOT / "layouts" / "_default" / "home.html"
 BASEOF_PATH = ROOT / "layouts" / "_default" / "baseof.html"
 CSS_PATH = ROOT / "static" / "css" / "home.css"
-MOIRAI_POST = ROOT / "content" / "posts" / "what-stochastic-variation-reveals.md"
+MOIRAI_POST = ROOT / "content" / "posts" / "agent-trace-divergence-what-the-signal-is-and-isnt.md"
 
 EXPECTED_TITLE = "Ryan Orban — Agent evaluation and reliability"
 EXPECTED_H1 = ["Ryan Orban"]
@@ -64,9 +64,13 @@ OPTIONAL_LISTS = ("record-writing-list",)  # Writing, only when an unpinned post
 # the contract checks that a rendered figure agrees with its source, not that the claim
 # the figure encodes is one the essay still makes. The essay's September update reports
 # the pairs predict nothing on held-out runs.
+# MOIRAI_POST follows whichever essay the Moirai card links to, so these patterns are
+# written against that essay's phrasing and must be rewritten when the pin moves. The
+# pin moved to the trace-divergence essay on 2026-09-25; both figures now resolve from
+# its appendix "Scale:" line rather than the prose of the previous essay.
 MOIRAI_CONTRACT = {
-    "Runs analyzed": r"([\d,]+) runs total",
-    "Mixed-outcome tasks": r"attempts ([\d,]+) software engineering tasks",
+    "Runs analyzed": r"([\d,]+) total runs",
+    "Mixed-outcome tasks": r"([\d,]+) tasks with mixed-outcome runs",
 }
 # Claims the homepage shares with the About page, which is their source here.
 ABOUT_CLAIMS = ("$1M", "150+", "$100M+", "91%")
