@@ -1,406 +1,315 @@
 ---
-title: "What agent trace divergence actually tells you"
-date: 2026-09-20
-description: "Same agent, same task, different outcomes. Is there signal in the variability? I borrowed an alignment algorithm from bioinformatics to find out, then went to the literature and found four fields already working on it. Here's the compressed map."
+title: "Eleven ways to score an agent trajectory"
+date: 2026-09-25
+description: "Same agent, same task, different seed, different outcome. I tried eleven ways to find what separates the passing runs from the failing ones, five of them reimplemented from published papers. They all land within five points of each other, and most of what looks like signal turns out to be task difficulty."
 math: true
 ---
 
-You run your agent 30 times on the same task. 18 pass, 12 fail. The traces look different. They branch at different points, pick different tools, choose different files. The hypothesis everyone reaches for is:
+You run the same coding agent on the same task twenty times. Same model, same scaffold, same config, same prompt. Eleven pass, nine fail. Nothing differs between those runs except the sampling seed.
 
-*Those branch points are where the decisions matter. Find them, score them, turn them into training data.*
+So something in the traces separates the winners from the losers. Find it and you get step-level credit assignment out of variance you already paid for: no human labels, no reward model, no extra rollouts. Free preference pairs.
 
-That's the dream. A self-generating preference signal from the variance you already have. Free DPO pairs. A causal handle on agent behavior. No labeling cost.
+I spent a while testing that on 12,854 OpenHands runs across 1,096 SWE-rebench tasks, and then longer testing whether my way of testing it was any good.
 
-It is also, as far as I could find, assumed rather than tested. People reason from it, build on it, and propose it in conversation, but I could not find anyone who had run it end to end against held-out data with a control. That gap is the reason for this work.
+The short version. Eleven ways of representing a trajectory, five of them reimplemented from published papers, all land between 0.528 and 0.581 held-out AUROC on the same corpus under the same protocol. When I dropped the filter that restricts analysis to mixed-outcome tasks, held-out AUROC jumped to 0.690 and the label-permutation control jumped to 0.681. Ninety-eight percent of that apparent signal was a model learning which tasks are hard.
 
-I tested that hypothesis on [Nebius's SWE-rebench OpenHands trajectories](https://huggingface.co/datasets/nebius/SWE-rebench-openhands-trajectories): 12,854 runs across 1,096 mixed-outcome tasks, every one of them OpenHands v0.54.0 driving Qwen3-Coder-480B.
+The permutation floor is the part worth stealing. The rest is why I believe it.
 
-One agent, one scaffold, one config. That narrowness is the design rather than a limitation. When every run comes from the same setup, a within-task comparison has no architecture differences and no framework artifacts available to explain the outcome, so the only thing varying is the model's own sampling. I learned that the hard way: an earlier round of this work on a cross-agent corpus concluded that no universal behavioural predictors exist, and that conclusion was an artifact of comparing across 133 agent architectures rather than anything about agents. To run the experiments end to end I built a tool called [moirai](https://github.com/orban/moirai).
+## The number that wasn't a result
 
-Most of it doesn't work the way you'd hope, and the parts that do are narrower than I expected.
+The first detector aligned runs with [Needleman-Wunsch](https://en.wikipedia.org/wiki/Needleman%E2%80%93Wunsch_algorithm) over a 13-symbol alphabet of step names, grouped runs by what they did at each column, and tested whether the branch predicted outcome with [Fisher's exact](https://en.wikipedia.org/wiki/Fisher%27s_exact_test), corrected across columns by [Benjamini-Hochberg](https://en.wikipedia.org/wiki/False_discovery_rate#Benjamini%E2%80%93Hochberg_procedure).
 
-The obvious escape hatch is that the data was inadequate, so I closed it. Spectrum-based fault localization has a metric for whether a set of runs can localize anything at all, called DDU, and it reads no outcome labels. I ported it to trajectories and ran it over 19,592 runs. Median 0.14, against 0.10 to 0.42 for the real-fault suites in the paper that introduced it. This corpus sits inside the range where the technique demonstrably works, and the runs are individually distinct rather than collapsed on top of each other. They are diagnosable. The signal still isn't there.
+Held-out AUROC: 0.507.
 
-When the rebuilt detectors came back flat I went looking for who else had attacked this. Four fields have been working on versions of the problem, three of them for decades: multiple sequence alignment, spectrum-based fault localization, counterfactual off-policy evaluation, and process reward modelling. They don't cite each other, and none of them are indexed under "agent traces." The last section maps what each one gives you.
+I read that as a negative result for months. It isn't one. At a median of 11 runs per task, a 2-versus-9 split can't clear significance after correcting across every column, so **812 of the 1,096 tasks returned no branch points at all**. With nothing to score, the scorer falls back to a constant, and a constant scorer lands on exactly 0.500 because ties contribute 0.5 to the Mann-Whitney statistic.
 
----
+"No signal" and "no detector" were emitting the same number. That's the first thing worth carrying: if your pipeline can produce a degenerate scorer, measure how often it does before interpreting the aggregate.
 
-## The setup
+## Rebuilding the detector
 
-Each task has multiple runs with mixed outcomes. Each run is a sequence of tool calls: `read(source)`, `search(grep_targeted)`, `edit(source)`, `test(pass)`, `bash(python)`, and so on.
+Spectrum-based fault localization has used Ochiai as a *ranking* statistic since the mid-2000s, and a ranking statistic is always defined. So I built a ladder, each rung changing exactly one thing, with a decision rule written down before I looked at any output.
 
-To find divergence points, align the runs with [Needleman-Wunsch](https://en.wikipedia.org/wiki/Needleman%E2%80%93Wunsch_algorithm). At each column, group runs by the step they took. Test whether the branch predicts outcome with [Fisher's exact](https://en.wikipedia.org/wiki/Fisher%27s_exact_test), correct for multiple comparisons with [Benjamini-Hochberg](https://en.wikipedia.org/wiki/False_discovery_rate#Benjamini%E2%80%93Hochberg_procedure).
+| rung | change | held-out AUROC |
+|---|---|---:|
+| M0 | NW on step names, Fisher + BH | 0.507 |
+| M1 | same matching, Ochiai instead of the gate | 0.523 |
+| M2 | prefix tree on names, Ochiai | 0.504 |
+| M3 | prefix tree on content signatures, shrinkage | 0.501 |
+| M4 | Markov-2 state, Ochiai | 0.554 |
+| M5 | Markov-2 on content, shrinkage | 0.545 |
 
-That gives you a list of statistically significant divergence points per task. Within-task, the signal looks real. The question is whether it generalizes, whether it's uniform across tasks, and whether you can do anything useful with it.
+Every cell ran twice, once real and once with pass/fail labels shuffled within task. The shuffled arms sit between 0.487 and 0.502 at full budget, so the estimator isn't leaking. M0 reproduces 0.507 exactly, which is the regression check that the harness measures the same thing the original did. The pre-registered threshold was 0.60 and nothing reached it.
 
-Six questions, six experiments.
+The interesting rung is M2. Replacing column alignment with a prefix tree was supposed to be the principled fix, because global alignment aliases states: Needleman-Wunsch will happily align step *i* of run A to step *j* of run B when their histories differ completely, so a "divergence column" pools runs that are in different situations. A prefix tree can't do that, since every run at a node shares a byte-identical history.
 
----
+It scored 0.504, worse than the crude column model it was meant to repair.
 
-## 1. Does divergence correlate with outcome? (No, and my first answer didn't count)
+## It was never the statistic
 
-Split each task's runs into train/test halves. Find divergence points on train. Use them to score held-out test runs. Measure AUROC.
+That sent me to look at the representation instead of the scoring, and the sweep is where the real finding lives. Corpus, protocol and control held fixed, varying only how a trajectory gets encoded:
 
-The first pass gave the divergence score 0.507 per-task, against 0.556 for behavioral features and 0.486 for random. I called 0.507 a coin flip and moved on. That was wrong, though not because the number was too low. It could not have come out any other way.
+| encoding | components | held-out AUROC |
+|---|---:|---:|
+| step name, last action only | 12 | 0.559 |
+| step name, last two actions | 56 | 0.554 |
+| step name, last three actions | 134 | 0.554 |
+| step name, full history | 332 | 0.504 |
+| name + file target, last action | 106 | 0.571 |
+| name + file target, full history | 337 | 0.502 |
+| **file paths hashed into 26 arbitrary buckets** | 26 | **0.578** |
 
-The detector gated branch points behind Fisher's exact plus Benjamini-Hochberg. At a median of 11 runs a 2-vs-9 split cannot clear significance after correction, so **812 of the 1,096 tasks returned no branch points at all**. With nothing to score, the scorer fell back to a constant, and a constant scorer lands on 0.500 by construction. "No signal" and "no detector" were emitting the same number and I had no way to tell them apart. The result was unfalsifiable as stated.
+Two things fall out. Full history is broken and everything else is equivalent, which kills the Markov-2 story I'd been building since M4 scored highest. And hashing file paths into 26 meaningless buckets beats every alphabet I designed on purpose.
 
-So I rebuilt the detector three times, each version changing exactly one thing: Ochiai suspiciousness from spectrum-based fault localization in place of Fisher; prefix-tree matching in place of column alignment; 165,820 content signatures in place of 13 step names. Ochiai is always defined, so the rebuilt matchers fit a model for 72–96% of tasks where the original fit one for none at all below 15 runs. The decision rule was fixed before I read any output.
+When a random coarsening outperforms deliberate design, the design was contributing nothing. That's a useful thing to learn about your own feature engineering, and you don't learn it by staring at the features.
 
-| Detector | Best held-out AUROC | Verdict |
-|---|---:|---|
-| Original (Fisher + BH) | 0.507 | Unfalsifiable: 812/1,096 tasks scored by a constant |
-| **Best of three rebuilds** | **0.532** | Below the pre-registered 0.55 bar |
+## Generating a vocabulary instead of choosing one
 
-Every cell ran a second time with pass/fail labels shuffled within task. The largest real-minus-shuffled gap across all 28 cells was **+0.052**. Finer signatures made things worse, not better: going from 13 step names to 165,820 content signatures shortens the mean shared prefix across a task's runs from 1.68 steps to 1.18, because resolution buys you nothing once runs stop agreeing almost immediately either way.
+Statistical debugging solved this in 2005 and I'd been reinventing the problem badly. Liblit, Naik, Zheng, Aiken and Jordan's [Scalable Statistical Bug Isolation](https://doi.org/10.1145/1065010.1065014) stops picking predicates. Templates emit everything the program admits, and the outcome labels prune the set. On Rhythmbox: **857,384 predicates, cut to 537 by keeping only those whose 95% confidence interval on Increase(P) sits above zero, then to 15 by redundancy elimination.**
 
-### Would more runs have fixed it?
+Their statistic is what transfers:
 
-The obvious objection is that a median of 11 runs per task is simply too few, and the fix is to collect more. That is testable, so I tested it. Every method was re-run at fixed budgets of 4, 6, 8, 11, 15 and 20 runs per task.
+$$\text{Context}(P) = \frac{F(P\ \text{observed})}{S(P\ \text{observed}) + F(P\ \text{observed})}$$
 
-| Runs per task | 4 | 6 | 8 | 11 | 15 | 20 |
-|---|---:|---:|---:|---:|---:|---:|
-| Tasks in cell | 486 | 714 | 711 | 575 | 162 | 71 |
-| Detection rate, original | 0.000 | 0.000 | 0.000 | 0.000 | 0.426 | 0.563 |
-| Detection rate, Ochiai rebuild | 0.718 | 0.846 | 0.907 | 0.911 | 0.957 | 0.930 |
-| Held-out AUROC, Ochiai rebuild | 0.514 | 0.525 | 0.523 | 0.517 | 0.522 | 0.530 |
-| Margin over shuffled labels | +0.052 | +0.032 | +0.017 | +0.031 | +0.020 | +0.015 |
+$$\text{Increase}(P) = \text{Failure}(P) - \text{Context}(P)$$
 
-Three things to read off that. The original detector's detection rate is **exactly zero** through 11 runs per task, which turns the constant-scorer diagnosis from an inference into a measurement. The rebuild reaches 96% detection at 15 runs, so past that point there is no detection problem left to solve. And AUROC stays flat across the whole range. The margin over shuffled labels is the row shown here, which declines; the other three rebuilt methods wander in both directions, from -0.025 to +0.045, with no trend. Read across all four, the margin is indistinguishable from noise at every budget. The single best cell anywhere was 0.532, and it sits at the largest budget, which is exactly where the thinnest task counts are.
+Context is a counterfactual baseline. A run that has thrown five tracebacks by step 30 is doomed whatever it does next, so every predicate true at that point scores high on raw failure rate. Liblit calls those innocent bystanders. Subtracting the failure probability of merely *reaching* the state removes them.
 
-More runs fixed detection completely and did nothing for prediction. That is the answer to "just collect more data," at least across this range, and the trend gives no reason to expect 50 runs per task to read differently.
+This matters here specifically, because the prefix-state problem is the deepest objection to the whole approach: comparing what two runs did at aligned step *k* assumes they were in equivalent states at *k*, and nothing in the alignment checks that. The causal literature says fixing it properly needs a state model. It turns out you can approximate it with subtraction, and the approximation is twenty years old.
 
-Task counts thin toward the right of the table, because fewer tasks have 20 runs to draw from. Treat the last two columns as weaker evidence than the first four.
+So I generated instead of choosing: command head tokens, path tokens, file extensions, action counts at five thresholds, adjacent action pairs, ordered before-and-after pairs, step and file and error count thresholds, re-read and edit-without-read. 3,596 predicates over the corpus, 93 surviving the confidence interval, scored on entirely held-out tasks.
 
-Behavioral features are a separate measurement, within-task median splits with split-half validation rather than off-policy prediction of a held-out outcome, and the rebuild does not test them. Their 0.556 stands.
+**0.5768**, against a shuffled arm at 0.4922.
 
-**Takeaway:** The detector was the problem. Fixing the detector did not produce a signal. That is a stronger negative result than the one I started with, because this one could have come out the other way.
+### The bug that made it look better than it was
 
----
+The first version scored 0.5483, and these were the top predicates:
 
-## 2. Does reranking with it work? (Slightly)
+```
++0.474  tok:executionresult     +0.461  tok:python__gql__
++0.487  tok:basehttpmiddleware  +0.440  tok:apsw
+```
 
-Second experiment: best-of-K selection. For each task, sample K=3 runs and pick the one with the best score. Compare to random selection and oracle (always pick a passing run if one exists).
+Those are repository names. `apsw` and `python__gql__` identify *which task* the run belongs to, not anything the agent did. The shuffled arm selected the same token families, which is the tell: shuffling permutes labels within task, so a task-constant predicate has an identical failure rate in both arms and sails through the test untouched.
 
-| Method | Accuracy | Lift vs random |
-|--------|---------:|---------------:|
-| Features | 57.2% | +4.4pp |
-| Uncertainty (inv) | 56.4% | +3.7pp |
-| Divergence | 55.9% | +3.2pp |
-| Random | 52.7% | n/a |
-| **Oracle** | **85.9%** | **+33.2pp** |
+Worse, they contribute nothing to the evaluation. AUROC is computed within each held-out task, and a predicate true for every run of that task adds the same constant to every score and cancels. Roughly 190 of my 200 selected predicates were inert padding.
 
-Features capture 13% of the oracle gap. Divergence captures 10%. Both are real but neither is close to what a reward model or perplexity-based reranker would give you.
+I'd selected on corpus-level variance and evaluated on within-task variance. Liblit doesn't hit this because his setting is one program, with no between-task dimension to confound. Stratifying the selection so a predicate only accumulates evidence from tasks where it actually varies moved the number to 0.5768 and left behavioral predicates on top.
 
-The more interesting number is the oracle gap itself. 33 points of potential lift are sitting in the data. Current methods capture a small slice. The rest is locked up in task-specific structure that doesn't generalize across families.
+That's Simpson's paradox inside a pipeline whose author had already written "always stratify" in his own notes.
 
----
+## Five published representations, one protocol
 
-## 3. Where does it generalize? (The 25% with structure)
+At that point I'd tried six encodings I made up. The obvious missing comparison is against encodings somebody else published and validated. Four are specified precisely enough to reimplement and need nothing my logs lack:
 
-Here's where it gets interesting.
+- **Bigram TF-IDF**, 30k features, min_df 2, sublinear term frequency, L2 logistic regression with class-balanced weights. The configuration that reaches task-disjoint AUROC 0.83 on tau2-bench in [From Confident Closing to Silent Failure](https://arxiv.org/abs/2606.09863).
+- **Byte-pair encoding over action sequences** at K=192, where [Agent trajectories as programs](https://arxiv.org/abs/2606.16988) reports its V-measure plateauing at 0.644.
+- **Action crossed with environment response**, the enriched encoding from [Beyond Resolution Rates](https://arxiv.org/abs/2604.02547) that distinguishes a clean edit from a syntax error from a re-patch.
+- **Canonical-path Jaccard**, where the reference is the set of steps appearing in more than half of a task's successful runs, from [Capable but Unreliable](https://arxiv.org/abs/2602.19008).
 
-I computed "captured oracle gap" per task family and got a range from **-73% to +100%**. Some families benefit enormously from divergence-based scoring. Others get hurt. The aggregate mean of +10% is hiding the actual story.
+All under one protocol: tasks split in half, everything fit on the train half, AUROC computed within each held-out task and averaged, shuffled arm permuting outcomes within task.
 
-So I built a per-task score called **structure**, three components, equal-weight:
+| representation | origin | real | shuffled | margin |
+|---|---|---:|---:|---:|
+| bigram TF-IDF, class-balanced | arXiv:2606.09863 | **0.5813** | 0.5146 | +0.067 |
+| per-state FSM features | arXiv:2608.23670 | 0.5783 | 0.5044 | +0.074 |
+| hashed path buckets, k=26 | this work | 0.5780 | 0.4820 | +0.096 |
+| generated predicates, Increase(P) | Liblit 2005 | 0.5768 | 0.4922 | +0.085 |
+| unigram TF-IDF | this work | 0.5727 | 0.5070 | +0.066 |
+| canonical Jaccard, rich alphabet | arXiv:2602.19008 | 0.5632 | 0.4822 | +0.081 |
+| BPE vocabulary, K=192 | arXiv:2606.16988 | 0.5607 | 0.5018 | +0.059 |
+| action × outcome bigrams | arXiv:2604.02547 | 0.5603 | 0.5125 | +0.048 |
+| step name, last-action state | this work | 0.5590 | 0.5040 | +0.055 |
+| canonical Jaccard, 13 symbols | arXiv:2602.19008 | 0.5280 | 0.5079 | +0.020 |
+| full-history prefix tree | this work | 0.5040 | 0.4960 | +0.008 |
 
-- `branch_gap`: mean pass-rate spread at the top divergence points
-- `earlyness`: how early in the trajectory those splits occur (early = more decisive)
-- `stability`: how reproducible the divergence map is under run resampling
+Learned vocabularies, bags of words, spectrum statistics, counterfactual baselines, finite state machines. A span of five points, and the winner is a bag of bigrams over raw trajectory text.
 
-Kendall's tau between structure and divergence reranking lift: **+0.402** (p < 0.0001).
+Two caveats I'd want if I were reading this. The canonical-Jaccard rows are approximate: their shuffled arm sits below chance because leave-one-out is asymmetric across labels, and equalizing the reference size fixed most of that but not all. And canonical adherence reads the outcomes of a task's *other* runs, so it isn't a deployable predictor the way the rest are.
 
-Split tasks at structure ≥ 0.20:
+Canonical Jaccard also shows why cardinality matters. On the 13-symbol alphabet it scores 0.528; on name-plus-target it scores 0.563. Every run touches about eleven of the thirteen step names, so a set comparison over that alphabet has nothing to vary over. Their benchmark has a rich tool vocabulary. Mine doesn't.
 
-- **High-structure** (269 tasks, 25%): divergence scoring gives +12.5% reranking lift
-- **Low-structure** (827 tasks, 75%): divergence scoring gives +0.4% lift
+## The floor
 
-That's the whole story. In one quarter of the tasks, the signal is strong. In three quarters, it's noise-indistinguishable drift. Aggregating across both hides the fact that you have two regimes, not one.
+Every experiment above restricts to mixed-outcome tasks, where the same agent both passes and fails. That's deliberate: if a task always passes or always fails, there's no within-task contrast to find a divergence point in.
 
-**One caveat.** All three components of the structure score (`branch_gap`, `earlyness`, `stability`) are computed *from* divergence points. The original detector found none for 812 of 1,096 tasks. This section splits the corpus into 269 high-structure and 827 low-structure tasks, and the original detector found no divergence points at all for 812 of them. Those 812 sit entirely inside the low bucket; no high-structure task has zero divergence points, and only 15 low-structure tasks have any. So "low structure" is, to within 15 tasks out of 827, a restatement of "the detector fired on nothing." Read this section as a statement about when the detector produces output, not about a latent property of the task. I have not re-run sections 3 through 5 against the rebuilt detectors, so treat the sign of these results as more reliable than their magnitude.
+I wanted to know what the filter was worth, so I rebuilt the corpus from the raw parquet, which holds 6,225 tasks with at least four runs, of which 1,737 are mixed-outcome and 4,488 always produce the same outcome. Then I scored both populations under an 80/20 split over runs with pooled AUROC, which is the shape most published evaluations use.
 
-**Takeaway:** Divergence-based analysis produces output on a minority of tasks with a detectable property: early, reproducible, outcome-correlated branching. For everything else, the runs look like samples from a diffuse distribution over successful paths, or the detector simply had nothing to say, and I cannot fully separate those two cases.
+| population | features | real | shuffled | margin |
+|---|---|---:|---:|---:|
+| all 6,225 tasks | structural | 0.6897 | **0.6808** | +0.009 |
+| all 6,225 tasks | trace length only | 0.6629 | 0.6616 | +0.001 |
+| 1,737 mixed-outcome | structural | 0.6229 | 0.5619 | +0.061 |
+| 1,737 mixed-outcome | trace length only | 0.5826 | 0.5633 | +0.019 |
 
----
+Drop the filter and AUROC climbs from 0.58 to 0.690. The permutation control climbs to 0.681. With 4,488 always-same-outcome tasks in the pool, a model learns "this task always fails," and permuting labels *within* task leaves that untouched because each task's success count is preserved.
 
-## 4. Can you route between scoring methods? (Yes, modestly)
-
-If you know structure per task, you can pick the right scoring strategy per task instead of globally:
-
-| Strategy | Accuracy | Lift |
-|----------|---------:|-----:|
-| Random | 52.9% | n/a |
-| Divergence (global) | 56.1% | +3.1pp |
-| Features (global) | 57.3% | +4.4pp |
-| **Conditional (struct ≥ 0.20)** | **59.2%** | **+6.3pp** |
-| Oracle | 64.2% | +11.4pp |
-
-Use divergence on high-structure tasks, features on low-structure tasks. Beats both global strategies by +2pp.
-
-That's not a breakthrough. It's a routing rule over two heuristics that gets you closer to oracle. If you're already running features or a reranker, adding structure-based routing is a drop-in that nudges the number up. If you're not, this isn't enough to justify building the infrastructure.
-
-**Takeaway:** Structure score is a **method router**. You use it to decide which existing scoring strategy to apply per task. It is not a standalone scorer.
-
----
-
-## 5. Can you use structure to allocate eval budget? (No)
-
-This is where the negative result gets interesting.
-
-If some tasks have structure and some don't, intuition says: spend more eval runs on the structured ones. They should need more samples to characterize. Use the rest of your budget uniformly on low-structure tasks.
-
-That's wrong, and it's wrong for a reason that took me a day to see.
-
-Kendall's tau between structure score and [task volatility](https://en.wikipedia.org/wiki/Bernoulli_distribution) (`p(1-p)`): **-0.273** (p < 0.0001).
-
-High-structure tasks *anti-correlate* with volatility. Why? Because structured tasks have decisive branch points: early decisions that lock in the outcome. That means pass rates cluster near 0% or 100%, which means low Bernoulli variance, which means *fewer* runs needed to characterize the rate, not more.
-
-Simulate it. Three policies under fixed compute budget:
-
-| Budget | Policy | MAE | P90 error | False signal rate |
-|-------:|--------|----:|----------:|------------------:|
-| 1.0 | n=1 | 1.1% | 2.3% | 12.9% |
-| 2.0 | uniform | **0.8%** | **1.6%** | **2.4%** |
-| 2.0 | structure-aware | 1.0% | 2.0% | 8.2% |
-| 3.0 | uniform | **0.6%** | **1.3%** | **1.0%** |
-| 3.0 | structure-aware | 1.0% | 2.0% | 8.3% |
-
-Uniform wins at every budget ≥ 2.0. Structure-aware plateaus because it keeps spending compute on high-structure tasks that already have stable estimates.
-
-**Takeaway:** Structure and volatility are orthogonal axes. Structure predicts *which scoring method works*. Volatility predicts *how much sampling you need*. They are not the same latent variable, even when your intuition insists they should be.
-
----
-
-## 6. Can you extract DPO pairs from divergence? (No, and this one isn't new)
-
-The original dream: at each divergence point, the better-outcome branch is the preferred response and the worse-outcome branch is the rejected response. Feed those pairs into DPO. Train a better agent for free.
-
-There are two problems.
-
-**Problem 1: the signal is too weak to justify the infrastructure.** The best detector I could build tops out at 0.532 held-out, under the 0.55 bar, with a largest real-minus-shuffled gap of +0.052. Any preference pair extracted at that level carries enormous label noise. DPO is already fragile to label noise; pairs from this signal would train the model on mostly random distinctions.
-
-**Problem 2: the field already tried it and went the other way.** Every public SWE-bench fine-tune I looked at (SWE-Gym, SWE-Fixer, Lingma SWE-GPT, SWE-Smith, SWE-Dev) ships SFT on successful trajectories. [SWE-Dev](https://arxiv.org/abs/2506.07636) is the useful case, because they did not simply skip preference learning: they ran it. Their paper reports exploring rejection-sampling fine-tuning alongside KTO and OREO, and finds that "RFT brings the most significant performance improvement, while offline reinforcement learning (RL) methods -- KTO and OREO -- deliver marginal or task-specific gains." A team with more data than me tested the contrastive route on these trajectories and shipped the supervised one. [SWE-Gym](https://arxiv.org/abs/2412.21139) is the clearest case: rejection-sampling SFT on runs that passed, and mixing in on-policy self-generated trajectories *hurt* their numbers. Successful and failed rollouts aren't exchangeable training signal in aggregate. The problem is the approach, not the choice of divergence step.
-
-The one prominent exception goes around the problem rather than through it. Agentica and Together AI's [DeepSWE-Preview](https://www.together.ai/blog/deepswe) trains Qwen3-32B with RL only, using a modified GRPO they call GRPO++, and reaches 42.2% Pass@1 on SWE-bench Verified and 59% with test-time scaling. Online RL never needs a preference pair mined from logs, because it generates its own on-policy signal. That's a different animal from what I was attempting, and it's the direction with momentum behind it.
-
-Two 2026 papers show what the alternatives look like, and neither makes the comparison I was making. [SWE-Lego](https://arxiv.org/abs/2601.01426) stays SFT-only and adds step-level error masking: it excludes tokens tied to failing tool calls and failing tests from the loss, using per-step *outcome* as a cheap always-available label instead of trying to locate a decisive step statistically. No preference pairs at all. [Agentic-DPO](https://arxiv.org/abs/2607.10601) does use a contrastive objective, but builds its pairs *within* a single expert trajectory, contrasting the expert action against sampled plausible wrong actions at the same state, rather than pairing across independently sampled runs.
-
-That last distinction is the one that matters, and it's the structural reason this doesn't work. Agentic-DPO holds the state fixed and varies the action, as do the process reward methods further down. I aligned separate runs and compared whatever actions happened to land in the same column, so the pairs are conditioned on observed actions rather than on the latent state of the repository and task. Two runs that diverged at step 7 may have been in quite different states already (files opened, context accumulated, model hidden state), and the extracted pair ignores all of it. You end up training on correlations confounded by invisible prefix state.
-
-**Takeaway:** Don't extract DPO pairs from agent trace divergence on SWE-bench. The signal is too weak, the state-aliasing is severe, and every team with more data than me builds its contrastive pairs at a fixed state rather than across independent runs. SFT on successful trajectories remains the right move.
-
----
-
-
-## What's left that's useful
-
-After all six experiments, here's what survives:
-
-1. **Structure score as a method router.** Useful if you're already running multiple scoring strategies and want to pick per task. +2-6pp over global strategy. Not a standalone product.
-
-2. **Two assumptions worth testing before you build on them.** "Divergence generalizes across tasks" is widely assumed and rarely checked. "Structure score is a variance router" is a mistake I nearly made, and several people I described the work to proposed it independently. Both are cheap to test and expensive to assume.
-
-3. **Held-out validation, plus a negative control.** The in-sample results looked great and the held-out results killed most of the pipeline, which is the version of this lesson I wrote down first. It isn't enough. My held-out number was 0.507 and it was unfalsifiable, because a broken detector and a genuinely absent signal both produce 0.500. What made the second answer real was the shuffled-label control: run every cell again with outcomes permuted within task, and see whether the gap survives. Held-out data tells you the signal doesn't transfer. A negative control tells you whether you were ever measuring anything.
-
-4. **moirai itself as a per-task debugging tool.** If you have traces and want to know where your runs diverge and which path worked, it works. On this corpus, 77/1096 tasks surface strong claims like "wrote source → 85% success (13 runs) vs ran a command first → 0% success (3 runs)". That's not a product. It's a personal tool.
-
----
-
-## Hard lessons from building this
-
-Same section as the [last post](/posts/stop-testing-agents-like-deterministic-code). These are the things I wish someone had told me at the start.
-
-### Prove signal before building infrastructure
-
-My original plan was SFT → ORM → DPO with divergence-mined pairs, running on OpenHands eval infrastructure. Three stages of training, plus eval harness work, all of it before the first result.
-
-My advisor pushed back: "prove the signal first." I compressed the plan into two validation experiments, held-out prediction and reranking. The signal was weak, and the training pipeline plan went with it.
-
-If I had skipped that step, I would have built the training loop, run it, gotten noisy results, and then gone debugging "training instability" that was actually a signal-strength problem. Held-out validation is cheap. Training loops are not. Run the cheap experiment first.
-
-### Family-conditional signals look universal in aggregate
-
-The first round of analysis on eval-harness data showed strong behavioral patterns: edit-test alternation, specific motif sequences, etc. Then I stratified by task family. Everything disappeared. The "universal" patterns were family artifacts: certain families have certain shapes, and when those families dominate the dataset the pattern looks global.
-
-This is [Simpson's paradox](https://en.wikipedia.org/wiki/Simpson%27s_paradox) in agent eval, and it's everywhere. Always stratify. If you can't stratify because your dataset is too small per family, you don't have enough data to draw the conclusion you want.
-
-### Don't reuse one latent variable for two jobs
-
-I had structure score working for method routing. I assumed it would also work for eval budget allocation, since both are "use this variable to make a per-task decision," the same shape. Different physics.
-
-Structure score measures *branching sensitivity*, which predicts which scoring function works best. Volatility measures *outcome uncertainty*, which predicts how much sampling you need. These are empirically anti-correlated on SWE-rebench. One latent variable can't do both jobs. Test each application on its own terms before assuming it transfers.
-
-### Don't overclaim
-
-The pull to frame a +2-6pp routing rule as a "control system for stochastic agents" or a "reasoning paradigm" is real, and it's killed every time I tested it against a serious reader. A routing rule is a routing rule. Name it that. The honest framing is easier to defend and easier to iterate on.
-
-### Aggregate metrics hide the regimes
-
-The headline number for divergence-based reranking was +3.2pp. The per-family captured oracle gap ranged from -73% to +100%. The aggregate hid the fact that I had two different problems on different subsets of the data. Once I saw the per-family distribution, everything else followed.
-
-Any time you're computing an aggregate metric over a heterogeneous dataset, look at the distribution. Always. The mean is almost never the story.
-
----
+So: report your permutation floor. Raw held-out AUROC on an agent-trajectory corpus is dominated by task difficulty, and the gap between a method that works and a method that memorizes which repositories are hard is invisible in the headline number and obvious in the control. It costs one extra run of the same pipeline.
 
 ## The prior art, compressed
 
-Given many runs of one stochastic agent on one task, some passing and some failing, find the step that made the difference. Several fields have been working on that question under other names. Here is each of them, what it gives you, and where it stops.
+While I was doing this, several groups published on versions of the same question. Here's what each gives you and where it stops. The most useful thing I can hand over is a distinction that took me far too long to see.
+
+### Three different questions get reported as one
+
+**Between-model variation.** Why does one agent beat another? [Beyond Resolution Rates](https://arxiv.org/abs/2604.02547) covers 9,374 trajectories across 19 agents, 8 frameworks and 14 LLMs on 500 tasks. Agents delaying their first edit succeed more (ρ = +0.68), agents front-loading patches in the first ten steps succeed less (ρ = −0.78), validation effort correlates with resolution (ρ = +0.50). Those are correlations across 19 agents, not run-level predictions. The paper also reports that agents sharing an LLM agree on 85–93% of tasks regardless of framework, while agents sharing a framework but not an LLM agree on 47–88%. Behavior is mostly the model.
+
+**Between-task variation.** Why is this task harder? Large, and it contaminates any pooled metric, as measured above: 0.690 against a 0.681 floor.
+
+**Within-model, within-task sampling variation.** Same agent, same task, same config, different seed. This is the question everyone means, and it's the small residual left after the other two. The paper that isolates it cleanly is [Capable but Unreliable](https://arxiv.org/abs/2602.19008): 22 models on 108 tasks at 3 runs each, restricted to the 22.5% of model-task units with mixed outcomes, measuring Jaccard adherence to a canonical tool set defined by successful runs. They report +0.060 Jaccard (p < 0.0001, 95% CI [+0.043, +0.077]), worth +5.3 percentage points of success probability, Cohen's *d* = 0.48. That's roughly 0.63 AUROC-equivalent against my 0.578.
+
+They also ship an intervention, which is the strongest practical result in this literature: a monitor flagging bottom-tercile adherence at 75% completion lifts success by +8.8 points among intervened runs.
+
+Once you separate those three, most of the impressive numbers in this space are measuring the first two. If you're planning to mine step-level signal from sampling variance specifically, budget for an effect around *d* = 0.5 and design accordingly.
+
+### The methods that work best need data your logs don't have
+
+[OAT](https://arxiv.org/abs/2607.12747) trains neural controlled differential equations on successful trajectories only and scores each step of a failure by reconstruction error. Its step vector is "the aggregated token representations produced by layer ℓ when generating action a_t," mean-pooled and projected to 64 dimensions. That's an LLM hidden state, which post-hoc logs don't contain. The absolute numbers are modest too: in-domain F1 0.435 against 0.181 for a GPT-5 judge, out-of-distribution F1 0.211. The win is cost, 16ms against 38 seconds.
+
+[Math-Shepherd](https://arxiv.org/abs/2312.08935) and [OmegaPRM](https://arxiv.org/abs/2406.06592) are the right answer to credit assignment and need something logs don't have either. Rather than asking which of two observed actions was better, they resume many rollouts from each intermediate state and score that state by the fraction of completions that succeed. OmegaPRM is the MCTS version, using binary search to find the first error in a chain of thought, and collected over 1.5 million process annotations with no human in the loop, lifting Gemini Pro from 51% to 69.4% on MATH500. Both descend from [Let's Verify Step by Step](https://arxiv.org/abs/2305.20050), which established that process supervision beats outcome supervision and released 800,000 human step labels to prove it.
+
+The catch is resumability. My runs are post-hoc logs, not checkpoints you can fork from. That makes this a different data collection design rather than a better analysis of data I already had.
+
+[RTMC](https://arxiv.org/abs/2604.11037) is the cheapest version and the closest to runnable on existing data: aggregate return statistics across rollouts sharing a common state to produce per-step Q-values and advantages with no learned critic at all, for +3.2 points of pass@1 over GRPO on SWE-bench Verified. It needs runs that genuinely share states, which is the assumption this whole approach rests on and the one I never checked.
+
+### Order doesn't help, found twice independently
+
+Capable but Unreliable's limitations section reports that their sequence metrics performed worse than set-based Jaccard. Independently, my full-history prefix trees score 0.504 against 0.55 to 0.58 for every order-insensitive or bounded-history encoding.
+
+Two corpora, two methods, same conclusion: the sequence structure of an agent trajectory carries less than the multiset of things it did. Worth knowing before you build an alignment algorithm.
+
+### There's a blind window between cause and evidence
+
+[Failure as a Process](https://arxiv.org/abs/2607.09510) hand-annotated 63,000 execution steps across 3,843 trajectories from seven models and three scaffolds on Terminal-Bench. Failures are epistemic 57.9% of the time, competence 32.8%, environment 9.4%. The decisive error lands at a **median of step 7** in runs whose median length is 27, and observable failure signals emerge about **10 steps later**.
+
+[When Evidence is Sparse](https://arxiv.org/abs/2606.05414) arrives from the other direction, learning turn-level failure signal from trajectory-level labels via attention. High-relevance turns are 4.7–11.3% of turns, and most failure-indicating evidence appears after 59–84% of the trajectory has elapsed.
+
+So the cause lands around a quarter of the way in and becomes visible around three quarters of the way in. That predicts what I measured: truncating traces to their first 25% moves AUROC from 0.578 to 0.558, barely at all, because the decisive error has already happened and hasn't left a mark yet. It also explains why every spectrum method underperforms here. They weight all steps equally when one step in ten carries anything.
 
 ### Alignment: partial order, not pairwise
 
-Needleman-Wunsch is pairwise and global. It forces a set of runs into a single linear column structure, which is precisely wrong for trajectories that branch and never reconverge. [Partial order alignment](https://doi.org/10.1093/bioinformatics/18.3.452) (Lee, Grasso & Sharlow, *Bioinformatics* 18(3):452–464, 2002) keeps the alignment as a DAG instead of collapsing it into a linear profile, which is what you want for branching histories. Profile HMMs are the softer version of the same move: assign runs to latent branch states probabilistically instead of committing to one discrete column.
+Needleman-Wunsch reduces a multiple alignment to a linear profile at each step, losing information and introducing gap-scoring artifacts. [Partial order alignment](https://doi.org/10.1093/bioinformatics/18.3.452) (Lee, Grasso & Sharlow, *Bioinformatics* 18(3):452–464, 2002) keeps the alignment as a directed acyclic graph instead, which is the right shape for histories that branch and never reconverge.
 
-I owe you my own counterevidence here, because I already tested a version of this. Rung 2 of the rebuild replaced column alignment with a prefix tree for exactly the reason POA exists. My note in the script at the time: "Global alignment aliases states. NW can align step i of run A to step j of run B when their histories differ entirely, so a 'divergence column' pools runs that are in different states. A prefix tree cannot do this: at a node every run shares a byte-identical history." That is the same structural move, a strict one, and it bought nothing. The prefix-tree rungs reached 0.532 and 0.524 against 0.530 for plain alignment.
+I owe you counterevidence, because the prefix-tree rungs above are a strict version of the same move and they bought nothing. Given the order result, I'd now expect POA to underperform a bag of actions on this data too.
 
-There is a reason to think POA would not rescue it either. A DAG helps when runs share substantial structure and diverge at identifiable points. On this corpus the mean shared prefix is between one and two steps, so there is almost no agreement for a graph to represent before the runs scatter. Better alignment cannot manufacture structure that the runs do not have.
+### Detection: diagnosability, and why I wouldn't lead with it
 
-I could not find anyone who has applied multiple sequence alignment to LLM agent trajectories, and the bioinformatics methods are twenty-plus years old and well understood, so the application does look open. Go in knowing that the obvious first version of it has been tried here and did not work.
+Perez, Abreu and van Deursen's [test-suite diagnosability metric](https://doi.org/10.1109/ICSE.2017.66) (ICSE 2017) argues that coverage is the wrong thing to optimize for diagnosis. What matters is the structure of the coverage matrix: how densely runs touch components, how many distinct activity patterns appear, how many components are distinguishable at all. DDU multiplies those three terms, needs no pass/fail labels, and runs before you spend any compute. Generating suites to maximize DDU instead of branch coverage cut diagnosis effort by 34% on average across 186 real Defects4J faults.
 
-### Detection: diagnosability, not significance
+I ported it, ran it over 19,592 runs, got a median of 0.14, and spent a day drawing conclusions from that number. Three things went wrong, and all three are instructive.
 
-I reached for Ochiai on instinct once Fisher failed. The instinct was right and the literature is well ahead of it. Spectrum-based fault localization has spent twenty years on exactly "which component is implicated when some runs pass and some fail," through Tarantula, Ochiai, DStar and Barinel.
+First, I read their Table III as a range that real-fault suites occupy. It isn't. **0.10 is the median DDU of suites generated without optimizing for diagnosability, and 0.42 is the median when EvoSuite optimizes for it.** Those are the before and after of an intervention. Sitting at 0.14 means sitting next to the arm they measured as diagnostically worse in 77% of scenarios.
 
-The result that reframes my failure is Perez, Abreu & van Deursen's [test-suite diagnosability metric](https://doi.org/10.1109/ICSE.2017.66) (ICSE 2017, 654–664). Their argument is that coverage is the wrong thing to optimize for diagnosis. What matters is the structure of the coverage matrix: how densely runs touch components, how many distinct activity patterns appear across runs, and how many components are distinguishable from one another at all. They combine those three into a metric called DDU, computable from the matrix alone with no pass/fail labels. Generating suites to maximize DDU instead of branch coverage cut diagnosis effort by an average of 34% across 186 real faults in Defects4J.
+Second, DDU is a function of the component alphabet, and I fed it the alphabets I already suspected were bad. Over the same runs it reads 0.008 for full-history prefix nodes, 0.130 for last-action states, and 0.523 for a two-step context. A 65-fold swing from changing nothing but the definition of "same state."
 
-It is worth knowing this is contested ground rather than settled: [FDG](https://arxiv.org/abs/2104.06641) argues that scoring a suite without using the outcomes a test would produce leaves value on the table, and [RLFDC](https://arxiv.org/abs/2501.02216) reports beating DDU on the same benchmarks.
+Third, and worst: those differences don't predict downstream performance. The 0.523 encoding and the 0.130 encoding deliver 0.554 and 0.559 AUROC. Identical. DDU told me one was four times more diagnosable than the other and it made no difference at all.
 
-So I ran it on my own data. `moirai diagnosability` builds the activity matrix from traces instead of coverage, with runs as rows and step signatures as components, and computes the three terms. Over 1,737 mixed-outcome tasks with at least four runs each, 19,592 runs in total:
+DDU also can't tell you whether a signal exists, by construction. It reads no outcome labels, which is what makes it cheap and what makes it blind to whether the outcome depends on the trajectory at all. A run set can be beautifully structured for localizing a fault that isn't there.
 
-| | step-name alphabet | step+target alphabet |
-|---|---:|---:|
-| Median DDU | 0.141 | 0.145 |
-| Density | 0.358 | 0.501 |
-| Diversity | 0.879 | 1.000 |
-| Uniqueness | 0.438 | 0.331 |
-| Tasks below 0.10 | 25.8% | 23.9% |
+This is contested ground, which is worth knowing. [FDG](https://arxiv.org/abs/2104.06641) argues that no existing metric uses the suspiciousness scores of individual program elements *during* localization, even though those scores say where more information is needed, and reports 11.6× acc@1 and 2.2× acc@10 from augmenting suites its way. [RLFDC](https://arxiv.org/abs/2501.02216) goes further and learns the measurement rather than designing it, treating fault localization results as reward signals. Given that DDU predicted nothing downstream for me, learning the metric from downstream feedback looks like the right instinct.
 
-I expected this to come back low and explain everything. It didn't. A median of 0.14 is inside the band their Defects4J suites occupied, and diversity, the term I assumed had collapsed, is the strongest of the three: at the finer alphabet every single run has a distinct activity pattern. Whatever is wrong here, it isn't that the runs are too few or too alike.
-
-The weak term is uniqueness, at 0.33 to 0.44. Components keep getting touched together, so a large share of them sit in ambiguity groups where nothing distinguishes one from another. That is a real limit, and it is a limit on telling *components* apart rather than on telling *runs* apart. Two caveats worth carrying: my filter takes every mixed-outcome task with four or more runs and yields 1,737 tasks where the published analysis used 1,096, so the corpora are not identical even though mean runs per task lands at 11.3 against a published median of 11. And DDU was validated as a test-suite generation objective, not as a go/no-go gate, so treat 0.14 as "comparable to suites that localize successfully" and not as a passing grade.
-
-[SBEST](https://arxiv.org/abs/2405.00565) is the precedent for what to do instead: when the failing signal is too scarce for statistics to mean anything, stop doing statistics on it and substitute a structural signal.
-
-The instinct is in the air, too. [Who is Introducing the Failure?](https://arxiv.org/abs/2509.13782) applies SBFL-style spectrum analysis to attributing failures in multi-agent systems. It does not solve my problem, since attributing a failure across *agents within one system* is a different question from predicting an outcome across *independent runs of one agent*, but it is a sign that fault localization is the frame this family of questions keeps converging on.
+Two more from this family. [SBEST](https://arxiv.org/abs/2405.00565) handles the case where the failing signal is too scarce for statistics by substituting a structural one, and it's worth being precise about which: stack traces from crash reports. Only 3.33% of their 60 Defects4J crash bugs had fault-triggering tests, but 98.3% of fixes addressed the exception in the trace, for +32.22% MAP. A failing coding-agent run has no exception pointing at the fault, so this doesn't transfer. [Who is Introducing the Failure?](https://arxiv.org/abs/2509.13782) is the first spectrum-based failure attribution for multi-agent systems, which is a different question: attributing failure across agents within one system rather than across independent runs of one agent.
 
 ### Causality: the prefix-state problem
 
-This is the deepest of the four.
+Comparing the action at aligned step *k* across two runs assumes those runs were in equivalent states. [Namkoong et al.](https://arxiv.org/abs/2003.05623) put it directly: off-policy evaluation for sequential decisions routinely assumes no unobserved confounding, that assumption is usually false, and it's usually unstated. Mine was unstated. They derive worst-case bounds and show that even minimal per-decision confounding creates substantial bias.
 
-Comparing the action taken at aligned step *k* across two runs assumes those runs were in equivalent states at step *k*. Nothing in the alignment checks that. [Namkoong et al.](https://arxiv.org/abs/2003.05623) put it directly: off-policy evaluation for sequential decisions routinely assumes no unobserved confounding, that assumption is usually false, and it is usually unstated. Mine was unstated.
+The formal tools are [Oberst & Sontag's Gumbel-Max structural causal models](https://arxiv.org/abs/1905.05824), which construct counterfactual trajectories in a POMDP and identify which episodes would genuinely have gone differently, and [COMA](https://arxiv.org/abs/1705.08926), which does the same in multi-agent RL by marginalizing out a single agent's action while holding the others fixed against a learned counterfactual baseline.
 
-The formal tool is [Oberst & Sontag's Gumbel-Max structural causal models](https://arxiv.org/abs/1905.05824), which construct counterfactual trajectories in a POMDP and identify which episodes would genuinely have gone differently. [COMA](https://arxiv.org/abs/1705.08926) is the same idea in multi-agent RL: marginalize one action while holding the others fixed, against a learned counterfactual baseline. My column-wise Fisher test was a crude approximation of that baseline with no state model behind it.
+Both need a state model you'd have to build. Liblit's Increase(P) is the cheap approximation that needs nothing, and the agent-trace literature isn't using it. If you take one implementable idea from this section, take that one.
 
-Honest caveat: none of these is a drop-in fix. They need a POMDP or SCM model of agent state that OpenHands logs don't give you. You'd have to build a state abstraction first. That's a real obstacle, not a citation I can hand you.
+### Vocabulary: the axis nobody varies
+
+Every experiment here except the last few holds the alphabet fixed without saying so, and so does most of the agent-trace literature. [Automata from Agent Traces](https://arxiv.org/abs/2608.23670) collapses a trace corpus into a finite state machine of 7 to 43 states over alphabets of 6 to 42 symbols, replays held-out data at ≥0.997 fitness, and reports failure-prediction AUROC up to 0.94 across twelve datasets, with 0.80 on SWE-agent against 0.659 for trace length alone. Its state, by their Theorem 3, is the last activity performed. Its abstraction step is manual activity typing. [ATLAS](https://arxiv.org/abs/2608.14352) uses an LLM to generate semantic labels and learns labelled Markov chains with Alergia, lifting a 14B model from 1.7% to 38.3% on a penetration-testing benchmark through knowledge transfer.
+
+The exception is [Agent trajectories as programs](https://arxiv.org/abs/2606.16988), which induces the vocabulary with byte-pair encoding over action sequences, merging frequently co-occurring adjacent actions and stopping by V-measure at K=192. It identifies which of ten agents produced an unseen trajectory at 85.7% accuracy against an 11.1% random baseline.
+
+Learning the abstraction alphabet and the model together is where the hole is. On this corpus it may not matter, since BPE at the size its authors validated scores 0.5607 and arbitrary hash buckets score 0.5780. But that's one corpus with a 13-symbol base alphabet, and the answer could differ where the action space is richer.
+
+### What the field did about preference pairs
+
+The specific version of the dream in my opening, mining DPO pairs from divergence points, has been tried by people with more data than me.
+
+[SWE-Dev](https://arxiv.org/abs/2506.07636) is the clearest case because they ran the comparison rather than skipping it: "We observe that RFT brings the most significant performance improvement, while offline reinforcement learning (RL) methods—KTO and OREO—deliver marginal or task-specific gains." With 2,300 rejection-sampling trajectories they reach a 21.2% resolve rate, against 17.2% for KTO and 17.0% for OREO at 1,800.
+
+[SWE-Gym](https://arxiv.org/abs/2412.21139) is more nuanced than I'd assumed, and I had it backwards for a while. Their verifier ablation finds that "training with a mixture of off-policy and on-policy data yields the best results," reaching 27@8, while off-policy alone plateaus around 22%. Mixing helps. What's modest is self-improvement: two rounds of rejection-sampling fine-tuning moved their 7B from 7.0% to 10.0% and their 32B from 19.0% to 19.7% with no further gains.
+
+[Agentic-DPO](https://arxiv.org/abs/2607.10601) shows what the preference-pair idea looks like done correctly, and the difference is the one that matters. At each expert action state it samples a one-step action from *that state*, treats plausible wrong actions as negatives, and contrasts them with the expert action. State fixed, action varied. A 9B model goes from 21.7% to 41.4% on τ-bench retail. I aligned separate runs and compared whatever actions happened to land in the same column, so my pairs were conditioned on observed actions rather than on shared state. That's the structural reason it doesn't work, and it sits upstream of every detector choice in this piece.
+
+[SWE-Lego](https://arxiv.org/abs/2601.01426) takes the cheap route: stay supervised and mask tokens tied to failing tool calls and failing tests out of the loss, using per-step outcome as an always-available label instead of locating a decisive step statistically. [DeepSWE](https://www.together.ai/blog/deepswe) goes around the problem entirely, training Qwen3-32B with a modified GRPO and reaching 42.2% Pass@1 on SWE-bench Verified averaged over 16 runs, 59% with test-time scaling. Online RL never needs a preference pair mined from logs, because it generates its own on policy.
 
 ### Budget: sequential, not fixed
 
-Experiment 5 asked how to spend a fixed number of eval runs across tasks, and found that uniform allocation beat my structure-aware policy at every budget. That's the right conclusion from the wrong frame: I was choosing between two *fixed* allocations decided up front.
+One more, because it subsumes a question I'd asked badly. I'd been choosing between fixed allocations of eval budget decided up front. [Knowing When to Stop](https://arxiv.org/abs/2608.14425) treats it as Bayesian optimal stopping with a hierarchical model, sampling where uncertainty is high and stopping where estimates are stable, and removes 57% to 97% of planned trials across nine validation settings with conclusions equivalent to the full run.
 
-The better framing is sequential. [Knowing When to Stop](https://arxiv.org/abs/2608.14425) (Pilditch, August 2026) treats it as Bayesian optimal stopping, with a hierarchical model that allocates sampling budget dynamically from current uncertainty and stops per task when the estimate is good enough, rather than committing to a per-task count in advance. That is the correct shape for "how many times should I run this," and it subsumes the uniform-vs-weighted question I was actually asking.
+## What I'd do differently
 
-This one postdates the work here by four months, so I could not have missed it. It is where I would start now.
+**Run the permutation control first.** It costs one extra pass and it invalidated a result I'd otherwise have published. If your held-out metric and your label-permuted metric move together, you're measuring the data's structure rather than your method.
 
-### Credit assignment: roll forward, don't align back
+**Stratify selection at the level you evaluate at.** Choosing features on pooled data and scoring within task puts repository names in your model and hides them behind a plausible number.
 
-[Math-Shepherd](https://arxiv.org/abs/2312.08935) is the one to reach for. Rather than asking which of two observed actions was better, it resumes many rollouts from each intermediate state and scores that state by the fraction of completions that succeed. Step-level labels from outcome-only supervision, no human annotation. [OmegaPRM](https://arxiv.org/abs/2406.06592) is the MCTS version, roughly 75× more label-efficient. Both descend from [Let's Verify Step by Step](https://arxiv.org/abs/2305.20050), which established that process supervision beats outcome supervision when you can get it.
+**Check whether a degenerate scorer is possible.** A constant predictor scores exactly 0.500, which looks like a finding.
 
-[RTMC](https://arxiv.org/abs/2604.11037) is the cheapest version of the idea: aggregate return statistics across rollouts that share a common state to get per-step advantages, with no learned critic at all. That's much closer to something you could run over existing data, provided the runs genuinely share states, which is the assumption my whole approach needed and never checked.
+**Don't infer adequacy from a label-free metric.** DDU is cheap and worth running. It told me three different things this week and none of them predicted downstream performance.
 
-The catch is the part that matters if you're planning this work. Math-Shepherd needs to *resume execution from an intermediate agent state and sample forward*. My 12,854 runs are post-hoc logs, not resumable checkpoints. So this is a different data collection design rather than a better analysis of the data I had, and a more expensive one.
+**Design for resumability before you collect.** Every method that genuinely assigns step-level credit needs to fork execution from an intermediate state. Aligning logs afterward tries to recover information the collection design already discarded.
 
-Which puts the real lesson upstream of the analysis: if you want step-level signal, build for resumable rollouts *before* you collect anything. Aligning logs afterwards is trying to recover information the collection design already threw away.
-
----
-
-## The point
-
-Agent trace divergence, detected this way, does not predict outcome. Three rebuilt detectors topped out at 0.532 against a pre-registered bar of 0.55, with a largest real-minus-shuffled gap of +0.052 across 28 cells. Behavioral features are a different measurement and recover a modest amount. Routing between scoring strategies by structure buys another two points, on the subset where the detector produces output at all.
-
-None of that justifies a preference-learning pipeline. SWE-bench teams have converged on SFT for a reason, and the reason is consistent with what I found.
-
-The deeper problem wasn't the detector, though rebuilding it three times is how I learned that. Comparing actions at an aligned column across independently sampled runs assumes those runs were in the same state, and nothing in the method establishes that. Every team getting contrastive signal out of agent trajectories holds state fixed and varies the action instead.
-
-So if you're thinking about extracting training signal from multi-run agent traces: run the cheap experiments first, and run a negative control alongside them, because a broken detector and an absent signal return the same number.
-
-And start from the map above rather than from an aligner. The alignment people don't cite the fault-localization people, and neither cite the off-policy-evaluation people, so the useful version of this problem sits spread across fields that don't read each other.
-
-And before committing compute, measure whether your run set can answer the question at all. `moirai diagnosability` does it over traces without reading a single outcome label. A low score means you have a data problem and none of the log-mining methods here will rescue you. A score in range, which is what I got, means the question was fair and the answer is genuinely no. That second outcome is the more valuable one, and it is the one a negative result cannot give you on its own.
-
----
+The honest summary: on one agent, one scaffold and one config, what a coding agent's trajectory tells you about whether it will resolve the issue tops out around 0.58 AUROC, and eleven ways of asking agree. That ceiling is a property of pure sampling variance. Between-model and between-task variation are much larger, which is why the literature's numbers look better than mine, and why they're answering a different question than the one you're probably asking.
 
 ## Try it yourself
 
-The code for all six experiments is public:
-
-**[github.com/orban/moirai](https://github.com/orban/moirai)**: Python, ~10.5k lines, 423 tests.
-
 ```bash
-git clone https://github.com/orban/moirai.git
-cd moirai
-pip install -e .
+git clone https://github.com/orban/moirai.git && cd moirai
+uv sync
 
-# Run branch analysis on your own traces
-moirai branch path/to/traces/ --html report.html --json report.json
+# the ablation ladder, M0 through M5, with shuffled controls
+python scripts/exp_matching_ablation.py <traces>/ --out ablation.json
 
-# Reproduce the held-out study
-moirai holdout path/to/traces/
+# generated predicate vocabulary with Liblit's Increase(P)
+python scripts/exp_predicate_vocabulary.py <traces>/ --out predicates.json
 
-# Reproduce the reranking experiment
-moirai rerank path/to/traces/ --k 3
+# the four published representations, head to head
+python scripts/exp_published_representations.py <traces>/ --out published.json
 
-# Reproduce the structure score routing
-python -m scripts.run_structure_routing path/to/traces/
-
-# Score whether your own runs can support any of this. Reads no outcome labels.
-moirai diagnosability path/to/traces/ --min-runs 4
+# how much of your AUROC survives label permutation
+python scripts/exp_mixed_outcome_filter.py trajectories.parquet --out floor.json
 ```
 
-The last script is locked with frozen parameters and an assertion on the output, so you can verify the headline number hasn't drifted. The measured value is 59.19% conditional accuracy; the assertion in the script is written against `0.593` with a tolerance of 0.01.
-
-If you run this on your own multi-run data and find something I missed, I want to hear about it.
-
----
+Every script prints a shuffled arm beside every real number. If they move together, stop.
 
 ## Appendix: experimental details
 
 ### Data
 
 - **Dataset:** [nebius/SWE-rebench-openhands-trajectories](https://huggingface.co/datasets/nebius/SWE-rebench-openhands-trajectories) (CC-BY-4.0)
-- **Agent:** OpenHands v0.54.0 with Qwen3-Coder-480B, single scaffold and config throughout
+- **Agent:** OpenHands with Qwen3-Coder-480B, one scaffold and one config throughout. Variation across runs is sampling only.
 - **Scale:** 1,096 tasks with mixed-outcome runs, 12,854 total runs, median 11 runs/task
-- **Filter:** tasks with ≥3 runs and both pass and fail outcomes
-- **Alignment:** Needleman-Wunsch at step-name granularity (e.g., `read(source)`, `edit(test_file)`)
+- **Filter:** tasks with at least 4 runs and both outcomes present
+- **Unfiltered population:** 6,225 tasks with at least 4 runs, of which 1,737 are mixed-outcome and 4,488 always produce the same outcome
 
-### Holdout study
+### Protocol
 
-For each task with ≥6 runs, randomly split runs 50/50 into train/test (stratified by outcome). Find divergence points on train with `min_branch_size=2, q_threshold=0.5`. Score each test run by the signed sum of its step contributions at known divergence columns. Measure per-task AUROC via Mann-Whitney U. Aggregate as pooled AUROC across all test runs and as per-task mean AUROC.
+Tasks are split in half. Vocabularies, feature selection and model fitting happen on the train tasks only. AUROC is computed within each held-out task via Mann-Whitney U and averaged across tasks, which keeps task difficulty out of the ranking. Ties contribute 0.5, so a constant scorer lands on exactly 0.500.
 
-Reported results are over 1 seed. Spot-checked with 3 seeds and deltas were within 0.01.
+Every configuration runs twice, once with real outcomes and once with outcomes permuted within task. Within-task permutation preserves each task's success count, so it removes label dependence while leaving task difficulty intact. That's what makes it the right null here.
 
-### Reranking study
+### The ablation ladder
 
-For each task with ≥3 runs, sample K=3 runs without replacement. Score each with the method being evaluated. Pick the top-scored run. Record whether it passes. Repeat 500 times per task. Aggregate accuracy across tasks.
+Budgets of 4, 6, 8, 11, 15 and 20 runs per task plus "all," sampled without replacement. Within each task, runs split 50/50 into train and test, the model fits on train, and held-out runs are scored. Pre-registered decision rule, fixed before any output: every rung at or below 0.55 at every budget means the negative result stands; any rung rising with budget and clearing 0.60 at n ≥ 15 means the original conclusion was a power artifact. M4 peaked at 0.585 with 15 runs per task over 162 tasks, which didn't clear it.
 
-Confidence intervals via [Wilson score](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval#Wilson_score_interval). Per-family captured oracle gap = (method_accuracy − random_accuracy) / (oracle_accuracy − random_accuracy).
+### Predicate generation
 
-### Structure score
+Templates emit predicates as (site, condition) pairs so Context(P) stays a counterfactual baseline rather than collapsing to the global failure rate. A predicate is retained when its support is at least 20 train runs and the lower bound of the 95% normal-approximation interval on Increase(P) is strictly above zero. Importance is the harmonic mean of Increase(P) and a log-scaled failure count, per Liblit. Redundancy elimination then ranks by importance, removes the top predicate along with every run where it holds, and repeats.
 
-For task `t`:
+Counts accumulate only from tasks where the predicate varies. Without that stratification the selection fills with repository names, as described above.
 
-$$\text{structure}(t) = \frac{\text{branch\_gap} + \text{earlyness} + \text{stability}}{3}$$
+### Diagnosability
 
-- `branch_gap` = mean outcome spread across top-5 divergence points, range [0, 1]
-- `earlyness` = 1 − mean position of top divergence points (normalized to trajectory length)
-- `stability` = fraction of 20 subsamples (at 70% of runs) that recover at least one top-5 divergence column within 10% position tolerance
+DDU over trajectories with runs as rows and step signatures as components, following Perez et al.:
 
-Threshold of 0.20 for "high structure" was picked by inspecting the bimodal distribution on a held-out slice, not optimized on the test set.
+$$\text{DDU} = \rho' \times G \times U, \qquad \rho' = 1 - |1 - 2\rho|$$
 
-### Eval reliability simulation
+where ρ is matrix density with an ideal of 0.5, *G* is Gini-Simpson diversity over distinct activity rows, and *U* is distinct columns over total components. No outcome labels are read. Measured over 1,737 tasks and 19,592 runs from the raw parquet: median 0.141 at step-name granularity, 0.145 at step-plus-target.
 
-For each task with ≥6 runs, treat the full run set as ground-truth pass rate. Simulate 2,000 evals per policy by sampling `k` runs with replacement from the ground-truth outcomes. Measure absolute error of estimated rate vs ground-truth and false signal rate between pairs of independent simulated evals (disagreement > 3pp).
+### Reproduction notes
 
-Budgets tested: 1.0, 1.5, 2.0, 3.0 runs per task. Structure-aware policy spends 1 run on low-structure tasks and distributes the rest uniformly over high-structure tasks.
-
-### Code
-
-All experiments are in `moirai/analyze/` with a `run_*` script per experiment in `scripts/`. Everything is deterministic under fixed seed. Reproducibility assertions are in `scripts/run_structure_routing.py`.
+`pyarrow` and `datasets` are needed for the parquet path and aren't yet declared in the project's dependencies. The converted corpus on disk was pre-filtered to mixed-outcome tasks before any of this work started, which is why the floor experiment reads the raw parquet directly.
