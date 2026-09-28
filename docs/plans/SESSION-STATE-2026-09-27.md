@@ -14,8 +14,9 @@ without a fresh "yes" from him in chat. Approval for other work does not carry o
 | repo | branch | head | state |
 |---|---|---|---|
 | ryanorban.com | `essay/trace-divergence` | `786d766797` | PR #26, CI **build: success / deploy: skipped** (PRs never deploy). Awaiting Ryan's read. |
+| ryanorban.com | `design/essay-page` | see PR #27 | Off `master`, independent of #26. Essay body 18px/64ch, booktabs tables, `render-heading.html` override (written heading level + `§` anchors). Audit and validator green. |
 | ryanorban.com | `tooling/citation-validator` | `8f331efde2` | pushed, **no PR**. Adds `scripts/validate_citations.py` + CI step + CLAUDE.md section. Its CI is red against `master` until #26 merges (master's draft still carries two fabricated arXiv IDs the rewrite removed). Sequence: #26 first. |
-| moirai | `exp/markov-state-abstraction` | `0726042` | pushed, **no PR**, 6 commits on top of `feat/diagnosability` (PR #6, also unmerged). Name is wrong for its contents. |
+| moirai | `exp/trajectory-representations` | `419da01` | PR #7, stacked on `feat/diagnosability` (PR #6, unmerged). Renamed from `exp/markov-state-abstraction`; old remote branch deleted. |
 
 Check the *job*, not the run: a skipped `deploy` reports the run green.
 
@@ -45,7 +46,7 @@ example (0.5483 → 0.5768) → eleven representations incl. five published, 0.5
 → the floor (unfiltered 0.6897 real / 0.6808 shuffled) → prior art around the
 three-questions distinction → "what I'd do differently" → repro block → appendix.
 
-PR #26's description is stale (describes the April draft). Rewrite before he reads.
+PR #26's description was rewritten 2026-09-27 and names the two open decisions.
 
 ## What the prior-art reading found (all applied in the essay)
 
@@ -78,9 +79,7 @@ Eight experiment scripts, all reproducible from the corpus, all printing a shuff
 `moirai/analyze/diagnosability.py` and `scripts/run_diagnosability.py` from PR #6.
 Result JSONs were copied to `scripts/blog_output/` which is **gitignored** — regenerate.
 
-Outstanding: rename the branch; open a PR (the essay's repro block points at these
-scripts and a reader gets nothing until it merges); declare `pyarrow` and `datasets`
-in `pyproject.toml`; `canon_rich` still has ~2pts of leave-one-out asymmetry (shuffled
+Outstanding: `canon_rich` still has ~2pts of leave-one-out asymmetry (shuffled
 0.482) — its margin is approximate and the essay says so.
 
 ## Data
@@ -92,7 +91,7 @@ in `pyproject.toml`; `canon_rich` still has ~2pts of leave-one-out asymmetry (sh
   mixed-outcome tasks only** (1,096 tasks / 12,854 runs at ≥4). The floor experiment
   has to read the parquet for that reason.
 
-## Design assessment (last thing done, no code written)
+## Design assessment (items 2, 3, 8 built in PR #27; the rest not started)
 
 Ryan likes https://david.alvarezrosa.com (source: github.com/david-alvarez-rosa/
 personal-website, cloned at `/tmp/dar-site`). Assessment delivered; his answer pending.
@@ -118,7 +117,11 @@ caps, ornaments, Alegreya, subscribe form, instantpage.
 Open layout question for him: essays have a *left* rail; sidenotes want right. I'd
 move date/meta to the right margin and retire the left rail on essays.
 
-Offered: build 2–3–8 on the essay branch (an afternoon), or plan sidenotes first.
+Built 2, 3 and 8 on `design/essay-page` (PR #27) after Ryan said "proceed". Found on the
+way: the theme's `render-heading.html` emitted `h{{ add .Level 1 }}`, so `##` was an h3
+site-wide and `.record-prose h2` never matched content; the override fixes the level.
+Also noticed, not touched: the essay nav shows "Writing" twice (section link plus the
+"where you are" item), pre-existing on master.
 
 ## Pattern for whoever picks this up
 
