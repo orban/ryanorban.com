@@ -526,10 +526,13 @@ body.working-record-site {
   color: var(--record-accent);
 }
 
+/* The measure is set in ch of the body face so it reads as what it is: sixty-odd
+   characters a line. 18px Geist at 1.7 is as large as a sans gets before it stops
+   looking like a ledger and starts looking like a blog. */
 .record-prose {
   margin-left: 8rem;
-  max-width: 42rem;
-  font-size: 1.0625rem;
+  max-width: 64ch;
+  font-size: 1.125rem;
   line-height: 1.7;
   color: var(--record-ink);
 }
@@ -557,12 +560,38 @@ body.working-record-site {
 .record-prose h2,
 .record-prose h3,
 .record-prose h4 {
+  position: relative;
   margin: 2.5rem 0 0.75rem;
   font-weight: 550;
   line-height: 1.3;
   letter-spacing: -0.005em;
   color: var(--record-ink);
   text-wrap: balance;
+  scroll-margin-top: 2rem;
+}
+
+/* A section mark in the margin, from _markup/render-heading.html. Invisible until the
+   heading is hovered, so the left edge of the text stays clean. It needs no parent
+   selector, because the anchor is a child of the heading it marks. */
+.record-anchor {
+  position: absolute;
+  right: 100%;
+  top: 0;
+  padding-right: 0.5rem;
+  font-family: var(--record-serif);
+  font-size: 0.9em;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--record-muted);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.record-prose h2:hover .record-anchor,
+.record-prose h3:hover .record-anchor,
+.record-prose h4:hover .record-anchor {
+  opacity: 1;
 }
 
 .record-prose h2 {
@@ -625,29 +654,49 @@ body.working-record-site {
   line-height: 1.6;
 }
 
+/* Booktabs. A heavy rule above and below, a light one under the header, and nothing
+   between rows: the row spacing does the separating. Numeric columns are right-aligned
+   from the markdown (`---:`) and set in tabular figures, so the decimals line up. */
 .record-prose table {
   width: 100%;
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.75rem;
   border-collapse: collapse;
+  border-top: 1.5px solid var(--record-ink);
+  border-bottom: 1.5px solid var(--record-ink);
   font-size: 0.9375rem;
+  line-height: 1.45;
   font-variant-numeric: tabular-nums;
 }
 
 .record-prose th {
-  padding: 0.4rem 0.75rem 0.4rem 0;
+  padding: 0.55rem 0.75rem 0.4rem 0;
   border-bottom: 1px solid var(--record-line-dark);
   font-size: 0.6875rem;
   font-weight: 550;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   text-align: left;
+  vertical-align: bottom;
   color: var(--record-muted);
 }
 
 .record-prose td {
-  padding: 0.4rem 0.75rem 0.4rem 0;
-  border-bottom: 1px solid var(--record-line);
+  padding: 0.3rem 0.75rem 0.3rem 0;
+  vertical-align: top;
   color: var(--record-mid);
+}
+
+.record-prose th:last-child,
+.record-prose td:last-child {
+  padding-right: 0;
+}
+
+.record-prose tbody tr:first-child td {
+  padding-top: 0.55rem;
+}
+
+.record-prose tbody tr:last-child td {
+  padding-bottom: 0.55rem;
 }
 
 .record-prose figure {
@@ -1264,7 +1313,15 @@ body.working-record-site {
   }
 
   .record-prose {
-    font-size: 1rem;
+    font-size: 1.0625rem;
+  }
+
+  /* No margin to hang the mark in, and no hover on a phone: it sits after the text,
+     faint, always. */
+  .record-anchor {
+    position: static;
+    padding: 0 0 0 0.35em;
+    opacity: 0.45;
   }
 
   .note-card {
