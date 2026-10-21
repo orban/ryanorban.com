@@ -12,7 +12,7 @@ You run your agent 30 times on the same task. 18 pass, 12 fail. The traces look 
 
 That's the dream. Free DPO pairs, generated from variance you already have, with no labeling cost.
 
-I spent three weeks testing that hypothesis on [SWE-rebench v2](https://huggingface.co/datasets/nebius/SWE-rebench) — 1,096 tasks, 12,854 runs, multiple models, multiple harnesses — and built a tool called [moirai](https://github.com/orban/moirai) to run the experiments end to end.
+I spent three weeks testing that hypothesis on [SWE-rebench v2](https://huggingface.co/datasets/nebius/SWE-rebench): 1,096 tasks, 12,854 runs, multiple models, multiple harnesses. I built a tool called [moirai](https://github.com/orban/moirai) to run the experiments end to end.
 
 Most of it doesn't work the way you'd hope. But the parts that do are narrower and sharper than I expected, and the negative results are more useful than the positive ones.
 
@@ -24,7 +24,7 @@ Each task has multiple runs with mixed outcomes. Each run is a sequence of tool 
 
 To find divergence points, align the runs with [Needleman-Wunsch](https://en.wikipedia.org/wiki/Needleman%E2%80%93Wunsch_algorithm). At each column, group runs by the step they took. Test whether the branch predicts outcome with [Fisher's exact](https://en.wikipedia.org/wiki/Fisher%27s_exact_test), correct for multiple comparisons with [Benjamini-Hochberg](https://en.wikipedia.org/wiki/False_discovery_rate#Benjamini%E2%80%93Hochberg_procedure).
 
-That gives you a list of statistically significant divergence points per task. Within-task, the signal looks real. The question is whether it generalizes, whether it's uniform across tasks, and whether you can do anything useful with it.
+That gives you a list of statistically significant divergence points per task. Within a task, the signal looks real. The question is whether it generalizes, whether it's uniform across tasks, and whether you can do anything useful with it.
 
 Six questions, six experiments.
 
@@ -41,11 +41,11 @@ Split each task's runs into train/test halves. Find divergence points on train. 
 | **Divergence score** | **0.533** | **0.507** |
 | Random | 0.488 | 0.486 |
 
-0.507 is a coin flip. Pooled is slightly better because large tasks dominate, but per-task the divergence signal is essentially noise on held-out data.
+0.507 is a coin flip. Pooled is slightly better because large tasks dominate, but per task the divergence signal is essentially noise on held-out data.
 
-Features do better — a modest 0.056 above chance. Real but weak. Trajectory *shape* matters more than the exact branch choice.
+Features do better, at a modest 0.056 above chance. Real but weak. Trajectory *shape* matters more than the exact branch choice.
 
-**Takeaway:** The divergence signal that looks strong in-sample collapses on held-out data. If you're training on one task's divergence and applying to another, you've got nothing.
+**Takeaway:** The divergence signal that looks strong in sample collapses on held-out data. If you're training on one task's divergence and applying to another, you've got nothing.
 
 ---
 
@@ -58,7 +58,7 @@ Second experiment: best-of-K selection. For each task, sample K=3 runs and pick 
 | Features | 57.2% | +4.4pp |
 | Uncertainty (inv) | 56.4% | +3.7pp |
 | Divergence | 55.9% | +3.2pp |
-| Random | 52.7% | — |
+| Random | 52.7% | baseline |
 | **Oracle** | **85.9%** | **+33.2pp** |
 
 Features capture 13% of the oracle gap. Divergence captures 10%. Both are real but neither is close to what a reward model or perplexity-based reranker would give you.
@@ -71,7 +71,7 @@ The number that matters is the oracle gap itself. 33 points of potential lift ar
 
 I computed "captured oracle gap" per task family and got a range from **-73% to +100%**. Some families gain a lot from divergence-based scoring. Others lose. The aggregate mean of +10% hides it.
 
-So I built a per-task score called **structure** — three components, equal-weight:
+So I built a per-task score called **structure** from three equally weighted components:
 
 - `branch_gap`: mean pass-rate spread at the top divergence points
 - `earlyness`: how early in the trajectory those splits occur (early = more decisive)
@@ -84,7 +84,7 @@ Split tasks at structure ≥ 0.20:
 - **High-structure** (269 tasks, 25%): divergence scoring gives +12.5% reranking lift
 - **Low-structure** (811 tasks, 75%): divergence scoring gives +0.4% lift
 
-That's the whole story. In one quarter of the tasks, the signal is strong. In three quarters, it's noise-indistinguishable drift. Aggregating across both hides the fact that you have two regimes, not one.
+That's the whole story. In one quarter of the tasks, the signal is strong. In three quarters, it's drift indistinguishable from noise. Aggregating across both hides the fact that you have two regimes, not one.
 
 **Takeaway:** Divergence-based analysis works on a minority of tasks with a detectable property: early, reproducible, outcome-correlated branching. For everything else, the runs look like samples from a diffuse distribution over successful paths.
 
@@ -96,7 +96,7 @@ If you know structure per task, you can pick the right scoring strategy per task
 
 | Strategy | Accuracy | Lift |
 |----------|---------:|-----:|
-| Random | 52.9% | — |
+| Random | 52.9% | baseline |
 | Divergence (global) | 56.1% | +3.1pp |
 | Features (global) | 57.3% | +4.4pp |
 | **Conditional (struct ≥ 0.20)** | **59.2%** | **+6.3pp** |
@@ -118,7 +118,7 @@ That's wrong, and it's wrong for a reason that took me a day to see.
 
 Kendall's tau between structure score and [task volatility](https://en.wikipedia.org/wiki/Bernoulli_distribution) (`p(1-p)`): **-0.273** (p < 0.0001).
 
-High-structure tasks *anti-correlate* with volatility. Why? Because structured tasks have decisive branch points — early decisions that lock in the outcome. That means pass rates cluster near 0% or 100%, which means low Bernoulli variance, which means *fewer* runs needed to characterize the rate, not more.
+High-structure tasks *anti-correlate* with volatility. Why? Because structured tasks have decisive branch points: early decisions that lock in the outcome. That means pass rates cluster near 0% or 100%, which means low Bernoulli variance, which means *fewer* runs needed to characterize the rate, not more.
 
 Simulate it. Three policies under fixed compute budget:
 
@@ -130,7 +130,7 @@ Simulate it. Three policies under fixed compute budget:
 | 3.0 | uniform | **0.6%** | **1.3%** | **1.0%** |
 | 3.0 | structure-aware | 1.0% | 2.0% | 8.3% |
 
-Uniform wins at every budget ≥ 2.0. Structure-aware plateaus because it keeps spending compute on high-structure tasks that already have stable estimates.
+Uniform wins at every budget ≥ 2.0. The structure-aware policy plateaus because it keeps spending compute on high-structure tasks that already have stable estimates.
 
 **Takeaway:** Structure and volatility are orthogonal axes. Structure predicts *which scoring method works*. Volatility predicts *how much sampling you need*. They are not the same latent variable, even when your intuition insists they should be.
 
@@ -174,19 +174,19 @@ Same section as the [last post](/posts/stop-testing-agents-like-deterministic-co
 
 My original plan was SFT → ORM → DPO with divergence-mined pairs, running on OpenHands eval infrastructure. Three stages of training, plus eval harness work. Six to eight weeks of build before the first result.
 
-My advisor pushed back: "prove the signal first." I compressed the plan into two validation experiments — held-out prediction and reranking — and ran them in three days. The signal was weak. The entire training pipeline plan evaporated in 72 hours.
+My advisor pushed back: "prove the signal first." I compressed the plan into two validation experiments, held-out prediction and reranking, and ran them in three days. The signal was weak. The entire training pipeline plan evaporated in 72 hours.
 
 If I had skipped that step, I would have built the training loop, run it, gotten noisy results, and then spent weeks debugging "training instability" that was actually a signal-strength problem. Held-out validation is cheap. Training loops are not. Run the cheap experiment first.
 
 ### Family-conditional signals look universal in aggregate
 
-The first round of analysis on eval-harness data showed strong behavioral patterns: edit-test alternation and recurring motif sequences. Then I stratified by task family. Everything disappeared. The "universal" patterns were family artifacts — certain families have certain shapes, and when those families dominate the dataset the pattern looks global.
+The first round of analysis on eval-harness data showed strong behavioral patterns: edit-test alternation and recurring motif sequences. Then I stratified by task family. Everything disappeared. The "universal" patterns were family artifacts. Certain families have certain shapes, and when those families dominate the dataset the pattern looks global.
 
 This is [Simpson's paradox](https://en.wikipedia.org/wiki/Simpson%27s_paradox) in agent eval, and it's everywhere. Always stratify. If you can't stratify because your dataset is too small per family, you don't have enough data to draw the conclusion you want.
 
 ### Don't reuse one latent variable for two jobs
 
-I had structure score working for method routing. I assumed it would also work for eval budget allocation — both "use this variable to make a per-task decision," same shape. Different physics.
+I had structure score working for method routing. I assumed it would also work for eval budget allocation. Both are "use this variable to make a per-task decision," same shape. Different physics.
 
 Structure measures *branching sensitivity*. Volatility measures *outcome uncertainty*. On SWE-rebench they're anti-correlated. Test each use of a variable on its own terms before assuming it transfers.
 
@@ -208,7 +208,7 @@ Agent trace divergence contains signal. The signal is weaker and more task-speci
 
 None of that justifies a preference-learning pipeline. SWE-bench teams have converged on SFT for a reason, and the reason is consistent with what I found.
 
-If you're thinking about extracting training signal from multi-run agent traces, run the cheap experiments first. Held-out AUROC. Reranking lift. Per-family captured oracle gap. If those numbers are weak — and they probably will be — the expensive infrastructure won't save you.
+If you're thinking about extracting training signal from multi-run agent traces, run the cheap experiments first. Held-out AUROC. Reranking lift. Per-family captured oracle gap. If those numbers are weak, and they probably will be, the expensive infrastructure won't save you.
 
 Use the signal where it's real: method selection on the minority of tasks where the divergence is early and decisive. Treat everything else as drift.
 
@@ -218,7 +218,7 @@ Use the signal where it's real: method selection on the minority of tasks where 
 
 The code for all six experiments is public:
 
-**[github.com/orban/moirai](https://github.com/orban/moirai)** — Python, ~7k lines, 423 tests.
+**[github.com/orban/moirai](https://github.com/orban/moirai)**: Python, ~7k lines, 423 tests.
 
 ```bash
 git clone https://github.com/orban/moirai.git
@@ -279,7 +279,7 @@ Threshold of 0.20 for "high structure" was picked by inspecting the bimodal dist
 
 ### Eval reliability simulation
 
-For each task with ≥6 runs, treat the full run set as ground-truth pass rate. Simulate 2,000 evals per policy by sampling `k` runs with replacement from the ground-truth outcomes. Measure absolute error of estimated rate vs ground-truth and false signal rate between pairs of independent simulated evals (disagreement > 3pp).
+For each task with ≥6 runs, treat the full run set as ground-truth pass rate. Simulate 2,000 evals per policy by sampling `k` runs with replacement from the ground-truth outcomes. Measure absolute error of estimated rate vs ground truth and false signal rate between pairs of independent simulated evals (disagreement > 3pp).
 
 Budgets tested: 1.0, 1.5, 2.0, 3.0 runs per task. Structure-aware policy spends 1 run on low-structure tasks and distributes the rest uniformly over high-structure tasks.
 
