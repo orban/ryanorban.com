@@ -3,7 +3,6 @@ title: "What agent trace divergence actually tells you"
 date: 2026-04-08
 description: "I spent three weeks trying to extract training signal from agent trace divergence. Most of it didn't survive held-out data. What did is narrower than I expected."
 math: true
-draft: true
 ---
 
 You run your agent 30 times on the same task. 18 pass, 12 fail. The traces look different. They branch at different points, pick different tools, choose different files. The hypothesis everyone reaches for is:

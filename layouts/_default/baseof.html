@@ -64,7 +64,9 @@
         {{- with (partialCached "record/data.html" .).side }}
           <a href="{{ $anchor }}#projects">Projects</a>
         {{- end }}
-        {{- with (partialCached "record/data.html" .).writing }}
+        {{- /* Omitted on essay pages: the "where you are" item below is also labelled
+               Writing, and it points at /posts/, the more useful target from here. */ -}}
+        {{- if and (partialCached "record/data.html" .).writing (ne .Section "posts") }}
           <a href="{{ $anchor }}#writing">Writing</a>
         {{- end }}
         <a href="{{ $anchor }}#contact">Contact</a>
