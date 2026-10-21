@@ -5,12 +5,12 @@
          typography instead. That is why it needs no specificity overrides: there is
          nothing to override. custom.css, which did fight those classes, is gone.
 
-         What still comes from the theme, and must keep working: Chroma's .highlight /
-         .codeblock markup from _markup/render-codeblock.html, the heading anchors from
-         _markup/render-heading.html, the inline SVG figures and /embeds/ iframes
-         authored in the posts, and KaTeX when a post sets `math: true`. Those carry
-         Tailwind utility classes and the Tailwind build is loaded site-wide by
-         head/css, so they render here unchanged — .record-prose does not restyle them.
+         What still comes from the theme, and must keep working: the inline SVG
+         figures and /embeds/ iframes authored in the posts, and KaTeX when a post sets
+         `math: true`. Those carry Tailwind utility classes and the Tailwind build is
+         loaded site-wide by head/css, so they render here unchanged — .record-prose
+         does not restyle them. Code blocks and heading anchors are ours: both markup
+         hooks are shadowed in _markup/ and styled in home.css.
 
          No feature-image branch: the posts are single files, not page bundles, so
          .Resources is always empty. Add one here if a post ever becomes a bundle. */ -}}
@@ -20,7 +20,8 @@
       <p class="record-when">
         {{- with .Date }}
           <time datetime="{{ .Format "2006-01-02" }}">{{ .Format "2006-01-02" }}</time>
-        {{- end -}}
+        {{- end }}
+        <span class="record-words">{{ lang.FormatNumber 0 .WordCount }} words</span>
       </p>
       <div class="record-article-title">
         <h1>{{ .Title }}</h1>
@@ -32,6 +33,7 @@
 
     <div class="record-prose">
       {{ .Content }}
+      <span class="record-end" aria-hidden="true"></span>
     </div>
 
     {{- /* Subjects, backlinks and the content graph, shared with a note. The partial

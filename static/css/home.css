@@ -637,8 +637,6 @@ body.working-record-site {
   border-top: 1px solid var(--record-line);
 }
 
-/* Inline code only. `pre code` is left to Chroma and the theme's .codeblock markup,
-   which is a dark panel by design and the one thing on the page that is not paper. */
 .record-prose code:not(pre code) {
   padding: 0.15em 0.35em;
   background: var(--record-paper);
@@ -648,10 +646,158 @@ body.working-record-site {
   font-size: 0.8em;
 }
 
-.record-prose pre {
+/* A fenced block, from _markup/render-codeblock.html. Ruled like a table, set on the
+   paper rather than in a panel, with the language on the spine where an essay keeps
+   its date. Chroma emits classes here, not inline styles, so the theme's dark
+   `.chroma` palette is reset below and a few token roles get a colour each: the rest
+   is ink. The copy control appears on hover like the heading mark. */
+.record-code {
+  position: relative;
+  margin: 1.75rem 0;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--record-line-dark);
+  border-bottom: 1px solid var(--record-line-dark);
+}
+
+.record-code-lang {
+  position: absolute;
+  right: 100%;
+  top: 0.85rem;
+  padding-right: 0.75rem;
+  font-family: var(--record-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--record-muted);
+}
+
+.record-code-copy {
+  position: absolute;
+  right: 0;
+  top: 0.75rem;
+  font-family: var(--record-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--record-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.record-code:hover .record-code-copy,
+.record-code-copy:focus-visible {
+  opacity: 1;
+}
+
+.record-code .highlight,
+.record-code pre,
+.record-code .chroma {
+  margin: 0;
+  color: var(--record-ink);
+  background: transparent;
+}
+
+.record-code pre {
+  overflow-x: auto;
+  padding: 0;
   font-family: var(--record-mono);
   font-size: 0.8125rem;
   line-height: 1.6;
+  tab-size: 4;
+}
+
+.record-code .chroma span {
+  color: inherit;
+  background: transparent;
+  font-weight: inherit;
+  font-style: inherit;
+}
+
+.record-code .chroma .c,
+.record-code .chroma .ch,
+.record-code .chroma .cm,
+.record-code .chroma .c1,
+.record-code .chroma .cs,
+.record-code .chroma .cp,
+.record-code .chroma .cpf {
+  color: var(--record-muted);
+  font-style: italic;
+}
+
+.record-code .chroma .s,
+.record-code .chroma .sa,
+.record-code .chroma .sb,
+.record-code .chroma .sc,
+.record-code .chroma .dl,
+.record-code .chroma .sd,
+.record-code .chroma .s2,
+.record-code .chroma .se,
+.record-code .chroma .sh,
+.record-code .chroma .si,
+.record-code .chroma .sx,
+.record-code .chroma .sr,
+.record-code .chroma .s1,
+.record-code .chroma .ss {
+  color: var(--record-accent-dark);
+}
+
+.record-code .chroma .k,
+.record-code .chroma .kc,
+.record-code .chroma .kd,
+.record-code .chroma .kn,
+.record-code .chroma .kp,
+.record-code .chroma .kr,
+.record-code .chroma .kt,
+.record-code .chroma .nt {
+  font-weight: 550;
+}
+
+.record-code .chroma .m,
+.record-code .chroma .mb,
+.record-code .chroma .mf,
+.record-code .chroma .mh,
+.record-code .chroma .mi,
+.record-code .chroma .il,
+.record-code .chroma .mo,
+.record-code .chroma .o,
+.record-code .chroma .p {
+  color: var(--record-mid);
+}
+
+.record-code .chroma .hl {
+  display: block;
+  background: var(--record-line);
+}
+
+.record-code-caption {
+  margin: 0.6rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--record-muted);
+}
+
+/* Word count on the spine under the date, and the mark that closes the body. The
+   mark is a square drawn in CSS rather than a glyph, so it does not depend on the
+   serif carrying one. */
+.record-words {
+  display: block;
+  font-weight: 400;
+}
+
+.record-end {
+  display: block;
+  margin: 2.5rem 0 0;
+  line-height: 1;
+}
+
+.record-end::after {
+  content: "";
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--record-ink);
 }
 
 /* Booktabs. A heavy rule above and below, a light one under the header, and nothing
@@ -1322,6 +1468,32 @@ body.working-record-site {
     position: static;
     padding: 0 0 0 0.35em;
     opacity: 0.45;
+  }
+
+  /* Same reason: nothing to the left to hang the language off, so it sits above the
+     block, and the copy control is always visible since there is no hover. */
+  .record-code {
+    padding-top: 2rem;
+  }
+
+  .record-code-lang {
+    position: absolute;
+    right: auto;
+    left: 0;
+    top: 0.75rem;
+    padding-right: 0;
+  }
+
+  .record-code-copy {
+    opacity: 1;
+  }
+
+  .record-words {
+    display: inline;
+  }
+
+  .record-words::before {
+    content: "\00a0\00b7\00a0";
   }
 
   .note-card {

@@ -1,0 +1,21 @@
+{{- /* Shadows the theme's hook, which wrapped every fence in a dark Tailwind panel with
+       a language chip and two icons: the one element on the page that was not paper.
+       This one is ruled like the tables and typeset from home.css. Chroma runs with
+       classes rather than inline styles so the palette is ours, not the config's
+       `tokyonight-night`, and the token rules live beside everything else.
+
+       The language sits on the spine, left of the block, where the date sits on an
+       essay; on a phone it sits above. Copy is a text control that appears on hover,
+       the same way the heading mark does, and uses the theme's <clipboard-copy>
+       element so it keeps working without any script of our own. */ -}}
+{{- $id := printf "code-%02d" (add .Ordinal 1) -}}
+<figure class="record-code" id="{{ $id }}">
+  {{- with .Type }}
+  <span class="record-code-lang" aria-hidden="true">{{ . }}</span>
+  {{- end }}
+  <clipboard-copy class="record-code-copy" type="button" target="#{{ $id }} code" aria-label="Copy code to clipboard" title="Copy code to clipboard">copy</clipboard-copy>
+  {{ transform.Highlight .Inner .Type (merge .Options (dict "noClasses" false)) }}
+  {{- with .Attributes.caption }}
+  <figcaption class="record-code-caption">{{ . }}</figcaption>
+  {{- end }}
+</figure>
