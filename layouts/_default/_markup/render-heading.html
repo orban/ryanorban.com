@@ -1,0 +1,8 @@
+{{- /* Shadows the theme's hook, which emits `h{{ add .Level 1 }}`: an essay's `##` came
+       out as an h3 under the page's h1, and the serif ruled `.record-prose h2` in
+       home.css matched nothing. This one keeps the level the author wrote.
+
+       The anchor is a `§` in the margin, shown on hover; the theme's was a Lucide link
+       icon on Tailwind `group-hover`. aria-hidden and tabindex=-1 as before — the
+       heading text is the accessible name, the anchor is a convenience for a mouse. */ -}}
+<h{{ .Level }} id="{{ .Anchor | safeURL }}">{{ .Text | safeHTML }} <a class="record-anchor" href="#{{ .Anchor | safeURL }}" aria-hidden="true" tabindex="-1" title="Link to this section">§</a></h{{ .Level }}>
