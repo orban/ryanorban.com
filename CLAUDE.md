@@ -44,7 +44,7 @@ content/
 
 ### Layout Overrides
 
-Everything in `layouts/` shadows the theme module. There are twenty-nine files. The site
+Everything in `layouts/` shadows the theme module. There are thirty files. The site
 has one design — the "Working Record" — and one stylesheet; every page renders through
 `baseof.html`'s single body. The theme supplies data plumbing, the Tailwind build behind
 its own markup, and nothing else visual.
@@ -103,6 +103,11 @@ its own markup, and nothing else visual.
 - `layouts/_default/_markup/render-heading.html` — shadows the theme's, which rendered
   every heading one level deeper than written (`##` → h3). Keeps the author's level and
   emits a `§` margin anchor (`.record-anchor`) instead of the theme's Tailwind icon.
+- `layouts/_default/_markup/render-codeblock.html` — shadows the theme's, which wrapped
+  every fence in a dark Tailwind panel. Emits `.record-code`: ruled like a table, the
+  language on the spine, a hover `copy` control that reuses the theme's
+  `<clipboard-copy>` element. Runs Chroma with classes, so the palette is `home.css`'s
+  and not the config's `tokyonight-night`.
 - `layouts/_default/_markup/render-image.html`, `layouts/partials/posts/list.html`.
 
 **Agent-facing surfaces (see Crawler Policy):**
@@ -128,9 +133,9 @@ constantly for exactly that reason, and it was 1,014 lines inlined into all ~2,5
 pages. The override war was a property of the theme shell, not the content.
 
 The theme's Tailwind build is still loaded site-wide by `head/css`, because the theme's
-own markup — code blocks, the graph widget — carries utility classes. Do not restyle
-those from `home.css`; they work as they are. Heading anchors are ours now
-(`render-heading.html`) and are styled in `home.css`.
+own markup — the graph widget — carries utility classes. Do not restyle that from
+`home.css`; it works as it is. Heading anchors and code blocks are ours now
+(`render-heading.html`, `render-codeblock.html`) and are styled in `home.css`.
 
 The audit only builds the homepage, so a rule that exists solely for another page is
 unenforced. Keep it in the same grammar anyway. The `!important` check is a plain
@@ -241,9 +246,8 @@ once held the redesign off production for two days while `master` looked green.
   body, header, footer or the Tailwind classes on them — reaches no page here and nothing
   fails. That is now intentional rather than a hazard to reconcile: the site does not use
   the theme's design. What a theme update *can* still change under you is the markup the
-  theme generates inside the page — code blocks, heading anchors, the graph widget — so
-  check those render after one. Headings are no longer on that list: the render hook is
-  shadowed too.
+  theme generates inside the page — the graph widget — so check that renders after one.
+  Headings and code blocks are no longer on that list: both render hooks are shadowed.
 - **Hugo's documented template lookup for term pages does not hold on 0.166.** A
   `term.html` in `layouts/_default/` or `layouts/` is silently ignored; only
   `layouts/<plural>/term.html` is picked up. `_default/taxonomy.html` dispatches on
