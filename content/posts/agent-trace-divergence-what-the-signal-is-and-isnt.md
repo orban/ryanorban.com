@@ -1,7 +1,7 @@
 ---
 title: "What agent trace divergence actually tells you"
 date: 2026-04-08
-description: "I spent three weeks trying to extract training signal from agent trace divergence. Most of the dreams didn't survive contact with held-out data. Here's what's actually there."
+description: "I spent three weeks trying to extract training signal from agent trace divergence. Most of it didn't survive held-out data. What did is narrower than I expected."
 math: true
 draft: true
 ---
@@ -10,11 +10,11 @@ You run your agent 30 times on the same task. 18 pass, 12 fail. The traces look 
 
 *Those branch points are where the decisions matter. Find them, score them, turn them into training data.*
 
-That's the dream. A self-generating preference signal from the variance you already have. Free DPO pairs. A causal handle on agent behavior. No labeling cost.
+That's the dream. Free DPO pairs, generated from variance you already have, with no labeling cost.
 
 I spent three weeks testing that hypothesis on [SWE-rebench v2](https://huggingface.co/datasets/nebius/SWE-rebench) — 1,096 tasks, 12,854 runs, multiple models, multiple harnesses — and built a tool called [moirai](https://github.com/orban/moirai) to run the experiments end to end.
 
-Most of it doesn't work the way you'd hope. But the parts that do are narrower and sharper than I expected, and the negative results are more useful than the positive ones. Here's what I found.
+Most of it doesn't work the way you'd hope. But the parts that do are narrower and sharper than I expected, and the negative results are more useful than the positive ones.
 
 ---
 
@@ -43,7 +43,7 @@ Split each task's runs into train/test halves. Find divergence points on train. 
 
 0.507 is a coin flip. Pooled is slightly better because large tasks dominate, but per-task the divergence signal is essentially noise on held-out data.
 
-Features do better — a modest 0.056 above chance. That's "real but weak." Trajectory *shape* matters more than the exact branch choice.
+Features do better — a modest 0.056 above chance. Real but weak. Trajectory *shape* matters more than the exact branch choice.
 
 **Takeaway:** The divergence signal that looks strong in-sample collapses on held-out data. If you're training on one task's divergence and applying to another, you've got nothing.
 
@@ -63,15 +63,13 @@ Second experiment: best-of-K selection. For each task, sample K=3 runs and pick 
 
 Features capture 13% of the oracle gap. Divergence captures 10%. Both are real but neither is close to what a reward model or perplexity-based reranker would give you.
 
-The more interesting number is the oracle gap itself. 33 points of potential lift are sitting in the data. Current methods capture a small slice. The rest is locked up in task-specific structure that doesn't generalize across families.
+The number that matters is the oracle gap itself. 33 points of potential lift are sitting in the data. Current methods capture a small slice. The rest is locked up in task-specific structure that doesn't generalize across families.
 
 ---
 
 ## 3. Where does it generalize? (The 25% with structure)
 
-Here's where it gets interesting.
-
-I computed "captured oracle gap" per task family and got a range from **-73% to +100%**. Some families benefit enormously from divergence-based scoring. Others get hurt. The aggregate mean of +10% is hiding the actual story.
+I computed "captured oracle gap" per task family and got a range from **-73% to +100%**. Some families gain a lot from divergence-based scoring. Others lose. The aggregate mean of +10% hides it.
 
 So I built a per-task score called **structure** — three components, equal-weight:
 
@@ -106,15 +104,13 @@ If you know structure per task, you can pick the right scoring strategy per task
 
 Use divergence on high-structure tasks, features on low-structure tasks. Beats both global strategies by +2pp.
 
-That's not a breakthrough. It's a routing rule over two heuristics that gets you closer to oracle. If you're already running features or a reranker, adding structure-based routing is a drop-in that nudges the number up. If you're not, this isn't enough to justify building the infrastructure.
+It's a routing rule over two heuristics. If you're already running features or a reranker, adding structure-based routing is a drop-in that nudges the number up. If you're not, this isn't enough to justify building the infrastructure.
 
 **Takeaway:** Structure score is a **method router**. You use it to decide which existing scoring strategy to apply per task. It is not a standalone scorer.
 
 ---
 
 ## 5. Can you use structure to allocate eval budget? (No)
-
-This is where the negative result gets interesting.
 
 If some tasks have structure and some don't, intuition says: spend more eval runs on the structured ones. They should need more samples to characterize. Use the rest of your budget uniformly on low-structure tasks.
 
@@ -146,27 +142,27 @@ The original dream: at each divergence point, the better-outcome branch is the p
 
 There are two problems.
 
-**Problem 1: the signal is too weak to justify the infrastructure.** AUROC 0.556 with features and 0.507 with raw divergence means any preference pair you extract has massive label noise. DPO is already fragile to label noise; pairs from this signal would train the model on mostly random distinctions.
+**Problem 1: the signal is too weak to justify the infrastructure.** AUROC 0.556 with features and 0.507 with raw divergence means any preference pair you extract has heavy label noise. DPO is already fragile to label noise; pairs from this signal would train the model on mostly random distinctions.
 
 **Problem 2: someone already tried this.** [SWE-Dev](https://arxiv.org/abs/2502.12904) explicitly tested preference learning (KTO, OREO) on SWE-bench trajectories and rejected it in favor of SFT on successful trajectories. All five public SWE-bench fine-tunes I looked at (SWE-Gym, SWE-Fixer, Lingma SWE-GPT, SWE-Smith, SWE-Dev) use SFT. [DeepSWE](https://arxiv.org/abs/2506.08902) is the exception and uses online GRPO, which is a different animal.
 
-The structural reason it doesn't work: preference pairs extracted from trajectory divergence are conditioned on observed actions, not on the latent state of the repository/task. Two runs that took different actions at step 7 might have been in subtly different states (files opened, context accumulated, model hidden state) that the extracted pair completely ignores. You end up training on correlations that are confounded by invisible prefix state.
+The structural reason it doesn't work: preference pairs extracted from trajectory divergence are conditioned on observed actions, not on the latent state of the repository/task. Two runs that took different actions at step 7 might have been in subtly different states (files opened, context accumulated, model hidden state) that the extracted pair ignores. You end up training on correlations that are confounded by invisible prefix state.
 
-**Takeaway:** Don't extract DPO pairs from agent trace divergence on SWE-bench. The signal is too weak, the state-aliasing is severe, and the teams with the most resources and the most data have already tried and rejected it. SFT on successful trajectories remains the right move.
+**Takeaway:** Don't extract DPO pairs from agent trace divergence on SWE-bench. SFT on successful trajectories remains the right move.
 
 ---
 
 ## What's left that's useful
 
-After all six experiments, here's what survives:
+What survives the six experiments:
 
 1. **Structure score as a method router.** Useful if you're already running multiple scoring strategies and want to pick per task. +2-6pp over global strategy. Not a standalone product.
 
-2. **Negative results that are actually useful.** "Divergence doesn't generalize" is a thing a lot of people assume without checking. "Structure score is a method router, not a variance router" is a mistake I almost made and several people I talked to independently proposed. Documenting them saves someone else three weeks.
+2. **Negative results worth writing down.** "Divergence doesn't generalize" is a thing a lot of people assume without checking. "Structure score is a method router, not a variance router" is a mistake I almost made and several people I talked to independently proposed. Documenting them saves someone else three weeks.
 
-3. **The discipline of held-out validation.** The in-sample results looked great. The held-out results killed most of the pipeline. If I had built the training loop first — as was my original plan — I would have spent weeks debugging an infrastructure problem that was actually a signal problem.
+3. **The discipline of held-out validation.** The in-sample results looked great. The held-out results killed most of the pipeline.
 
-4. **moirai itself as a per-task debugging tool.** If you have traces and want to know where your runs diverge and which path worked, it works. On SWE-rebench v2, 77/1096 tasks surface strong claims like "wrote source → 85% success (13 runs) vs ran a command first → 0% success (3 runs)". That's not a product. It's a personal tool.
+4. **moirai itself as a per-task debugging tool.** If you have traces and want to know where your runs diverge and which path worked, it works. On SWE-rebench v2, 77/1096 tasks surface strong claims like "wrote source → 85% success (13 runs) vs ran a command first → 0% success (3 runs)". It's a personal tool, not a product.
 
 ---
 
@@ -184,7 +180,7 @@ If I had skipped that step, I would have built the training loop, run it, gotten
 
 ### Family-conditional signals look universal in aggregate
 
-The first round of analysis on eval-harness data showed strong behavioral patterns: edit-test alternation, specific motif sequences, etc. Then I stratified by task family. Everything disappeared. The "universal" patterns were family artifacts — certain families have certain shapes, and when those families dominate the dataset the pattern looks global.
+The first round of analysis on eval-harness data showed strong behavioral patterns: edit-test alternation and recurring motif sequences. Then I stratified by task family. Everything disappeared. The "universal" patterns were family artifacts — certain families have certain shapes, and when those families dominate the dataset the pattern looks global.
 
 This is [Simpson's paradox](https://en.wikipedia.org/wiki/Simpson%27s_paradox) in agent eval, and it's everywhere. Always stratify. If you can't stratify because your dataset is too small per family, you don't have enough data to draw the conclusion you want.
 
@@ -192,7 +188,7 @@ This is [Simpson's paradox](https://en.wikipedia.org/wiki/Simpson%27s_paradox) i
 
 I had structure score working for method routing. I assumed it would also work for eval budget allocation — both "use this variable to make a per-task decision," same shape. Different physics.
 
-Structure score measures *branching sensitivity*, which predicts which scoring function works best. Volatility measures *outcome uncertainty*, which predicts how much sampling you need. These are empirically anti-correlated on SWE-rebench. One latent variable can't do both jobs. Test each application on its own terms before assuming it transfers.
+Structure measures *branching sensitivity*. Volatility measures *outcome uncertainty*. On SWE-rebench they're anti-correlated. Test each use of a variable on its own terms before assuming it transfers.
 
 ### Don't overclaim
 
@@ -200,21 +196,21 @@ The pull to frame a +2-6pp routing rule as a "control system for stochastic agen
 
 ### Aggregate metrics hide the regimes
 
-The headline number for divergence-based reranking was +3.2pp. The per-family captured oracle gap ranged from -73% to +100%. The aggregate hid the fact that I had two different problems on different subsets of the data. Once I saw the per-family distribution, everything else followed.
+The headline number for divergence-based reranking was +3.2pp. The per-family captured oracle gap ranged from -73% to +100%. The aggregate hid two different problems on two subsets of the data. Once I saw the per-family distribution, everything else followed.
 
-Any time you're computing an aggregate metric over a heterogeneous dataset, look at the distribution. Always. The mean is almost never the story.
+Any time you're computing an aggregate metric over a heterogeneous dataset, look at the distribution. The mean is almost never the story.
 
 ---
 
 ## The point
 
-Agent trace divergence contains signal. The signal is narrower, weaker, and more task-specific than the in-sample numbers suggest. On held-out data, raw divergence is a coin flip. Behavioral features recover a modest amount. Routing between scoring strategies by structure buys you another two points.
+Agent trace divergence contains signal. The signal is weaker and more task-specific than the in-sample numbers suggest. On held-out data, raw divergence is a coin flip. Behavioral features recover a modest amount. Routing between scoring strategies by structure buys you another two points.
 
 None of that justifies a preference-learning pipeline. SWE-bench teams have converged on SFT for a reason, and the reason is consistent with what I found.
 
 If you're thinking about extracting training signal from multi-run agent traces, run the cheap experiments first. Held-out AUROC. Reranking lift. Per-family captured oracle gap. If those numbers are weak — and they probably will be — the expensive infrastructure won't save you.
 
-Use the signal where it's real: method selection on the minority of tasks where the divergence is strong, decisive, and early. Treat everything else as drift.
+Use the signal where it's real: method selection on the minority of tasks where the divergence is early and decisive. Treat everything else as drift.
 
 ---
 
