@@ -363,7 +363,11 @@ def main() -> None:
     # Every ledger row is dated, so the record can be checked rather than believed.
     undated = [n for n, row in enumerate(rows, 1) if "<time datetime" not in row]
     check("every ledger row is dated", not undated, f"rows {undated} carry no <time datetime>")
-    check("direction contract survives the build", "THESIS:" in html and "FINISH:" in html)
+    # The contract is a note to whoever edits the shell, so it lives in the template as
+    # a Go comment and must not reach the reader: a shipped HTML comment is a note to
+    # the author left in the reader's view-source.
+    check("direction contract kept in baseof.html", "THESIS:" in baseof and "FINISH:" in baseof)
+    check("no HTML comments ship on the homepage", "<!--" not in html)
     check(
         "no third-party font requests on the homepage",
         not any(host in html for host in THIRD_PARTY_FONT_HOSTS),
